@@ -1,0 +1,30 @@
+{
+  "name": "gongbusaju",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "next": "15.3.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lunar-javascript": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.3",
+    "eslint-plugin-import": "^2.31.0",
+    "typescript": "^5",
+    "vitest": "^3.2.3",
+    "@vitejs/plugin-react": "^4.5.1"
+  }
+}

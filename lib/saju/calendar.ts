@@ -10,7 +10,7 @@
  * 최종 정확도는 한국천문연구원(KASI) 또는 권위 있는 만세력과 대조 필요.
  */
 
-import { Solar } from "lunar-javascript";
+import { Solar, Lunar } from "lunar-javascript";
 
 /**
  * 사주 月柱 결정에 쓰는 12節 (절) → 사주 월 (1=인월, ..., 12=축월)
@@ -91,6 +91,25 @@ export function toLunar(
     day: lunar.getDay(),
     isLeap: lunar.isLeap(),
   };
+}
+
+/**
+ * 음력 날짜를 양력으로 변환한다.
+ * (개발 검증 UI 등에서 사용 — lunar-javascript 직접 의존 없이 호출 가능)
+ *
+ * @param lunarYear  음력 년
+ * @param lunarMonth 음력 월 (1-12)
+ * @param lunarDay   음력 일
+ * @returns 양력 { year, month, day }
+ */
+export function solarFromLunar(
+  lunarYear: number,
+  lunarMonth: number,
+  lunarDay: number
+): { year: number; month: number; day: number } {
+  const lunar = Lunar.fromYmd(lunarYear, lunarMonth, lunarDay);
+  const solar = lunar.getSolar();
+  return { year: solar.getYear(), month: solar.getMonth(), day: solar.getDay() };
 }
 
 /**

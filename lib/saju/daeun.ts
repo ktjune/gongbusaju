@@ -30,8 +30,6 @@ export function computeDaeun(
   const genderCode = gender === "male" ? 0 : 1;
   const yun = eightChar.getYun(genderCode);
 
-  // getStartYear() = 대운이 처음 시작하는 나이(년 단위)
-  const startAge: number = yun.getStartYear();
   const daYunList = yun.getDaYun(MAX_DAEUN + 1); // +1: da[0]은 빈 ganji이므로 skip 후 MAX_DAEUN 확보
 
   // da[0]은 대운 시작 전 과도기(胎元 등)로 干支가 빈 문자열이다. 제외한다.

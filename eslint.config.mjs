@@ -11,6 +11,10 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // 테스트 파일은 빌드 lint 대상에서 제외
+  {
+    ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     plugins: {

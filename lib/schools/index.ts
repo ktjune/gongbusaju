@@ -17,7 +17,7 @@ import {
   findSchoolsByIdsFromDb,
 } from "./query";
 
-export type { School, SchoolFacts, Coordinate, ZoneCollection, ZoneFeature } from "./types";
+export type { SchoolFacts, SchoolRecord, Coordinate, ZoneCollection, ZoneFeature } from "./types";
 export type { SchoolFixture } from "./query";
 export { pointInGeoJsonGeometry, haversineDistanceM, findZoneByPoint } from "./zone";
 

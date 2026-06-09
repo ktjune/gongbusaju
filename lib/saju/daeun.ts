@@ -33,8 +33,9 @@ export function computeDaeun(
   eightChar: any,
   gender: "male" | "female"
 ): DaeunStep[] {
-  // lunar-javascript: 0=男(남), 1=女(여)
-  const genderCode = gender === "male" ? 0 : 1;
+  // lunar-javascript: 1=男(남), 0=女(여)  ← 주의: 직관과 반대
+  // 소스 확인: `var man = 1 === gender;` (lunar.js getYun)
+  const genderCode = gender === "male" ? 1 : 0;
   const yun = eightChar.getYun(genderCode);
 
   // 출생 후 첫 대운까지 경과 시간 (만나이 기준)

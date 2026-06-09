@@ -23,7 +23,18 @@ export type Elements = {
 export type TenGods = Record<string, number>; // 십성 분포
 
 export type DaeunStep = {
-  age: number; // 시작 나이
+  /**
+   * 대운 시작 만나이 (연 단위).
+   * lunar-javascript Yun.getStartYear() 기반 — 출생 후 경과 연수이므로 만나이와 동일.
+   * 첫 대운은 getStartYear(), 이후 10년씩 증가.
+   */
+  age: number;
+  /**
+   * age에 더해지는 추가 개월 수 (0~11).
+   * lunar-javascript Yun.getStartMonth() — 모든 대운에 동일.
+   * "만 5세 10개월부터" 형식으로 표기할 때 사용.
+   */
+  startMonths: number;
   ganji: Ganji;
 };
 

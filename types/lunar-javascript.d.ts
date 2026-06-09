@@ -60,7 +60,12 @@ declare module "lunar-javascript" {
   }
 
   class Yun {
+    /** 출생일로부터 첫 대운 시작까지 경과 연수 (만나이 연 단위) */
     getStartYear(): number;
+    /** 경과 연수 이후 추가 개월 수 (0~11) */
+    getStartMonth(): number;
+    /** 경과 개월 이후 추가 일수 */
+    getStartDay(): number;
     getDaYun(count: number): DaYun[];
   }
 

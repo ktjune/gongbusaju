@@ -13,5 +13,5 @@ export {
   ganjiToHangul, withHangul,
   wuxingToHangul, wuxingWithHangul,
   tenGodToHangul, tenGodWithHangul,
-  seToMannai, formatMannai,
+  seToMannai, formatMannai, formatDaeunAge,
 } from "./hanzi";

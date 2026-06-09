@@ -13,7 +13,7 @@ import {
   solarFromLunar,
   withHangul,
   tenGodWithHangul,
-  formatMannai,
+  formatDaeunAge,
 } from "@/lib/saju";
 import type { SajuResult } from "@/lib/saju";
 
@@ -343,14 +343,14 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
         <p style={styles.ageNote}>
           나이 기준: <strong>만나이</strong>
           <span style={styles.ageNoteDetail}>
-            {" "}(lunar-javascript 원값은 세는나이(虚岁); 만나이 = 세는나이 − 1 적용)
+            {" "}(Yun.getStartYear()/getStartMonth() — 출생 후 경과 시간 = 만나이.
+            전통 만세력은 세는나이로 표기하므로 권위 만세력과 ±1~2세 차이 날 수 있음)
           </span>
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {result.daeun.map((step, i) => (
             <div key={i} style={styles.daeunCard}>
-              {/* step.age는 세는나이 → formatMannai()로 만나이 변환 표시 */}
-              <div style={styles.daeunAge}>{formatMannai(step.age)}~</div>
+              <div style={styles.daeunAge}>{formatDaeunAge(step.age, step.startMonths)}</div>
               <div style={styles.daeunGanji}>{withHangul(step.ganji)}</div>
             </div>
           ))}
@@ -371,7 +371,8 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
 
       <p style={styles.footer}>
         ※ 동경 135° 표준시(KST) 기준 · 진태양시 보정 미적용<br />
-        ※ 대운 나이: 만나이 기준 표시 (세는나이 − 1). 연도 단위 근사값.<br />
+        ※ 대운 나이: Yun.getStartYear()/getStartMonth() 기반 만나이 (출생 후 경과 시간).
+        전통 만세력은 세는나이 표기 — 교차 검증 시 ±1~2세 차이 발생할 수 있음.<br />
         ※ 이 결과는 lunar-javascript 기반 자체 계산입니다.
         권위 있는 만세력과 반드시 대조 검증하세요.
       </p>

@@ -161,3 +161,20 @@ export function seToMannai(senayi: number): number {
 export function formatMannai(senayi: number): string {
   return `만 ${seToMannai(senayi)}세`;
 }
+
+/**
+ * 대운 시작 만나이(연·월)를 "만 X세 Y개월부터" 형식으로 반환한다.
+ *
+ * 입력값은 lunar-javascript Yun.getStartYear()/getStartMonth() — 출생 후 경과 시간이므로
+ * 만나이와 동일. DaYun.getStartAge()(세는나이)와 혼동 금지.
+ *
+ * @param years  만나이 연 단위 (Yun.getStartYear() + n*10)
+ * @param months 추가 개월 수 0~11 (Yun.getStartMonth())
+ *
+ * @example formatDaeunAge(5, 10) → "만 5세 10개월부터"
+ * @example formatDaeunAge(15, 0) → "만 15세부터"
+ */
+export function formatDaeunAge(years: number, months: number): string {
+  const monthPart = months > 0 ? ` ${months}개월` : "";
+  return `만 ${years}세${monthPart}부터`;
+}

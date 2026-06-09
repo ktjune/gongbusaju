@@ -1,33 +1,140 @@
 /**
- * lib/schools — 사실 레이어 (학교·통학구역 데이터)
+ * lib/schools — 사실 레이어 진입점
  *
  * [절대 규칙] lib/schools 는 lib/saju 를 절대 import 하지 않는다.
  * 두 레이어를 합치는 곳은 오직 lib/report 이다.
  *
- * TODO [빌드 순서 3단계]: /data-pipeline + /lib/schools 구현
- *   - geocode.ts  주소 → 좌표
- *   - zone.ts     PostGIS point-in-polygon
- *   - query.ts    학교군 조인
+ * 배정 결과는 항상 "예상 배정(교육청 확인 필요)" 라벨 + 출처·기준일 포함.
  */
 
-export type School = {
-  name: string;
-  type: string;
-  distanceM: number;
-  admissionStats?: Record<string, unknown>;
-  /** 출처 URL 또는 공공데이터포털 데이터셋 ID */
-  source: string;
-  /** 데이터 기준일 (YYYY-MM-DD) */
-  asOf: string;
+import type { Coordinate, SchoolFacts, SchoolRecord, ZoneCollection } from "./types";
+import type { SchoolFixture } from "./query";
+import { geocodeAddress } from "./geocode";
+import { findZoneByPoint, findZoneByPointFromDb, findNearbySchoolsFromDb } from "./zone";
+import {
+  findSchoolInFixtures,
+  findNearbyInFixtures,
+  findSchoolsByIdsFromDb,
+} from "./query";
+
+export type { School, SchoolFacts, Coordinate, ZoneCollection, ZoneFeature } from "./types";
+export type { SchoolFixture } from "./query";
+export { pointInGeoJsonGeometry, haversineDistanceM, findZoneByPoint } from "./zone";
+
+/** getSchoolFacts() 옵션 */
+export type GetSchoolFactsOptions = {
+  /**
+   * 지오코딩을 건너뛰고 직접 좌표를 전달한다.
+   * (테스트·개발 시 API 키 없이 사용)
+   */
+  coord?: Coordinate;
+  /**
+   * 픽스처 모드: DB 대신 로컬 JSON 데이터로 조회한다.
+   * (키 없이 파이프라인·테스트 실행 가능)
+   */
+  fixtureSchools?: SchoolFixture[];
+  fixtureZones?: ZoneCollection;
 };
 
-export type SchoolFacts = {
-  /** 예상 배정 학교 (교육청 확인 필요) */
-  assignedSchool?: School;
-  cluster: School[];
-  source: string;
-  asOf: string;
-};
+/** 배정 학교 라벨 — 항상 이 값을 사용한다 */
+export const ASSIGNED_SCHOOL_LABEL = "예상 배정(교육청 확인 필요)" as const;
 
-// placeholder — 구현 예정
-export {};
+/**
+ * 주소 또는 좌표로 학교 사실 데이터를 조회한다.
+ *
+ * 동작:
+ * 1. 좌표 결정: options.coord 우선, 없으면 geocodeAddress(address)
+ * 2. 배정 예상 학교: 통학구역 point-in-polygon
+ * 3. 학교군: 반경 2km 이내 학교
+ * 4. 반환: SchoolFacts (항상 assignedLabel + 출처·기준일)
+ *
+ * 좌표를 얻을 수 없으면 빈 cluster로 반환한다.
+ */
+export async function getSchoolFacts(
+  address: string,
+  options: GetSchoolFactsOptions = {}
+): Promise<SchoolFacts> {
+  const emptyResult: SchoolFacts = {
+    cluster: [],
+    source: "좌표 변환 실패 — KAKAO_REST_API_KEY 확인 또는 coord 직접 전달 필요",
+    asOf: new Date().toISOString().slice(0, 10),
+  };
+
+  // 1. 좌표 결정
+  const coord: Coordinate | null =
+    options.coord ?? (await geocodeAddress(address));
+
+  if (!coord) return emptyResult;
+
+  // 2. 픽스처 모드
+  if (options.fixtureSchools && options.fixtureZones) {
+    return getSchoolFactsFromFixtures(coord, options.fixtureSchools, options.fixtureZones);
+  }
+
+  // 3. DB 모드 (DATABASE_URL 필요)
+  return getSchoolFactsFromDb(coord);
+}
+
+// ──────────────────────────────────────────────────────────────
+// 픽스처 기반 (테스트·개발)
+// ──────────────────────────────────────────────────────────────
+
+async function getSchoolFactsFromFixtures(
+  coord: Coordinate,
+  schools: SchoolFixture[],
+  zones: ZoneCollection
+): Promise<SchoolFacts> {
+  const zone = findZoneByPoint(coord, zones.features);
+  const asOf = schools[0]?.asOf ?? new Date().toISOString().slice(0, 10);
+  const source = schools[0]?.source ?? "샘플 픽스처";
+
+  let assigned: SchoolFacts["assignedSchool"] | undefined;
+  if (zone) {
+    const rec = findSchoolInFixtures(zone.properties.schoolId, schools, coord);
+    if (rec) {
+      assigned = { ...rec, assignedLabel: ASSIGNED_SCHOOL_LABEL };
+    }
+  }
+
+  const cluster = findNearbyInFixtures(coord, schools, 2000);
+
+  return { assignedSchool: assigned, cluster, source, asOf };
+}
+
+// ──────────────────────────────────────────────────────────────
+// DB 기반 (프로덕션)
+// ──────────────────────────────────────────────────────────────
+
+async function getSchoolFactsFromDb(coord: Coordinate): Promise<SchoolFacts> {
+  const [zoneResult, nearbyRows] = await Promise.all([
+    findZoneByPointFromDb(coord),
+    findNearbySchoolsFromDb(coord, 2000),
+  ]);
+
+  let assigned: SchoolFacts["assignedSchool"] | undefined;
+  if (zoneResult) {
+    const rec = await findSchoolsByIdsFromDb([zoneResult.schoolId], coord);
+    if (rec.length) {
+      assigned = { ...rec[0], assignedLabel: ASSIGNED_SCHOOL_LABEL };
+    }
+  }
+
+  const cluster = nearbyRows.map((r) => ({
+    schoolId: r.schoolId,
+    name: r.name,
+    type: r.type,
+    address: r.address,
+    lat: 0, // DB에서 lat/lng 가져오려면 추가 쿼리 필요 — TODO
+    lng: 0,
+    distanceM: Math.round(r.distanceM),
+    source: r.source,
+    asOf: r.asOf,
+  } satisfies SchoolRecord));
+
+  return {
+    assignedSchool: assigned,
+    cluster,
+    source: "전국초등학교통학구역표준데이터(data.go.kr/data/15021149)",
+    asOf: zoneResult?.asOf ?? new Date().toISOString().slice(0, 10),
+  };
+}

@@ -46,8 +46,8 @@ export type SajuInput = {
   birthMinute?: number; // 0-59
   gender: "male" | "female";
   /**
-   * 진태양시 보정 사용 여부 (기본 true)
-   * 한국 표준시 동경 135° vs 실제 ~127° → 약 -32분 보정
+   * 진태양시 보정 사용 여부 (기본 false — 절대 규칙: 동경 135° 표준시 기준)
+   * 진태양시 보정이 필요한 경우에만 true로 명시 전달.
    */
   useTrueSolarTime?: boolean;
 };

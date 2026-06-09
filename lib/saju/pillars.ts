@@ -23,7 +23,8 @@ import { computeTraits } from "./traits";
  *
  * 동작 규칙:
  * - birthHour 미지정 → 時柱 = null (추정·날조 금지)
- * - useTrueSolarTime=true (기본) → 진태양시 보정(-32분, 서울 기준)을 적용한 후 계산
+ * - useTrueSolarTime 기본 false: 동경 135° 표준시(KST) 기준으로 계산 (절대 규칙)
+ *   진태양시 보정을 원할 때만 true로 명시 전달.
  * - 절기(節) 기준 月柱는 lunar-javascript가 처리 (입춘으로 年 경계 포함)
  */
 export function computeSaju(input: SajuInput): SajuResult {
@@ -34,7 +35,7 @@ export function computeSaju(input: SajuInput): SajuResult {
     birthHour,
     birthMinute = 0,
     gender,
-    useTrueSolarTime = true,
+    useTrueSolarTime = false,
   } = input;
 
   const hasTime = birthHour !== undefined;

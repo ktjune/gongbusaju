@@ -1,0 +1,111 @@
+// Prisma 스키마 — 공부사주
+// DB: Supabase Postgres + PostGIS
+//
+// 사용법:
+//   1. DATABASE_URL을 .env에 설정
+//   2. npx prisma migrate dev  (또는 001_init.sql 직접 실행)
+//   3. npx prisma generate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 주문·결제
+// ──────────────────────────────────────────────────────────────
+model Order {
+  id          String   @id @default(cuid())
+  tier        String   // "basic" | "premium"
+  status      String   @default("paid")
+  // paid → generating → review → published
+  subjectId   String?  // subjects 외래키 (PII 분리)
+  reportId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("orders")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 자녀 PII (암호화·분리 저장 필수, 법정대리인 동의)
+// ──────────────────────────────────────────────────────────────
+model Subject {
+  id              String   @id @default(cuid())
+  // 아래 필드는 애플리케이션 레이어에서 암호화 후 저장
+  encBirthYear    String
+  encBirthMonth   String
+  encBirthDay     String
+  encBirthHour    String?  // null = 시간 모름
+  encGender       String
+  encAddress      String?  // Premium용
+  encCurrentSchool String? // Premium용
+  consentAt       DateTime
+  retainUntil     DateTime // 보관 기간 (동의 시 명시)
+  createdAt       DateTime @default(now())
+
+  @@map("subjects")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 사주 계산 캐시 (생년월일시 해시 키, PII 미포함)
+// ──────────────────────────────────────────────────────────────
+model SajuResult {
+  id          String   @id @default(cuid())
+  inputHash   String   @unique // SHA256(birthYear|month|day|hour|gender)
+  resultJson  String   // SajuResult JSON (암호화 권장)
+  createdAt   DateTime @default(now())
+
+  @@map("saju_results")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 학교 기본정보·위치 (PostGIS location 컬럼은 raw SQL)
+// ──────────────────────────────────────────────────────────────
+model School {
+  id         String   @id @default(cuid())
+  schoolId   String   @unique // NEIS 학교 코드
+  name       String
+  type       String   // "초등학교" | "중학교" | "고등학교"
+  address    String
+  // location geometry(Point,4326) — PostGIS: 마이그레이션 SQL로 관리
+  source     String
+  asOf       String   // YYYY-MM-DD
+  createdAt  DateTime @default(now())
+
+  @@map("schools")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 통학구역 폴리곤 (PostGIS geom 컬럼은 raw SQL)
+// ──────────────────────────────────────────────────────────────
+model SchoolZone {
+  id        String   @id @default(cuid())
+  schoolId  String
+  // geom geometry(MultiPolygon,4326) — PostGIS: 마이그레이션 SQL로 관리
+  source    String
+  asOf      String
+  createdAt DateTime @default(now())
+
+  @@map("school_zones")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 리포트 (생성물·토큰·PDF·검수 상태)
+// ──────────────────────────────────────────────────────────────
+model Report {
+  id          String   @id @default(cuid())
+  orderId     String   @unique
+  token       String   @unique @default(cuid()) // 결과 페이지 접근 토큰
+  contentJson String   // 리포트 JSON
+  pdfUrl      String?
+  reviewStatus String  @default("pending") // pending|approved|rejected
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reports")
+}

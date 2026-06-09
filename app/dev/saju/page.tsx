@@ -106,7 +106,6 @@ export default function DevSajuPage() {
         birthHour: hour,
         birthMinute: minute,
         gender: form.gender,
-        useTrueSolarTime: false,
       });
 
       setResult(sajuResult);
@@ -123,7 +122,7 @@ export default function DevSajuPage() {
       </div>
 
       <h1 style={styles.h1}>만세력 결과 검증</h1>
-      <p style={styles.notice}>동경 135° 표준시(KST) 기준 · 진태양시 보정 미적용</p>
+      <p style={styles.notice}>동경 127.5° 경도 보정(-30분) 적용 · KST(동경 135°) 기준 입력</p>
 
       {/* 입력 폼 */}
       <form onSubmit={handleSubmit} style={styles.form}>
@@ -370,7 +369,7 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
       </Section>
 
       <p style={styles.footer}>
-        ※ 동경 135° 표준시(KST) 기준 · 진태양시 보정 미적용<br />
+        ※ 동경 127.5° 경도 보정(-30분) 적용 (KST 입력 → 자동 보정). 한국 주류 만세력 관행.<br />
         ※ 대운 나이: Yun.getStartYear()/getStartMonth() 기반 만나이 (출생 후 경과 시간).
         전통 만세력은 세는나이 표기 — 교차 검증 시 ±1~2세 차이 발생할 수 있음.<br />
         ※ 이 결과는 lunar-javascript 기반 자체 계산입니다.

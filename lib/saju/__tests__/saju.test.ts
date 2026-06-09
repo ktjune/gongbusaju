@@ -5,6 +5,10 @@
  * 이 테스트는 lunar-javascript 라이브러리 기반의 자체 일관성(internal consistency)을
  * 검증합니다. 라이브러리 내 데이터와 동일한 결과가 나오는지 확인합니다.
  *
+ * [시각 보정 기준]
+ * computeSaju는 동경 127.5° 경도 보정(-30분)을 항상 적용합니다.
+ * 이 테스트의 기댓값은 모두 -30분 보정이 반영된 값입니다.
+ *
  * TODO [외부 권위 대조]: 한국천문연구원(KASI) 또는 대한사주학회 등 권위 있는
  * 만세력과 교차 검증이 반드시 필요합니다. 이 테스트 통과 ≠ 절대 정확도 보장.
  */
@@ -14,6 +18,7 @@ import {
   getSajuMonth,
   getTrueSolarTimeOffsetMinutes,
   applyTrueSolarTime,
+  LONGITUDE_CORRECTION_MINUTES,
 } from "../calendar";
 import { computeSaju } from "../pillars";
 
@@ -58,10 +63,10 @@ describe("getSajuMonth — 절기(節) 기준 월주", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. 진태양시(眞太陽時) 보정
+// 2. 경도 보정 공식 단위 테스트 (getTrueSolarTimeOffsetMinutes)
 // ---------------------------------------------------------------------------
 
-describe("진태양시 보정", () => {
+describe("경도 보정 공식 — getTrueSolarTimeOffsetMinutes", () => {
   it("서울 기준(동경 126.97°) 오프셋 = 약 -32분", () => {
     expect(getTrueSolarTimeOffsetMinutes(126.97)).toBe(-32);
   });
@@ -74,25 +79,42 @@ describe("진태양시 보정", () => {
     expect(getTrueSolarTimeOffsetMinutes(135)).toBe(0);
   });
 
-  it("15:00 KST → 14:28 진태양시(시각 감소)", () => {
+  it("LONGITUDE_CORRECTION_MINUTES 상수 = -30 (동경 127.5° 고정값)", () => {
+    expect(LONGITUDE_CORRECTION_MINUTES).toBe(-30);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3. applyTrueSolarTime — 고정 -30분 보정
+// ---------------------------------------------------------------------------
+
+describe("applyTrueSolarTime — 고정 -30분 보정", () => {
+  it("15:00 KST → 14:30 (−30분 적용)", () => {
     const adj = applyTrueSolarTime(2000, 6, 1, 15, 0);
     expect(adj.hour).toBe(14);
-    expect(adj.minute).toBe(28);
+    expect(adj.minute).toBe(30);
     expect(adj.day).toBe(1); // 날짜 변경 없음
   });
 
-  it("00:10 KST → 전날 23:38 (날짜 넘김)", () => {
+  it("00:10 KST → 전날 23:40 (날짜 넘김)", () => {
     // 2000년은 윤년이므로 2월 29일이 있음
     const adj = applyTrueSolarTime(2000, 3, 1, 0, 10);
     expect(adj.month).toBe(2);
     expect(adj.day).toBe(29); // 날짜가 전날로
     expect(adj.hour).toBe(23);
-    expect(adj.minute).toBe(38);
+    expect(adj.minute).toBe(40);
+  });
+
+  it("09:19 → 08:49 (시 경계 이동: 巳→辰)", () => {
+    // 巳時 경계 09:00. 09:19 → -30분 = 08:49 → 辰時로 이동
+    const adj = applyTrueSolarTime(2022, 6, 7, 9, 19);
+    expect(adj.hour).toBe(8);
+    expect(adj.minute).toBe(49);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 3. 시간 모름 케이스
+// 4. 시간 모름 케이스
 // ---------------------------------------------------------------------------
 
 describe("computeSaju — 시간 모름(birthHour 미지정)", () => {
@@ -102,7 +124,6 @@ describe("computeSaju — 시간 모름(birthHour 미지정)", () => {
       birthMonth: 5,
       birthDay: 1,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.pillars.hour).toBeNull();
   });
@@ -113,7 +134,6 @@ describe("computeSaju — 시간 모름(birthHour 미지정)", () => {
       birthMonth: 5,
       birthDay: 1,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.pillars.year).toBeTruthy();
     expect(r.pillars.month).toBeTruthy();
@@ -126,7 +146,6 @@ describe("computeSaju — 시간 모름(birthHour 미지정)", () => {
       birthMonth: 5,
       birthDay: 1,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.daeun.length).toBeGreaterThan(0);
     expect(typeof r.daeun[0].age).toBe("number");
@@ -135,17 +154,17 @@ describe("computeSaju — 시간 모름(birthHour 미지정)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. 알려진 만세력 픽스처 — lunar-javascript 라이브러리 기준 자체 일관성
-//    (lunar-javascript __tests__/EightChar.test.js 와 동일 입력값 사용)
+// 5. 알려진 만세력 픽스처 — -30분 보정 적용 후 기댓값
+//    (입력 시각의 시 경계로부터 충분히 떨어진 케이스 선택 → 보정 후에도 時柱 동일)
 // ---------------------------------------------------------------------------
 
-describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)", () => {
+describe("computeSaju — 알려진 기둥값 검증 (-30분 보정 적용)", () => {
   /**
    * TODO [외부 권위 대조]: 아래 기댓값은 lunar-javascript 라이브러리에서
    * 직접 추출한 값으로, 한국 권위 만세력과의 대조가 아직 이루어지지 않았습니다.
    */
 
-  it("2005-12-23 08:37 → 乙酉 戊子 辛巳 壬辰", () => {
+  it("2005-12-23 08:37 → 乙酉 戊子 辛巳 壬辰 (보정 후 08:07, 辰時 유지)", () => {
     const r = computeSaju({
       birthYear: 2005,
       birthMonth: 12,
@@ -153,7 +172,6 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
       birthHour: 8,
       birthMinute: 37,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.pillars.year).toBe("乙酉");
     expect(r.pillars.month).toBe("戊子");
@@ -161,7 +179,7 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
     expect(r.pillars.hour).toBe("壬辰");
   });
 
-  it("1988-02-15 23:30 → 戊辰 甲寅 庚子 戊子 (입춘 이후 인월)", () => {
+  it("1988-02-15 23:30 → 戊辰 甲寅 庚子 戊子 (보정 후 23:00, 子時 유지)", () => {
     // 입춘(1988-02-04 경) 이후 → 戊辰년, 甲寅월(인월)
     const r = computeSaju({
       birthYear: 1988,
@@ -170,7 +188,6 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
       birthHour: 23,
       birthMinute: 30,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.pillars.year).toBe("戊辰");
     expect(r.pillars.month).toBe("甲寅");
@@ -178,7 +195,7 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
     expect(r.pillars.hour).toBe("戊子");
   });
 
-  it("1988-02-02 22:30 → 丁卯 癸丑 丁亥 辛亥 (입춘 이전 축월, 前年 丁卯)", () => {
+  it("1988-02-02 22:30 → 丁卯 癸丑 丁亥 辛亥 (보정 후 22:00, 亥時 유지)", () => {
     // 입춘 이전 → 1987년(丁卯) 기준, 癸丑월(축월)
     const r = computeSaju({
       birthYear: 1988,
@@ -187,7 +204,6 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
       birthHour: 22,
       birthMinute: 30,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(r.pillars.year).toBe("丁卯");
     expect(r.pillars.month).toBe("癸丑");
@@ -197,7 +213,7 @@ describe("computeSaju — 알려진 기둥값 검증 (lunar-javascript 기준)",
 });
 
 // ---------------------------------------------------------------------------
-// 5. 절기 경계일 테스트
+// 6. 절기 경계일 테스트
 // ---------------------------------------------------------------------------
 
 describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
@@ -208,7 +224,6 @@ describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
       birthDay: 2,
       birthHour: 12,
       gender: "male",
-      useTrueSolarTime: false,
     });
     const after = computeSaju({
       birthYear: 1988,
@@ -216,7 +231,6 @@ describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
       birthDay: 15,
       birthHour: 12,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(before.pillars.year).toBe("丁卯");
     expect(after.pillars.year).toBe("戊辰");
@@ -229,7 +243,6 @@ describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
       birthDay: 2,
       birthHour: 12,
       gender: "male",
-      useTrueSolarTime: false,
     });
     const after = computeSaju({
       birthYear: 1988,
@@ -237,7 +250,6 @@ describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
       birthDay: 15,
       birthHour: 12,
       gender: "male",
-      useTrueSolarTime: false,
     });
     expect(before.pillars.month).toBe("癸丑"); // 축월
     expect(after.pillars.month).toBe("甲寅"); //  인월
@@ -245,36 +257,99 @@ describe("절기 경계일 — 입춘(立春) 전후 年月柱 변경", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 6. 진태양시 보정 → 時柱 변경 확인
+// 7. 경도 보정 → 時柱 변경 확인 (-30분 항상 적용)
 // ---------------------------------------------------------------------------
 
-describe("진태양시 보정 → 時柱 변경", () => {
-  it("15:00 KST 미보정 → 申時, 보정 후(14:28) → 未時로 달라진다", () => {
-    const withoutAdj = computeSaju({
+describe("경도 보정(-30분) → 時柱 변경 확인", () => {
+  it("15:00 KST → 보정 후 14:30 → 未時 (申時에서 변경됨)", () => {
+    // 미보정 시 15:00 = 申時, 보정 후 14:30 = 未時
+    const r = computeSaju({
       birthYear: 2005,
       birthMonth: 6,
       birthDay: 1,
       birthHour: 15,
       birthMinute: 0,
       gender: "male",
-      useTrueSolarTime: false,
     });
-    const withAdj = computeSaju({
+    // 지지가 未(미)여야 한다
+    expect(r.pillars.hour?.charAt(1)).toBe("未");
+  });
+
+  it("14:30 KST → 보정 후 14:00 → 未時 (경계 안쪽)", () => {
+    const r = computeSaju({
       birthYear: 2005,
       birthMonth: 6,
       birthDay: 1,
-      birthHour: 15,
-      birthMinute: 0,
+      birthHour: 14,
+      birthMinute: 30,
       gender: "male",
-      useTrueSolarTime: true,
     });
-    // 15:00 → 申時(申), 14:28 → 未時(未) — 地支가 달라지므로 기둥이 달라짐
-    expect(withAdj.pillars.hour).not.toBe(withoutAdj.pillars.hour);
+    expect(r.pillars.hour?.charAt(1)).toBe("未");
   });
 });
 
 // ---------------------------------------------------------------------------
-// 7. 오행·십성·기질 구조 검사
+// 8. 권위 만세력 교차 검증 — 점신(點神) 기준
+//    보정 기준: 동경 127.5° -30분
+// ---------------------------------------------------------------------------
+
+describe("권위 만세력 교차 검증 — 점신(點神)", () => {
+  it("2022-06-07 09:19 여 → 시주 壬辰 (점신 일치, 巳→辰시 보정 효과)", () => {
+    // 미보정(09:19 巳時) → 癸巳. 보정 후(08:49 辰時) → 壬辰 ← 점신 결과
+    const r = computeSaju({
+      birthYear: 2022,
+      birthMonth: 6,
+      birthDay: 7,
+      birthHour: 9,
+      birthMinute: 19,
+      gender: "female",
+    });
+    expect(r.pillars.hour).toBe("壬辰");
+  });
+
+  it("2022-06-07 09:19 여 → 오행 水木·火火·金木·水土 (점신 일치)", () => {
+    const r = computeSaju({
+      birthYear: 2022,
+      birthMonth: 6,
+      birthDay: 7,
+      birthHour: 9,
+      birthMinute: 19,
+      gender: "female",
+    });
+    expect(r.pillars.year).toBe("壬寅");
+    expect(r.pillars.month).toBe("丙午");
+    expect(r.pillars.day).toBe("辛卯");
+  });
+
+  it("1983-12-25 14:17 남 → 시주 丁未 유지 (경계 아님, 보정 무관)", () => {
+    // 14:17 - 30 = 13:47 → 未時. 丁未 유지
+    const r = computeSaju({
+      birthYear: 1983,
+      birthMonth: 12,
+      birthDay: 25,
+      birthHour: 14,
+      birthMinute: 17,
+      gender: "male",
+    });
+    expect(r.pillars.hour).toBe("丁未");
+  });
+
+  it("2020-09-16 16:43 남 → 시주 戊申 유지 (경계 아님, 보정 무관)", () => {
+    // 16:43 - 30 = 16:13 → 申時. 戊申 유지
+    const r = computeSaju({
+      birthYear: 2020,
+      birthMonth: 9,
+      birthDay: 16,
+      birthHour: 16,
+      birthMinute: 43,
+      gender: "male",
+    });
+    expect(r.pillars.hour).toBe("戊申");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. 오행·십성·기질 구조 검사
 // ---------------------------------------------------------------------------
 
 describe("computeSaju — 오행·기질 구조", () => {
@@ -285,7 +360,6 @@ describe("computeSaju — 오행·기질 구조", () => {
       birthDay: 1,
       birthHour: 10,
       gender: "male",
-      useTrueSolarTime: false,
     });
 
   it("오행 5항목이 모두 존재한다", () => {

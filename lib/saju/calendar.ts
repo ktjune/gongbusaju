@@ -116,11 +116,12 @@ export function solarFromLunar(
  * 진태양시(眞太陽時) 보정 분(minutes)
  *
  * 한국 표준시(KST)는 동경 135° 기준.
- * 서울 기준 약 동경 126.97° → KST 대비 약 -32분 차이.
+ * 임의의 경도에 대한 보정값을 계산한다.
+ * 공식: (출생지 경도 - 135) × 4분/도
  *
  * TODO [서머타임]: 한국 서머타임 적용 연도(1948~1960, 1987~1988 등)에 대한
  * 보정값은 확정되지 않았습니다. 해당 연도 출생자는 반드시 사용자가 실제
- * 시간을 확인해야 합니다. README.md "서머타임 안내" 항목 참조.
+ * 시간을 확인해야 합니다.
  *
  * @param longitude 출생지 동경 (기본값: 서울 126.97)
  * @returns 분 단위 보정값 (음수 = 빼기)
@@ -131,14 +132,27 @@ export function getTrueSolarTimeOffsetMinutes(longitude = 126.97): number {
 }
 
 /**
- * KST 시각에 진태양시(眞太陽時) 보정을 적용한 날짜+시각을 반환한다.
+ * 동경 127.5° 경도 보정값 (고정).
+ *
+ * 한국 주류 만세력(점신·정해·천을귀인 등)은 동경 127.5° 기준 -30분으로 時柱를 결정한다.
+ * KST(동경 135°) 대비 고정 -30분 적용.
+ * 계산: (127.5 - 135) × 4 = -30분
+ *
+ * 균시차(태양의 실제 이동) 및 출생지 정확 경도는 적용하지 않는다.
+ */
+export const LONGITUDE_CORRECTION_MINUTES = -30;
+
+/**
+ * KST 시각에 동경 127.5° 경도 보정(-30분)을 적용한 날짜+시각을 반환한다.
+ *
+ * 한국 주류 만세력 관행을 따른다. 균시차·출생지 경도 미적용.
  *
  * @param year   양력 년
  * @param month  양력 월 (1-12)
  * @param day    양력 일
  * @param hour   시 (0-23)
  * @param minute 분 (0-59)
- * @param longitude 출생지 동경 (기본: 서울 126.97)
+ * @param longitude 무시됨 (하위 호환 유지용, 내부적으로 LONGITUDE_CORRECTION_MINUTES 고정 사용)
  */
 export function applyTrueSolarTime(
   year: number,
@@ -146,11 +160,11 @@ export function applyTrueSolarTime(
   day: number,
   hour: number,
   minute: number,
-  longitude = 126.97
+  longitude?: number // 하위 호환 시그니처 — 내부에서 무시하고 고정 -30분 사용
 ): { year: number; month: number; day: number; hour: number; minute: number } {
-  const offsetMinutes = getTrueSolarTimeOffsetMinutes(longitude);
+  void longitude; // 의도적 미사용 — 고정 보정값 사용
   // JavaScript Date를 이용해 날짜 넘김 처리
-  const date = new Date(year, month - 1, day, hour, minute + offsetMinutes, 0);
+  const date = new Date(year, month - 1, day, hour, minute + LONGITUDE_CORRECTION_MINUTES, 0);
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1,

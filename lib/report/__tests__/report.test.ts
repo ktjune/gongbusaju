@@ -34,9 +34,9 @@ const sampleSaju: SajuResult = {
   elements: { 목: 20, 화: 25, 토: 30, 금: 15, 수: 10 },
   tenGods: { 비견: 2, 겁재: 1, 식신: 3, 상관: 1, 편재: 2, 정재: 1, 편관: 1, 정관: 1, 편인: 1, 정인: 2 },
   daeun: [
-    { age: 8, ganji: "丁卯" },
-    { age: 18, ganji: "戊辰" },
-    { age: 28, ganji: "己巳" },
+    { age: 8, startMonths: 6, ganji: "丁卯" },
+    { age: 18, startMonths: 6, ganji: "戊辰" },
+    { age: 28, startMonths: 6, ganji: "己巳" },
   ],
   traitScores: { 집중력: 70, 창의성: 60, 사교성: 50, 리더십: 65, 인내력: 75, 직관력: 55 },
 };

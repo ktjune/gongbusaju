@@ -32,7 +32,7 @@ const ELEMENTS: Array<{ key: keyof SajuResult["elements"]; hanja: string; hangul
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const MINUTES = [0, 10, 20, 30, 40, 50];
+const MINUTES = Array.from({ length: 60 }, (_, i) => i);
 
 // ──────────────────────────────────────────────────────────────
 // 타입

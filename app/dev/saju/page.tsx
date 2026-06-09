@@ -8,19 +8,25 @@
  */
 
 import { useState } from "react";
-import { computeSaju, solarFromLunar } from "@/lib/saju";
+import {
+  computeSaju,
+  solarFromLunar,
+  withHangul,
+  tenGodWithHangul,
+  formatMannai,
+} from "@/lib/saju";
 import type { SajuResult } from "@/lib/saju";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
 // ──────────────────────────────────────────────────────────────
 
-const ELEMENTS: Array<{ key: keyof SajuResult["elements"]; label: string; color: string }> = [
-  { key: "목", label: "木 목", color: "#4ade80" },
-  { key: "화", label: "火 화", color: "#f87171" },
-  { key: "토", label: "土 토", color: "#facc15" },
-  { key: "금", label: "金 금", color: "#94a3b8" },
-  { key: "수", label: "水 수", color: "#60a5fa" },
+const ELEMENTS: Array<{ key: keyof SajuResult["elements"]; hanja: string; hangul: string; color: string }> = [
+  { key: "목", hanja: "木", hangul: "목", color: "#4ade80" },
+  { key: "화", hanja: "火", hangul: "화", color: "#f87171" },
+  { key: "토", hanja: "土", hangul: "토", color: "#facc15" },
+  { key: "금", hanja: "金", hangul: "금", color: "#94a3b8" },
+  { key: "수", hanja: "水", hangul: "수", color: "#60a5fa" },
 ];
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -83,7 +89,6 @@ export default function DevSajuPage() {
       let solarY = y, solarM = m, solarD = d;
 
       if (form.calType === "lunar") {
-        // 음력 → 양력 변환
         const solar = solarFromLunar(y, m, d);
         solarY = solar.year;
         solarM = solar.month;
@@ -274,16 +279,26 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
           </thead>
           <tbody>
             <tr>
-              <td style={{ ...styles.td, ...styles.ganji }}>
+              {/* 時柱 */}
+              <td style={{ ...styles.td, ...styles.ganjiCell }}>
                 {noTime || result.pillars.hour === null ? (
                   <span style={styles.noTime}>—</span>
                 ) : (
-                  result.pillars.hour
+                  <GanjiCell ganji={result.pillars.hour} />
                 )}
               </td>
-              <td style={{ ...styles.td, ...styles.ganji }}>{result.pillars.day}</td>
-              <td style={{ ...styles.td, ...styles.ganji }}>{result.pillars.month}</td>
-              <td style={{ ...styles.td, ...styles.ganji }}>{result.pillars.year}</td>
+              {/* 日柱 */}
+              <td style={{ ...styles.td, ...styles.ganjiCell }}>
+                <GanjiCell ganji={result.pillars.day} />
+              </td>
+              {/* 月柱 */}
+              <td style={{ ...styles.td, ...styles.ganjiCell }}>
+                <GanjiCell ganji={result.pillars.month} />
+              </td>
+              {/* 年柱 */}
+              <td style={{ ...styles.td, ...styles.ganjiCell }}>
+                <GanjiCell ganji={result.pillars.year} />
+              </td>
             </tr>
           </tbody>
         </table>
@@ -295,11 +310,13 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
       {/* 오행 */}
       <Section title="오행 분포 (五行)">
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {ELEMENTS.map(({ key, label, color }) => {
+          {ELEMENTS.map(({ key, hanja, hangul, color }) => {
             const pct = result.elements[key];
             return (
               <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 48, fontWeight: "bold" }}>{label}</span>
+                <span style={{ width: 60, fontWeight: "bold" }}>
+                  {hanja}({hangul})
+                </span>
                 <div style={styles.barBg}>
                   <div
                     style={{
@@ -309,7 +326,7 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
                     }}
                   />
                 </div>
-                <span style={styles.pct}>{pct}%</span>
+                <span style={styles.pct}>{Math.round(pct)}%</span>
               </div>
             );
           })}
@@ -323,11 +340,18 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
 
       {/* 대운 */}
       <Section title="대운 (大運)">
+        <p style={styles.ageNote}>
+          나이 기준: <strong>만나이</strong>
+          <span style={styles.ageNoteDetail}>
+            {" "}(lunar-javascript 원값은 세는나이(虚岁); 만나이 = 세는나이 − 1 적용)
+          </span>
+        </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {result.daeun.map((step, i) => (
             <div key={i} style={styles.daeunCard}>
-              <div style={styles.daeunAge}>{step.age}세~</div>
-              <div style={styles.daeunGanji}>{step.ganji}</div>
+              {/* step.age는 세는나이 → formatMannai()로 만나이 변환 표시 */}
+              <div style={styles.daeunAge}>{formatMannai(step.age)}~</div>
+              <div style={styles.daeunGanji}>{withHangul(step.ganji)}</div>
             </div>
           ))}
         </div>
@@ -347,11 +371,33 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
 
       <p style={styles.footer}>
         ※ 동경 135° 표준시(KST) 기준 · 진태양시 보정 미적용<br />
+        ※ 대운 나이: 만나이 기준 표시 (세는나이 − 1). 연도 단위 근사값.<br />
         ※ 이 결과는 lunar-javascript 기반 자체 계산입니다.
         권위 있는 만세력과 반드시 대조 검증하세요.
       </p>
     </div>
   );
+}
+
+/** 간지(干支) 셀 — "甲子\n갑자" 2행 표시 */
+function GanjiCell({ ganji }: { ganji: string }) {
+  const [gan, zhi] = [ganji[0], ganji[1]];
+  const display = withHangul(ganji);
+  // "甲子(갑자)" 형식에서 괄호 앞/안을 분리해 줄바꿈으로 표시
+  const match = display.match(/^(.+)\((.+)\)$/);
+  if (match) {
+    return (
+      <div>
+        <div style={{ fontSize: 22, letterSpacing: 2, fontWeight: "bold" }}>
+          {gan}{zhi}
+        </div>
+        <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>
+          {match[2]}
+        </div>
+      </div>
+    );
+  }
+  return <span style={{ fontSize: 22 }}>{ganji}</span>;
 }
 
 function TenGodsView({ tenGods }: { tenGods: Record<string, number> }) {
@@ -363,7 +409,7 @@ function TenGodsView({ tenGods }: { tenGods: Record<string, number> }) {
         .sort(([, a], [, b]) => b - a)
         .map(([name, count]) => (
           <span key={name} style={styles.badge}>
-            {name} {count}
+            {tenGodWithHangul(name)} ×{count}
           </span>
         ))}
     </div>
@@ -396,7 +442,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    maxWidth: 700,
+    maxWidth: 720,
     margin: "0 auto",
     padding: "24px 16px",
     fontFamily: "monospace, sans-serif",
@@ -463,7 +509,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 16,
     marginBottom: 12,
   },
-  h2: { fontSize: 15, margin: "0 0 12px", color: "#1e3a8a" },
+  h2: { fontSize: 15, margin: "0 0 10px", color: "#1e3a8a" },
   table: { borderCollapse: "collapse", width: "100%" },
   th: {
     border: "1px solid #d1d5db",
@@ -472,10 +518,20 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center",
     fontSize: 13,
   },
-  td: { border: "1px solid #d1d5db", padding: "8px 12px", textAlign: "center" },
-  ganji: { fontSize: 22, letterSpacing: 2, fontWeight: "bold" },
+  td: { border: "1px solid #d1d5db", padding: "10px 12px", textAlign: "center" },
+  ganjiCell: { verticalAlign: "middle" },
   noTime: { color: "#9ca3af", fontSize: 18 },
   hint: { margin: "6px 0 0", color: "#6b7280", fontSize: 12 },
+  ageNote: {
+    margin: "0 0 10px",
+    fontSize: 12,
+    color: "#374151",
+    background: "#f0fdf4",
+    border: "1px solid #bbf7d0",
+    borderRadius: 4,
+    padding: "4px 8px",
+  },
+  ageNoteDetail: { color: "#6b7280" },
   barBg: {
     width: 200,
     height: 16,
@@ -488,13 +544,13 @@ const styles: Record<string, React.CSSProperties> = {
   daeunCard: {
     border: "1px solid #d1d5db",
     borderRadius: 4,
-    padding: "6px 12px",
+    padding: "8px 12px",
     textAlign: "center",
     background: "#f9fafb",
-    minWidth: 72,
+    minWidth: 90,
   },
-  daeunAge: { fontSize: 11, color: "#6b7280" },
-  daeunGanji: { fontSize: 18, fontWeight: "bold", letterSpacing: 1 },
+  daeunAge: { fontSize: 11, color: "#2563eb", fontWeight: "bold", marginBottom: 2 },
+  daeunGanji: { fontSize: 16, fontWeight: "bold", letterSpacing: 1 },
   traitCard: {
     border: "1px solid #e5e7eb",
     borderRadius: 4,
@@ -509,7 +565,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#e0e7ff",
     color: "#3730a3",
     borderRadius: 12,
-    padding: "2px 10px",
+    padding: "3px 10px",
     fontSize: 13,
   },
   footer: {
@@ -518,6 +574,6 @@ const styles: Record<string, React.CSSProperties> = {
     borderTop: "1px solid #e5e7eb",
     paddingTop: 12,
     marginTop: 4,
-    lineHeight: 1.8,
+    lineHeight: 1.9,
   },
 };

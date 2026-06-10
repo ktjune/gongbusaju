@@ -26,7 +26,18 @@ export { GuardrailError } from "./guardrails";
 export type { GuardrailViolation } from "./guardrails";
 export type { LlmProvider, LlmPerspective } from "./generate";
 export type { FactBlock, PerspectiveBlock } from "./template";
-export { buildFactBlock, assembleReport, TIME_STANDARD_NOTICE, ASSIGNED_SCHOOL_LABEL } from "./template";
+export {
+  buildFactBlock,
+  assembleReport,
+  buildSajuTableSection,
+  buildElementsSection,
+  buildTenGodsSection,
+  buildTraitsSection,
+  buildDaeunSection,
+  TIME_STANDARD_NOTICE,
+  INTERPRETATION_NOTICE,
+  ASSIGNED_SCHOOL_LABEL,
+} from "./template";
 export { checkGuardrails, passesGuardrails } from "./guardrails";
 
 // ──────────────────────────────────────────────────────────────
@@ -83,15 +94,13 @@ export async function generateReport(
   //    buildUserPrompt() 는 학교명·주소·진학률을 LLM에게 전달하지 않는다
   const perspective = await generatePerspective(saju, tier, provider);
 
-  // 3. guardrails 검사 — 위반 시 GuardrailError throw → 발행 차단
-  checkGuardrails(perspective.studyTraitsProse);
-  checkGuardrails(perspective.daeunProse);
-  if (perspective.schoolConnectionProse) {
-    checkGuardrails(perspective.schoolConnectionProse);
+  // 3. guardrails 검사 — 모든 산문 필드, 위반 시 GuardrailError throw → 발행 차단
+  for (const prose of Object.values(perspective)) {
+    if (typeof prose === "string") checkGuardrails(prose);
   }
 
-  // 4. 조립
-  const markdown = assembleReport(factBlock, perspective);
+  // 4. 조립 (사주 데이터 섹션은 코드가 표로 생성)
+  const markdown = assembleReport(saju, factBlock, perspective);
 
   return { markdown, tier };
 }

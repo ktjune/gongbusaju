@@ -98,6 +98,14 @@ function splitGanji(ganji: string): [string, string] {
 }
 
 /**
+ * 지지의 본기(本氣) 천간을 반환한다. (예: 子→癸, 寅→甲)
+ * 리포트 원국 표에서 지지 십성 라벨을 만들 때 사용.
+ */
+export function branchMainStem(branch: string): string | null {
+  return BRANCH_INFO[branch]?.mainStem ?? null;
+}
+
+/**
  * 4기둥에서 오행 분포(백분율)를 계산한다.
  *
  * 글자 단위 집계: 천간은 천간 오행, 지지는 지지 자체 오행(寅=木, 子=水 등).

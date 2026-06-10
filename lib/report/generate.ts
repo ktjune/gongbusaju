@@ -6,29 +6,34 @@
  * - LLM은 관점 산문(해석·연결)만 생성한다.
  * - 학교명·진학률·통학거리 등 학교 사실은 LLM에게 생성시키지 않는다.
  *   학교 사실은 template.ts(코드)가 별도로 삽입한다.
+ * - 사주 데이터 표(원국·오행·십성·대운)도 template.ts(코드)가 생성한다.
  * - 시스템 프롬프트에 금지 규칙을 명시한다.
  *
  * 인터페이스(LlmProvider)를 분리해 테스트에서 mock으로 교체 가능.
  */
 
 import type { SajuResult } from "../saju";
+import type { PerspectiveBlock } from "./template";
 
 // ──────────────────────────────────────────────────────────────
 // 타입
 // ──────────────────────────────────────────────────────────────
 
-/** LLM이 생성하는 관점(해석) 블록 */
-export type LlmPerspective = {
-  /** 오행·십성 기반 공부 기질 해석 산문 (LLM 작성) */
-  studyTraitsProse: string;
-  /** 현재 대운 기준 공부·성장 흐름 해석 산문 (LLM 작성) */
-  daeunProse: string;
-  /**
-   * [Premium] 사주 기질 관점에서 학교 선택 시 참고할 경향 산문.
-   * 학교명·순위·진학률 등 사실 절대 포함 금지 — 기질 관점만.
-   */
-  schoolConnectionProse?: string;
-};
+/**
+ * LLM이 생성하는 관점(해석) 블록 — template.ts PerspectiveBlock과 동일 형태.
+ * 모든 필드는 산문이며, 학교 사실·데이터 수치 표는 포함하지 않는다.
+ */
+export type LlmPerspective = PerspectiveBlock;
+
+/** 모든 tier 공통 필수 산문 필드 */
+export const REQUIRED_PROSE_FIELDS = [
+  "dayMasterProse",
+  "elementsProse",
+  "tenGodsProse",
+  "studyStyleProse",
+  "parentingProse",
+  "daeunProse",
+] as const;
 
 /**
  * LLM 공급자 인터페이스.
@@ -75,7 +80,7 @@ export class ClaudeLlmProvider implements LlmProvider {
       },
       body: JSON.stringify({
         model: this.model,
-        max_tokens: 2048,
+        max_tokens: 8192, // 산문 7개 섹션 — 충분한 출력 길이 확보
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       }),
@@ -97,51 +102,77 @@ export class ClaudeLlmProvider implements LlmProvider {
 // 시스템 프롬프트
 // ──────────────────────────────────────────────────────────────
 
-/** Basic 공통 시스템 프롬프트 — 사주 해석만 */
-const SYSTEM_PROMPT_BASIC = `당신은 사주 기질 해석 전문가입니다.
-주어진 사주팔자(오행·십성·대운) 데이터를 바탕으로 공부 기질과 대운 흐름을 해석하는 산문을 작성합니다.
-
-[절대 금지 규칙]
+const FORBIDDEN_RULES = `[절대 금지 규칙]
 1. 학교명·학교 주소·진학률·통학거리 등 학교에 관한 사실을 직접 언급하거나 생성하지 않는다.
 2. 단정·보장 표현 금지: "반드시", "보장", "틀림없이", "확실히"
 3. 특정 학교를 정답으로 연결하는 표현 금지: "이 학교 가면 된다", "이 학교가 정답", "이 학교에 가야 한다"
 4. 사주→학교 인과 단정 금지: "이 사주면 이 학교가 맞다", "오행이 X라 Y학교가 최적"
 5. "예측", "최적화" 대신 "참고", "경향", "해석"을 사용한다.
+6. 의학·심리 진단으로 읽힐 표현 금지. 해석은 "~경향이 있습니다", "~로 풀이됩니다"로 작성한다.`;
 
-[작성 역할]
-- studyTraitsProse: 오행 분포·십성에서 드러나는 공부 기질·학습 스타일 해석 (200자 이상)
-- daeunProse: 현재 대운 기준 공부·성장 흐름 해석 (150자 이상)
+const WRITING_STYLE = `[문체]
+- 독자는 아이의 보호자(부모)다. 따뜻하고 구체적으로, 존댓말로 쓴다.
+- 전문 용어(오행·십성·대운)는 처음 나올 때 짧게 풀어 쓴다.
+- 각 산문은 추상적 칭찬이 아니라 "일상·공부 장면에서 어떻게 드러나는지"를 구체적 예시로 보여준다.
+- 아이의 나이(대운 데이터의 만나이)에 맞는 생활 장면을 사용한다.`;
 
-반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
-{
-  "studyTraitsProse": "...",
+const FIELD_SPEC_BASIC = `[작성할 산문 — 각 필드는 2~3문단, 공백 포함 400자 이상]
+- dayMasterProse: 일간(日干)이 뜻하는 아이의 타고난 본질·결. 일간 글자의 자연 상징(예: 壬=큰 물)으로 시작해 일상 모습으로 연결.
+- elementsProse: 오행 분포에서 강한 기운과 약한(없는) 기운이 공부·생활에서 드러나는 방식. 약한 기운은 "보완 활동" 제안으로 마무리.
+- tenGodsProse: 두드러진 십성 구조가 뜻하는 마음의 습관(배우는 방식·욕구·절제). 십성 명칭은 한글 병기.
+- studyStyleProse: 위 기질을 종합한 공부 스타일 — 잘 맞는 학습 방식·환경·시간 운용, 흔들리기 쉬운 지점과 대처.
+- parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.
+- daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.`;
+
+const FIELD_SPEC_PREMIUM_EXTRA = `- schoolConnectionProse: 이 아이의 기질에서 학교 '환경'을 고를 때 참고할 만한 경향 (300자 이상).
+  절대 금지: 학교명·주소·순위·진학률 등 사실 정보. 순수 기질·성향 관점만 작성.
+  마지막은 "여러 요소를 종합해 보호자께서 판단"하라는 안내로 마무리.`;
+
+const JSON_SHAPE_BASIC = `{
+  "dayMasterProse": "...",
+  "elementsProse": "...",
+  "tenGodsProse": "...",
+  "studyStyleProse": "...",
+  "parentingProse": "...",
   "daeunProse": "..."
 }`;
 
-/** Premium 추가 필드: 학교 선택 기질 관점 */
-const SYSTEM_PROMPT_PREMIUM = `당신은 사주 기질 해석 전문가입니다.
-주어진 사주팔자(오행·십성·대운) 데이터를 바탕으로 공부 기질과 대운 흐름을 해석하는 산문을 작성합니다.
-
-[절대 금지 규칙]
-1. 학교명·학교 주소·진학률·통학거리 등 학교에 관한 사실을 직접 언급하거나 생성하지 않는다.
-2. 단정·보장 표현 금지: "반드시", "보장", "틀림없이", "확실히"
-3. 특정 학교를 정답으로 연결하는 표현 금지: "이 학교 가면 된다", "이 학교가 정답", "이 학교에 가야 한다"
-4. 사주→학교 인과 단정 금지: "이 사주면 이 학교가 맞다", "오행이 X라 Y학교가 최적"
-5. "예측", "최적화" 대신 "참고", "경향", "해석"을 사용한다.
-
-[작성 역할]
-- studyTraitsProse: 오행 분포·십성에서 드러나는 공부 기질·학습 스타일 해석 (200자 이상)
-- daeunProse: 현재 대운 기준 공부·성장 흐름 해석 (150자 이상)
-- schoolConnectionProse: 이 아이의 사주 기질에서 학교 환경 선택 시 '참고할 만한 기질 경향' 산문 (150자 이상).
-  절대 금지: 학교명·주소·순위·진학률 등 사실 정보. 순수 기질·성향 관점만 작성.
-  예시 방향: "활동적 에너지가 강한 경향이 있어, 체험·활동 중심 학습 환경에서 기질이 잘 발현될 수 있습니다."
-
-반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
-{
-  "studyTraitsProse": "...",
+const JSON_SHAPE_PREMIUM = `{
+  "dayMasterProse": "...",
+  "elementsProse": "...",
+  "tenGodsProse": "...",
+  "studyStyleProse": "...",
+  "parentingProse": "...",
   "daeunProse": "...",
   "schoolConnectionProse": "..."
 }`;
+
+/** Basic 시스템 프롬프트 — 사주 해석 산문 6종 */
+const SYSTEM_PROMPT_BASIC = `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
+주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.
+
+${FORBIDDEN_RULES}
+
+${WRITING_STYLE}
+
+${FIELD_SPEC_BASIC}
+
+반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
+${JSON_SHAPE_BASIC}`;
+
+/** Premium 시스템 프롬프트 — + 학교 선택 기질 관점 */
+const SYSTEM_PROMPT_PREMIUM = `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
+주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.
+
+${FORBIDDEN_RULES}
+
+${WRITING_STYLE}
+
+${FIELD_SPEC_BASIC}
+${FIELD_SPEC_PREMIUM_EXTRA}
+
+반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
+${JSON_SHAPE_PREMIUM}`;
 
 // ──────────────────────────────────────────────────────────────
 // 사용자 프롬프트 빌더
@@ -156,13 +187,13 @@ export function buildUserPrompt(
   saju: SajuResult,
   tier: "basic" | "premium"
 ): string {
-  const daeunTop3 = saju.daeun
-    .slice(0, 3)
-    .map((d) => `${d.age}세~: ${d.ganji}`)
+  const daeunList = saju.daeun
+    .slice(0, 5)
+    .map((d) => `만 ${d.age}세 ${d.startMonths}개월~: ${d.ganji}`)
     .join(", ");
 
   const elementsStr = Object.entries(saju.elements)
-    .map(([k, v]) => `${k} ${v}%`)
+    .map(([k, v]) => `${k} ${Math.round(v)}%`)
     .join(", ");
 
   const tenGodsStr = Object.entries(saju.tenGods)
@@ -171,21 +202,28 @@ export function buildUserPrompt(
     .map(([k, v]) => `${k}(${v})`)
     .join(", ");
 
+  const traitsStr = Object.entries(saju.traitScores)
+    .map(([k, v]) => `${k} ${v}`)
+    .join(", ");
+
   const lines: string[] = [
     "[사주팔자]",
     `년주: ${saju.pillars.year}`,
     `월주: ${saju.pillars.month}`,
-    `일주: ${saju.pillars.day}`,
+    `일주: ${saju.pillars.day} (일간 = ${saju.pillars.day.charAt(0)})`,
     `시주: ${saju.pillars.hour ?? "(시간 모름)"}`,
     "",
     "[오행 분포]",
     elementsStr,
     "",
-    "[십성 (높은 순)]",
+    "[십성 — 본기 기준, 높은 순]",
     tenGodsStr || "(데이터 없음)",
     "",
-    "[대운 (상위 3구간)]",
-    daeunTop3 || "(데이터 없음)",
+    "[대운 — 만나이 기준]",
+    daeunList || "(데이터 없음)",
+    "",
+    "[기질 지표 (규칙표 환산값, 참고용)]",
+    traitsStr || "(데이터 없음)",
   ];
 
   if (tier === "premium") {
@@ -193,7 +231,7 @@ export function buildUserPrompt(
       "",
       "[참고]",
       "이 리포트는 Premium 요금제입니다.",
-      "schoolConnectionProse 필드에 학교 선택 시 참고할 기질 경향을 작성해 주세요.",
+      "schoolConnectionProse 필드에 학교 환경 선택 시 참고할 기질 경향을 작성해 주세요.",
       "학교명·주소·진학률 등 사실 정보는 절대 포함하지 않습니다."
     );
   }
@@ -238,11 +276,10 @@ export async function generatePerspective(
   }
 
   // 필수 필드 검증
-  if (!parsed.studyTraitsProse?.trim()) {
-    throw new Error("LLM 응답에 studyTraitsProse 누락");
-  }
-  if (!parsed.daeunProse?.trim()) {
-    throw new Error("LLM 응답에 daeunProse 누락");
+  for (const field of REQUIRED_PROSE_FIELDS) {
+    if (!parsed[field]?.trim()) {
+      throw new Error(`LLM 응답에 ${field} 누락`);
+    }
   }
   if (tier === "premium" && !parsed.schoolConnectionProse?.trim()) {
     throw new Error("LLM Premium 응답에 schoolConnectionProse 누락");

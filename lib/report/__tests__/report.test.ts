@@ -82,29 +82,36 @@ const sampleSchools: SchoolFacts = {
   asOf: "2024-03-01",
 };
 
+/** 정상 관점 산문 픽스처 — 모든 필드 (guardrails 통과 문구) */
+const samplePerspective = {
+  dayMasterProse:
+    "일간 무토(戊土)는 너른 산의 흙으로, 듬직하고 한결같은 결로 해석됩니다. " +
+    "익숙한 일과를 좋아하고 약속을 지키려는 모습으로 드러나는 경향이 있습니다.",
+  elementsProse:
+    "토 기운이 강한 경향이 있어 꾸준하고 성실한 학습 스타일을 보일 수 있습니다. " +
+    "수 기운이 옅은 편이라 곱씹어 정리하는 활동을 곁들이면 균형에 참고가 됩니다.",
+  tenGodsProse:
+    "식신(食神)이 두드러져 좋아하는 것을 파고들며 즐겁게 배우는 마음의 습관으로 풀이됩니다.",
+  studyStyleProse:
+    "꾸준한 반복과 명확한 목표가 있는 학습 방식이 잘 맞는 경향이 있습니다. " +
+    "화 기운도 적절히 있어 발표·표현 활동에서 에너지를 발휘하는 경향이 있습니다. " +
+    "참고로 이는 해석적 관점이며 측정 결과가 아닙니다.",
+  parentingProse:
+    "아이가 머뭇거릴 때는 작은 단계로 나눠 주세요. 결과보다 과정을 짚어 칭찬해 주세요. " +
+    "하루 일과를 같이 정하면 안정감을 얻는 경향이 있습니다.",
+  daeunProse:
+    "현재 대운(丁卯 구간)은 활동적 에너지가 높아지는 시기로 해석됩니다. " +
+    "이 시기에는 다양한 경험을 쌓는 방향이 기질 발현에 도움이 될 수 있습니다.",
+  schoolConnectionProse:
+    "토 기운이 강한 아이는 안정적이고 체계적인 환경에서 기질이 잘 발현되는 경향이 있습니다. " +
+    "이는 참고 경향이며, 실제 학교 선택은 다양한 요소를 종합해 판단하시기 바랍니다.",
+};
+
 /** 정상 관점 산문을 반환하는 mock LLM */
-function makeMockProvider(overrides?: Partial<{
-  studyTraitsProse: string;
-  daeunProse: string;
-  schoolConnectionProse: string;
-}>): LlmProvider {
+function makeMockProvider(overrides?: Partial<typeof samplePerspective>): LlmProvider {
   return {
     async complete(_sys, _user) {
-      return JSON.stringify({
-        studyTraitsProse:
-          overrides?.studyTraitsProse ??
-          "이 아이는 토 기운이 강한 경향이 있어, 꾸준하고 성실한 학습 스타일을 보일 수 있습니다. " +
-          "화 기운도 적절히 있어 발표·표현 활동에서 에너지를 발휘하는 경향이 있습니다. " +
-          "참고로 이는 해석적 관점이며 측정 결과가 아닙니다.",
-        daeunProse:
-          overrides?.daeunProse ??
-          "현재 대운(丙寅→丁卯 구간)은 활동적 에너지가 높아지는 시기로 해석됩니다. " +
-          "이 시기에는 다양한 경험을 쌓는 방향이 기질 발현에 도움이 될 수 있습니다.",
-        schoolConnectionProse:
-          overrides?.schoolConnectionProse ??
-          "토 기운이 강한 아이는 안정적이고 체계적인 환경에서 기질이 잘 발현되는 경향이 있습니다. " +
-          "이는 참고 경향이며, 실제 학교 선택은 다양한 요소를 종합해 판단하시기 바랍니다.",
-      });
+      return JSON.stringify({ ...samplePerspective, ...overrides });
     },
   };
 }
@@ -274,42 +281,64 @@ describe("buildFactBlock — 코드가 학교 사실 생성", () => {
 
 describe("assembleReport — 블록 조립", () => {
   it("TIME_STANDARD_NOTICE 항상 포함", () => {
-    const md = assembleReport({}, {
-      studyTraitsProse: "기질 해석 텍스트",
-      daeunProse: "대운 해석 텍스트",
-    });
+    const md = assembleReport(sampleSaju, {}, samplePerspective);
     expect(md).toContain(TIME_STANDARD_NOTICE);
     expect(md).toContain("동경 127.5°");
   });
 
-  it("관점 블록 섹션 포함", () => {
-    const md = assembleReport({}, {
-      studyTraitsProse: "공부 기질 텍스트",
-      daeunProse: "대운 텍스트",
-    });
-    expect(md).toContain("공부 기질 해석");
-    expect(md).toContain("대운 흐름");
+  it("관점 블록 섹션이 모두 포함된다", () => {
+    const md = assembleReport(sampleSaju, {}, samplePerspective);
+    expect(md).toContain("타고난 결 — 일간 이야기");
+    expect(md).toContain("오행 에너지 분포");
+    expect(md).toContain("십성 구조");
+    expect(md).toContain("공부 스타일과 학습 환경");
+    expect(md).toContain("부모님을 위한 코칭 포인트");
+    expect(md).toContain("학령기 대운 흐름");
+  });
+
+  it("데이터 섹션(원국 표·오행 표·대운 표)이 코드로 생성된다", () => {
+    const md = assembleReport(sampleSaju, {}, samplePerspective);
+    // 원국 표: 일간 강조 + 한자·한글 병기
+    expect(md).toContain("사주 원국");
+    expect(md).toContain("← 일간");
+    expect(md).toContain("甲(갑)"); // 년간
+    // 오행 표: 비율 + 막대
+    expect(md).toContain("木(목)");
+    expect(md).toContain("%");
+    // 대운 표: 만나이 + 학령기 라벨
+    expect(md).toContain("만 8세 6개월");
+    expect(md).toContain("초등");
+    // 기질 지표 표 + 면책
+    expect(md).toContain("집중력");
+    expect(md).toContain("해석 지표");
   });
 
   it("schoolConnectionProse 있으면 기질 관점 섹션 포함", () => {
-    const md = assembleReport({}, {
-      studyTraitsProse: "기질",
-      daeunProse: "대운",
-      schoolConnectionProse: "기질 관점 참고 텍스트",
-    });
+    const md = assembleReport(sampleSaju, {}, samplePerspective);
     expect(md).toContain("학교 선택 기질 참고");
-    expect(md).toContain("기질 관점 참고 텍스트");
+    expect(md).toContain("안정적이고 체계적인 환경");
+  });
+
+  it("schoolConnectionProse 없으면(Basic) 해당 섹션 없음", () => {
+    const md = assembleReport(sampleSaju, {}, {
+      ...samplePerspective,
+      schoolConnectionProse: undefined,
+    });
+    expect(md).not.toContain("학교 선택 기질 참고");
   });
 
   it("사실 블록(학교명)이 관점 블록과 함께 포함됨", () => {
     const factBlock = buildFactBlock(sampleSchools);
-    const md = assembleReport(factBlock, {
-      studyTraitsProse: "기질 해석",
-      daeunProse: "대운 해석",
-    });
+    const md = assembleReport(sampleSaju, factBlock, samplePerspective);
     expect(md).toContain("청운초등학교");
     expect(md).toContain("예상 배정");
-    expect(md).toContain("기질 해석");
+    expect(md).toContain("타고난 결");
+  });
+
+  it("시주 null이면 원국 표에 '—' + 시간 미상 안내", () => {
+    const noHour = { ...sampleSaju, pillars: { ...sampleSaju.pillars, hour: null } };
+    const md = assembleReport(noHour, {}, samplePerspective);
+    expect(md).toContain("출생 시각 미상");
   });
 });
 
@@ -318,14 +347,15 @@ describe("assembleReport — 블록 조립", () => {
 // ──────────────────────────────────────────────────────────────
 
 describe("generateReport — mock LLM 합성 테스트", () => {
-  it("basic: 공부 기질·대운 섹션 포함 + 시각 기준 표기", async () => {
+  it("basic: 일간·공부 스타일·대운 섹션 포함 + 시각 기준 표기", async () => {
     const result = await generateReport(
       { saju: sampleSaju, tier: "basic" },
       { llmProvider: makeMockProvider() }
     );
     expect(result.tier).toBe("basic");
-    expect(result.markdown).toContain("공부 기질 해석");
-    expect(result.markdown).toContain("대운 흐름");
+    expect(result.markdown).toContain("타고난 결 — 일간 이야기");
+    expect(result.markdown).toContain("공부 스타일과 학습 환경");
+    expect(result.markdown).toContain("학령기 대운 흐름");
     expect(result.markdown).toContain("동경 127.5°");
   });
 
@@ -385,7 +415,7 @@ describe("generateReport — mock LLM 합성 테스트", () => {
 
   it("LLM 응답에 '보장' 포함 → GuardrailError 발행 차단", async () => {
     const badProvider = makeMockProvider({
-      studyTraitsProse: "이 결과를 보장합니다. 확실한 해석입니다.",
+      studyStyleProse: "이 결과를 보장합니다. 확실한 해석입니다.",
     });
     await expect(
       generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
@@ -427,12 +457,12 @@ describe("generateReport — mock LLM 합성 테스트", () => {
   it("LLM 필수 필드 누락 → Error 발생", async () => {
     const badProvider: LlmProvider = {
       async complete() {
-        return JSON.stringify({ studyTraitsProse: "기질" }); // daeunProse 누락
+        return JSON.stringify({ dayMasterProse: "일간" }); // elementsProse 이하 누락
       },
     };
     await expect(
       generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
-    ).rejects.toThrow(/daeunProse/);
+    ).rejects.toThrow(/elementsProse/);
   });
 
   it("사실 블록과 관점 블록이 인과 없이 나란히 배치됨", async () => {
@@ -442,8 +472,9 @@ describe("generateReport — mock LLM 합성 테스트", () => {
     );
     // 관점 섹션에 학교명 없음 — LLM이 삽입한 게 아니므로
     const studySection = result.markdown.match(
-      /## 공부 기질 해석\n\n([\s\S]*?)(?=\n\n##)/
+      /## 공부 스타일과 학습 환경\n\n([\s\S]*?)(?=\n\n## )/
     )?.[1] ?? "";
+    expect(studySection.length).toBeGreaterThan(0);
     expect(studySection).not.toContain("청운초등학교");
 
     // 사실 섹션에 학교명 있음 — 코드가 삽입

@@ -7,6 +7,7 @@
 
 export type { SajuResult, SajuInput, FourPillars, Elements, TenGods, DaeunStep } from "./types";
 export { computeSaju } from "./pillars";
+export { tenGodOf, branchMainStem } from "./elements";
 export { getSajuMonth, getSajuMonthExact, getTrueSolarTimeOffsetMinutes, applyTrueSolarTime, LONGITUDE_CORRECTION_MINUTES, toLunar, solarFromLunar } from "./calendar";
 export {
   TIANGAN_KR, DIZHI_KR, WUXING_KR, SHISHEN_KR,

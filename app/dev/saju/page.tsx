@@ -131,7 +131,9 @@ export default function DevSajuPage() {
       </div>
 
       <h1 style={styles.h1}>만세력 결과 검증</h1>
-      <p style={styles.notice}>동경 127.5° 경도 보정(-30분) 적용 · KST(동경 135°) 기준 입력</p>
+      <p style={styles.notice}>
+        일·시주: 동경 127.5° 보정(-30분, 일주 변경 00:30 야자시) · 연·월주: KASI 절입시각(KST) 기준 · 십성: 본기 위주
+      </p>
 
       {/* 입력 폼 */}
       <form onSubmit={handleSubmit} style={styles.form}>
@@ -378,7 +380,9 @@ function SajuResultView({ result, noTime }: { result: SajuResult; noTime: boolea
       </Section>
 
       <p style={styles.footer}>
-        ※ 동경 127.5° 경도 보정(-30분) 적용 (KST 입력 → 자동 보정). 한국 주류 만세력 관행.<br />
+        ※ 일주·시주: 동경 127.5° 경도 보정(-30분) 적용. 일주는 KST 00:30에 변경(야자시 방식). 한국 주류 만세력 관행.<br />
+        ※ 연주·월주·대운(절기 비교): 보정 없이 KASI 절입시각(KST)과 직접 비교.<br />
+        ※ 십성: 지지 본기(本氣) 위주 집계 — 일간 제외 최대 7개 (점신식).<br />
         ※ 대운 나이: Yun.getStartYear()/getStartMonth() 기반 만나이 (출생 후 경과 시간).
         전통 만세력은 세는나이 표기 — 교차 검증 시 ±1~2세 차이 발생할 수 있음.<br />
         ※ 이 결과는 lunar-javascript 기반 자체 계산입니다.

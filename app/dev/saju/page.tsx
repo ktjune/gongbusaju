@@ -56,8 +56,13 @@ type FormState = {
 // ──────────────────────────────────────────────────────────────
 
 export default function DevSajuPage() {
-  // 개발 전용 — 프로덕션 빌드에서는 노출하지 않는다
-  if (process.env.NODE_ENV === "production") notFound();
+  // 개발·검증 전용 — 프로덕션 빌드에서는 기본 404.
+  // 배포 환경에서 검증 페이지가 필요하면 빌드 시
+  // NEXT_PUBLIC_ENABLE_DEV_TOOLS=1 로 열 수 있다 (상용 오픈 전 반드시 제거).
+  const devToolsEnabled =
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_ENABLE_DEV_TOOLS === "1";
+  if (!devToolsEnabled) notFound();
 
   const [form, setForm] = useState<FormState>({
     calType: "solar",

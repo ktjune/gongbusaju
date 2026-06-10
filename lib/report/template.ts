@@ -17,7 +17,8 @@ import type { SchoolFacts, SchoolRecord } from "../schools";
 
 /** 만세력 계산 기준 표기 — 모든 리포트 하단 필수 포함 */
 export const TIME_STANDARD_NOTICE =
-  "본 리포트의 사주 계산은 동경 135° 표준시(KST) 기준입니다.";
+  "본 리포트의 사주 계산 기준: 일주·시주는 동경 127.5° 경도 보정(-30분), " +
+  "연주·월주는 한국천문연구원(KASI) 절입시각(KST)을 따릅니다.";
 
 /** 학교 배정 결과에 항상 붙이는 라벨 */
 export const ASSIGNED_SCHOOL_LABEL = "예상 배정(교육청 확인 필요)";

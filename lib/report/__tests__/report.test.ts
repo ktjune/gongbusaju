@@ -279,7 +279,7 @@ describe("assembleReport — 블록 조립", () => {
       daeunProse: "대운 해석 텍스트",
     });
     expect(md).toContain(TIME_STANDARD_NOTICE);
-    expect(md).toContain("동경 135°");
+    expect(md).toContain("동경 127.5°");
   });
 
   it("관점 블록 섹션 포함", () => {
@@ -318,7 +318,7 @@ describe("assembleReport — 블록 조립", () => {
 // ──────────────────────────────────────────────────────────────
 
 describe("generateReport — mock LLM 합성 테스트", () => {
-  it("basic: 공부 기질·대운 섹션 포함 + 동경 135° 표기", async () => {
+  it("basic: 공부 기질·대운 섹션 포함 + 시각 기준 표기", async () => {
     const result = await generateReport(
       { saju: sampleSaju, tier: "basic" },
       { llmProvider: makeMockProvider() }
@@ -326,7 +326,7 @@ describe("generateReport — mock LLM 합성 테스트", () => {
     expect(result.tier).toBe("basic");
     expect(result.markdown).toContain("공부 기질 해석");
     expect(result.markdown).toContain("대운 흐름");
-    expect(result.markdown).toContain("동경 135°");
+    expect(result.markdown).toContain("동경 127.5°");
   });
 
   it("basic: 학교 사실 블록 없음", async () => {
@@ -459,7 +459,7 @@ describe("generateReport — 실제 Claude API 통합 테스트", () => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   it.skipIf(!apiKey)(
-    "실제 API 호출 → guardrails 통과 + 동경 135° 표기 포함",
+    "실제 API 호출 → guardrails 통과 + 시각 기준 표기 포함",
     async () => {
       const result = await generateReport({
         saju: sampleSaju,
@@ -467,7 +467,7 @@ describe("generateReport — 실제 Claude API 통합 테스트", () => {
       });
       expect(result.markdown).toContain("공부 기질 해석");
       expect(result.markdown).toContain("대운 흐름");
-      expect(result.markdown).toContain("동경 135°");
+      expect(result.markdown).toContain("동경 127.5°");
       // guardrails가 통과했으면 여기까지 도달
     },
     30_000 // API 호출 타임아웃 30초
@@ -485,7 +485,7 @@ describe("generateReport — 실제 Claude API 통합 테스트", () => {
       expect(result.markdown).toContain("청운초등학교");
       expect(result.markdown).toContain(ASSIGNED_SCHOOL_LABEL);
       // guardrails 통과
-      expect(result.markdown).toContain("동경 135°");
+      expect(result.markdown).toContain("동경 127.5°");
     },
     30_000
   );

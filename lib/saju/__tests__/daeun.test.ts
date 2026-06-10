@@ -99,7 +99,94 @@ describe("대운 방향 — 양년 남자 순행 스모크", () => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// 3. formatDaeunAge 형식 검증
+// 3. 대운 방향 4조합 — 60갑자 수학 검증
+//    첫 대운은 월주에서 출발한다:
+//      순행(陽男陰女) = 월주 다음 간지, 역행(陰男陽女) = 월주 이전 간지
+// ──────────────────────────────────────────────────────────────
+
+const GAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+const ZHI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+/** 60갑자 순환표 (甲子 → 乙丑 → … → 癸亥) */
+const JIAZI = Array.from({ length: 60 }, (_, i) => GAN[i % 10] + ZHI[i % 12]);
+
+const nextGanji = (g: string) => JIAZI[(JIAZI.indexOf(g) + 1) % 60];
+const prevGanji = (g: string) => JIAZI[(JIAZI.indexOf(g) + 59) % 60];
+
+describe("대운 방향 4조합 — 첫 대운 = 월주 ±1 (60갑자 검증)", () => {
+  it("양남 순행: 2020-09-16 16:43 남 (庚子년) → 월주 乙酉 다음 丙戌", () => {
+    const r = computeSaju({
+      birthYear: 2020, birthMonth: 9, birthDay: 16,
+      birthHour: 16, birthMinute: 43, gender: "male",
+    });
+    expect(r.pillars.month).toBe("乙酉");
+    expect(r.daeun[0].ganji).toBe(nextGanji(r.pillars.month)); // 丙戌
+  });
+
+  it("음남 역행: 1983-12-25 14:17 남 (癸亥년) → 월주 甲子 이전 癸亥", () => {
+    const r = computeSaju({
+      birthYear: 1983, birthMonth: 12, birthDay: 25,
+      birthHour: 14, birthMinute: 17, gender: "male",
+    });
+    expect(r.pillars.month).toBe("甲子");
+    expect(r.daeun[0].ganji).toBe(prevGanji(r.pillars.month)); // 癸亥
+  });
+
+  it("양녀 역행: 2022-06-07 09:19 여 (壬寅년) → 월주 丙午 이전 乙巳", () => {
+    const r = computeSaju({
+      birthYear: 2022, birthMonth: 6, birthDay: 7,
+      birthHour: 9, birthMinute: 19, gender: "female",
+    });
+    expect(r.pillars.month).toBe("丙午");
+    expect(r.daeun[0].ganji).toBe(prevGanji(r.pillars.month)); // 乙巳
+  });
+
+  it("음녀 순행: 1985-06-15 10:00 여 (乙丑년) → 월주 壬午 다음 癸未", () => {
+    const r = computeSaju({
+      birthYear: 1985, birthMonth: 6, birthDay: 15,
+      birthHour: 10, birthMinute: 0, gender: "female",
+    });
+    expect(r.pillars.month).toBe("壬午");
+    expect(r.daeun[0].ganji).toBe(nextGanji(r.pillars.month)); // 癸未
+  });
+
+  it("연속성: 대운 목록 전체가 같은 방향으로 1칸씩 진행한다 (2022 여 역행)", () => {
+    const r = computeSaju({
+      birthYear: 2022, birthMonth: 6, birthDay: 7,
+      birthHour: 9, birthMinute: 19, gender: "female",
+    });
+    for (let i = 1; i < r.daeun.length; i++) {
+      expect(r.daeun[i].ganji).toBe(prevGanji(r.daeun[i - 1].ganji));
+    }
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 4. 점신 교차검증 픽스처 — 대운 시작 나이
+// ──────────────────────────────────────────────────────────────
+
+describe("대운 시작 나이 — 점신 교차검증 픽스처", () => {
+  it("2022-06-07 09:19 여 → 첫 대운 乙巳, 만 0세 5개월 (역행 — 점신 일치 케이스 고정)", () => {
+    const r = computeSaju({
+      birthYear: 2022, birthMonth: 6, birthDay: 7,
+      birthHour: 9, birthMinute: 19, gender: "female",
+    });
+    expect(r.daeun[0].ganji).toBe("乙巳");
+    expect(r.daeun[0].age).toBe(0);
+    expect(r.daeun[0].startMonths).toBe(5);
+  });
+
+  it("2020-09-16 16:43 남 → 첫 대운 丙戌, 만 7세 (점신 '7세' 일치)", () => {
+    const r = computeSaju({
+      birthYear: 2020, birthMonth: 9, birthDay: 16,
+      birthHour: 16, birthMinute: 43, gender: "male",
+    });
+    expect(r.daeun[0].ganji).toBe("丙戌");
+    expect(r.daeun[0].age).toBe(7);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 5. formatDaeunAge 형식 검증
 // ──────────────────────────────────────────────────────────────
 
 describe("formatDaeunAge — 대운 나이 표기", () => {

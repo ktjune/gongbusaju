@@ -57,8 +57,11 @@ export function getSajuMonth(
 }
 
 /**
- * 주어진 양력 날짜+시각 기준으로 사주 月柱를 결정한다.
+ * 주어진 양력 날짜+시각(KST) 기준으로 사주 月柱를 결정한다.
  * 시각 정보가 있을 때 사용 (절기 경계 정확도 향상).
+ *
+ * lunar-javascript의 절기는 CST(UTC+8) 기준이므로 -60분 시프트 후 비교한다.
+ * (JIEQI_CST_OFFSET_MINUTES 참조)
  */
 export function getSajuMonthExact(
   year: number,
@@ -67,7 +70,8 @@ export function getSajuMonthExact(
   hour: number,
   minute: number
 ): number {
-  const solar = Solar.fromYmdHms(year, month, day, hour, minute, 0);
+  const b = toJieqiBasis(year, month, day, hour, minute);
+  const solar = Solar.fromYmdHms(b.year, b.month, b.day, b.hour, b.minute, 0);
   const lunar = solar.getLunar();
   const prevJie = lunar.getPrevJie(true);
   if (!prevJie) return 11;
@@ -142,10 +146,30 @@ export function getTrueSolarTimeOffsetMinutes(longitude = 126.97): number {
  */
 export const LONGITUDE_CORRECTION_MINUTES = -30;
 
+/** 분 단위 시프트 적용 (JavaScript Date로 날짜 넘김 처리) */
+function shiftMinutes(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  offsetMinutes: number
+): { year: number; month: number; day: number; hour: number; minute: number } {
+  const date = new Date(year, month - 1, day, hour, minute + offsetMinutes, 0);
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+  };
+}
+
 /**
  * KST 시각에 동경 127.5° 경도 보정(-30분)을 적용한 날짜+시각을 반환한다.
  *
  * 한국 주류 만세력 관행을 따른다. 균시차·출생지 경도 미적용.
+ * 日柱·時柱 결정에 사용한다. (절기 비교에는 사용 금지 — toJieqiBasis 참조)
  *
  * @param year   양력 년
  * @param month  양력 월 (1-12)
@@ -163,13 +187,34 @@ export function applyTrueSolarTime(
   longitude?: number // 하위 호환 시그니처 — 내부에서 무시하고 고정 -30분 사용
 ): { year: number; month: number; day: number; hour: number; minute: number } {
   void longitude; // 의도적 미사용 — 고정 보정값 사용
-  // JavaScript Date를 이용해 날짜 넘김 처리
-  const date = new Date(year, month - 1, day, hour, minute + LONGITUDE_CORRECTION_MINUTES, 0);
-  return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-    hour: date.getHours(),
-    minute: date.getMinutes(),
-  };
+  return shiftMinutes(year, month, day, hour, minute, LONGITUDE_CORRECTION_MINUTES);
+}
+
+/**
+ * lunar-javascript 절기(節氣) 내부 기준 시간대 어댑터 오프셋.
+ *
+ * lunar-javascript는 중국 라이브러리로, 절기 시각을 중국표준시(CST, UTC+8)로
+ * 계산한다. 한국 만세력은 KASI 발표 절입시각(KST, UTC+9)과 출생 KST를 직접
+ * 비교하는 것이 관행이다 (절기 비교에는 -30분 진태양시 보정을 적용하지 않음).
+ *
+ * KST 입력을 -60분 시프트하면 lunar-javascript의 CST 절기 시각과 같은
+ * 시간대에서 비교되어, 연주·월주 경계가 KASI KST 절입시각과 일치한다.
+ *
+ * 실측 검증: lunar-js 2024 立春 = 02-04 16:27:07 (CST) ↔ KASI 17:27 (KST)
+ */
+export const JIEQI_CST_OFFSET_MINUTES = -60;
+
+/**
+ * 연주·월주·대운 등 절기 비교용 날짜+시각(KST → lunar-js CST 기준)을 반환한다.
+ *
+ * 진태양시 -30분 보정은 적용하지 않는다. 時柱·日柱에는 applyTrueSolarTime을 쓸 것.
+ */
+export function toJieqiBasis(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number
+): { year: number; month: number; day: number; hour: number; minute: number } {
+  return shiftMinutes(year, month, day, hour, minute, JIEQI_CST_OFFSET_MINUTES);
 }

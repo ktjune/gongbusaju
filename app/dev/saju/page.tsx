@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { notFound } from "next/navigation";
 import {
   computeSaju,
   solarFromLunar,
@@ -55,6 +56,9 @@ type FormState = {
 // ──────────────────────────────────────────────────────────────
 
 export default function DevSajuPage() {
+  // 개발 전용 — 프로덕션 빌드에서는 노출하지 않는다
+  if (process.env.NODE_ENV === "production") notFound();
+
   const [form, setForm] = useState<FormState>({
     calType: "solar",
     isLeapMonth: false,

@@ -49,6 +49,10 @@ export type ReportInput = {
   /** Premium: 학교 사실 포함 */
   schools?: SchoolFacts;
   tier: "basic" | "premium";
+  /** 세운 나이 표기용 출생 연도 (PII 아님: 연도만) */
+  birthYear?: number;
+  /** 세운 시작 연도 (기본: 현재 연도 — 테스트·샘플 고정용) */
+  currentYear?: number;
 };
 
 export type ReportOutput = {
@@ -82,8 +86,9 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, schools, tier } = input;
+  const { saju, schools, tier, birthYear, currentYear } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
+  const meta = { birthYear, currentYear };
 
   // 1. 사실 블록 생성 — 코드만, LLM 없음
   //    Premium + 학교 데이터 있을 때만 사실 블록 포함
@@ -92,15 +97,15 @@ export async function generateReport(
 
   // 2. LLM 관점 블록 생성
   //    buildUserPrompt() 는 학교명·주소·진학률을 LLM에게 전달하지 않는다
-  const perspective = await generatePerspective(saju, tier, provider);
+  const perspective = await generatePerspective(saju, tier, provider, meta);
 
   // 3. guardrails 검사 — 모든 산문 필드, 위반 시 GuardrailError throw → 발행 차단
   for (const prose of Object.values(perspective)) {
     if (typeof prose === "string") checkGuardrails(prose);
   }
 
-  // 4. 조립 (사주 데이터 섹션은 코드가 표로 생성)
-  const markdown = assembleReport(saju, factBlock, perspective);
+  // 4. 조립 (사주 데이터 섹션·도식·정적 콘텐츠는 코드가 생성)
+  const markdown = assembleReport(saju, factBlock, perspective, meta);
 
   return { markdown, tier };
 }

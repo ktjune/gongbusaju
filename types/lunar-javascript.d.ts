@@ -29,6 +29,8 @@ declare module "lunar-javascript" {
     getSolar(): Solar;
     getEightChar(): EightChar;
     getPrevJie(includeCurrentDay?: boolean): Jie | null;
+    /** 연간지 (입춘 절입시각 기준 정밀) — 세운 표시용 */
+    getYearInGanZhiExact(): string;
   }
 
   class EightChar {

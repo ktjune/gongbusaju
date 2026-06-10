@@ -13,7 +13,8 @@
  */
 
 import type { SajuResult } from "../saju";
-import type { PerspectiveBlock } from "./template";
+import { getYearGanji } from "../saju";
+import type { PerspectiveBlock, ReportMeta } from "./template";
 
 // ──────────────────────────────────────────────────────────────
 // 타입
@@ -31,8 +32,11 @@ export const REQUIRED_PROSE_FIELDS = [
   "elementsProse",
   "tenGodsProse",
   "studyStyleProse",
+  "studyAreasProse",
+  "subjectTendencyProse",
   "parentingProse",
   "daeunProse",
+  "annualProse",
 ] as const;
 
 /**
@@ -121,8 +125,11 @@ const FIELD_SPEC_BASIC = `[작성할 산문 — 각 필드는 2~3문단, 공백 
 - elementsProse: 오행 분포에서 강한 기운과 약한(없는) 기운이 공부·생활에서 드러나는 방식. 약한 기운은 "보완 활동" 제안으로 마무리.
 - tenGodsProse: 두드러진 십성 구조가 뜻하는 마음의 습관(배우는 방식·욕구·절제). 십성 명칭은 한글 병기.
 - studyStyleProse: 위 기질을 종합한 공부 스타일 — 잘 맞는 학습 방식·환경·시간 운용, 흔들리기 쉬운 지점과 대처.
+- studyAreasProse: 집중·암기·이해·표현·협동 5개 학습 영역 각각에 대해 이 아이의 기질이 어떻게 작동하는지. 영역마다 소제목 굵게(**집중** 등) + 1문단씩, 총 5문단.
+- subjectTendencyProse: 오행-학습영역 전통 매핑을 이 아이의 오행 분포에 비추어 풀이. 강한 오행이 가리키는 영역과 옅은 오행 영역의 접근법. 적성 단정 금지, "경향 참고"로 일관.
 - parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.
-- daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.`;
+- daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.
+- annualProse: 입력으로 주어진 향후 3년 세운(연간지) 각각의 기운을 아이의 원국에 비추어 해석. 연도별 1문단씩, 그해의 학습 생활 참고 포인트 포함.`;
 
 const FIELD_SPEC_PREMIUM_EXTRA = `- schoolConnectionProse: 이 아이의 기질에서 학교 '환경'을 고를 때 참고할 만한 경향 (300자 이상).
   절대 금지: 학교명·주소·순위·진학률 등 사실 정보. 순수 기질·성향 관점만 작성.
@@ -133,8 +140,11 @@ const JSON_SHAPE_BASIC = `{
   "elementsProse": "...",
   "tenGodsProse": "...",
   "studyStyleProse": "...",
+  "studyAreasProse": "...",
+  "subjectTendencyProse": "...",
   "parentingProse": "...",
-  "daeunProse": "..."
+  "daeunProse": "...",
+  "annualProse": "..."
 }`;
 
 const JSON_SHAPE_PREMIUM = `{
@@ -142,8 +152,11 @@ const JSON_SHAPE_PREMIUM = `{
   "elementsProse": "...",
   "tenGodsProse": "...",
   "studyStyleProse": "...",
+  "studyAreasProse": "...",
+  "subjectTendencyProse": "...",
   "parentingProse": "...",
   "daeunProse": "...",
+  "annualProse": "...",
   "schoolConnectionProse": "..."
 }`;
 
@@ -185,7 +198,8 @@ ${JSON_SHAPE_PREMIUM}`;
  */
 export function buildUserPrompt(
   saju: SajuResult,
-  tier: "basic" | "premium"
+  tier: "basic" | "premium",
+  meta: ReportMeta = {}
 ): string {
   const daeunList = saju.daeun
     .slice(0, 5)
@@ -226,6 +240,17 @@ export function buildUserPrompt(
     traitsStr || "(데이터 없음)",
   ];
 
+  // 세운 — 향후 3년 연간지 (annualProse 작성용)
+  const fromYear = meta.currentYear ?? new Date().getFullYear();
+  const annualStr = [0, 1, 2]
+    .map((i) => {
+      const y = fromYear + i;
+      const age = meta.birthYear !== undefined ? ` (만 ${y - meta.birthYear}세 무렵)` : "";
+      return `${y}년: ${getYearGanji(y)}${age}`;
+    })
+    .join(", ");
+  lines.push("", "[세운 — 향후 3년]", annualStr);
+
   if (tier === "premium") {
     lines.push(
       "",
@@ -252,11 +277,12 @@ export function buildUserPrompt(
 export async function generatePerspective(
   saju: SajuResult,
   tier: "basic" | "premium",
-  provider: LlmProvider
+  provider: LlmProvider,
+  meta: ReportMeta = {}
 ): Promise<LlmPerspective> {
   const systemPrompt =
     tier === "premium" ? SYSTEM_PROMPT_PREMIUM : SYSTEM_PROMPT_BASIC;
-  const userPrompt = buildUserPrompt(saju, tier);
+  const userPrompt = buildUserPrompt(saju, tier, meta);
 
   const raw = await provider.complete(systemPrompt, userPrompt);
 

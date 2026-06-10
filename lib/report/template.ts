@@ -5,8 +5,8 @@
  * [절대 규칙]
  * - 학교명·수치 등 학교 사실은 buildFactBlock()(코드)가 생성한다. LLM에게 전달되지 않는다.
  * - 배정 학교는 항상 ASSIGNED_LABEL + 출처·기준일을 붙인다.
- * - 사주 데이터 섹션(원국 표·오행·십성·기질·대운 타임라인)도 코드가 생성한다.
- *   LLM은 해석 산문(PerspectiveBlock)만 작성한다.
+ * - 사주 데이터 섹션(원국 표·오행·십성·기질·대운·세운)과 SVG 도식, 정적 교육
+ *   콘텐츠(사전·FAQ·용어집)도 모두 코드가 생성한다. LLM은 해석 산문만 작성한다.
  * - 모든 블록은 assembleReport()에서 나란히 배치된다.
  *   "오행이 X라 이 학교가 정답" 같은 인과 연결은 어디에도 없다.
  */
@@ -20,8 +20,28 @@ import {
   tenGodOf,
   branchMainStem,
   formatDaeunAge,
+  getYearGanji,
 } from "../saju";
 import type { SchoolFacts, SchoolRecord } from "../schools";
+import {
+  HOW_TO_READ,
+  SAJU_BASICS,
+  STEM_DICT,
+  BRANCH_DICT,
+  WUXING_DICT,
+  TENGOD_DICT,
+  TENGOD_KEY_ALIAS,
+  SUBJECT_MAP,
+  SUBJECT_MAP_NOTICE,
+  FAQ,
+  GLOSSARY,
+} from "./content";
+import {
+  elementsBarChart,
+  wuxingCycleChart,
+  traitsRadarChart,
+  daeunTimelineChart,
+} from "./charts";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
@@ -66,12 +86,18 @@ export type PerspectiveBlock = {
   elementsProse: string;
   /** 십성 구조 — 두드러진 십성이 뜻하는 마음의 습관 */
   tenGodsProse: string;
-  /** 공부 스타일 — 학습 환경·습관·과목 접근 방식 제안 */
+  /** 공부 스타일 — 학습 환경·습관·시간 운용 제안 */
   studyStyleProse: string;
+  /** 학습 영역 5분야(집중·암기·이해·표현·협동) 들여다보기 */
+  studyAreasProse: string;
+  /** 과목 경향 — 오행 관점 매핑 표에 대한 이 아이 기준 해석 */
+  subjectTendencyProse: string;
   /** 부모 코칭 — 보호자가 참고할 양육 포인트 */
   parentingProse: string;
   /** 학령기 대운 흐름 해석 산문 */
   daeunProse: string;
+  /** 다가오는 세운(향후 3년) 해석 산문 */
+  annualProse: string;
   /**
    * [Premium] 학교 선택 시 기질 관점에서 참고할 경향 산문.
    * 학교명·사실 절대 포함 금지.
@@ -79,8 +105,16 @@ export type PerspectiveBlock = {
   schoolConnectionProse?: string;
 };
 
+/** 리포트 메타 — 세운 나이 계산 등에 사용 (PII 아님: 연도만) */
+export type ReportMeta = {
+  /** 출생 연도 — 세운 표의 만나이 표기에 사용 */
+  birthYear?: number;
+  /** 세운 시작 연도 (기본: 현재 연도) */
+  currentYear?: number;
+};
+
 // ──────────────────────────────────────────────────────────────
-// 데이터 블록 빌더 — 사주 계산값을 표로 변환. 코드만, LLM 없음
+// 데이터 섹션 빌더 — 사주 계산값·사전을 표로 변환. 코드만, LLM 없음
 // ──────────────────────────────────────────────────────────────
 
 /** 원국 표 — 4기둥 천간·지지 + 글자별 십성(지지는 본기 기준) */
@@ -135,6 +169,35 @@ export function buildSajuTableSection(saju: SajuResult): string {
   return lines.join("\n");
 }
 
+/** 여덟 글자 각각의 사전 풀이 — 천간/지지 사전 기반 */
+export function buildGlyphDictSection(saju: SajuResult): string {
+  const { pillars } = saju;
+  const entries: Array<{ pos: string; ganji: string }> = [
+    { pos: "年柱(연주)", ganji: pillars.year },
+    { pos: "月柱(월주)", ganji: pillars.month },
+    { pos: "日柱(일주)", ganji: pillars.day },
+  ];
+  if (pillars.hour) entries.push({ pos: "時柱(시주)", ganji: pillars.hour });
+
+  const parts: string[] = [];
+  for (const { pos, ganji } of entries) {
+    const gan = ganji.charAt(0);
+    const zhi = ganji.charAt(1);
+    const s = STEM_DICT[gan];
+    const b = BRANCH_DICT[zhi];
+    if (!s || !b) continue;
+    parts.push(
+      [
+        `### ${pos} — ${withHangul(ganji)}`,
+        ``,
+        `- **${gan}(${s.hangul}) · ${s.nature}**: ${s.desc}`,
+        `- **${zhi}(${b.hangul}) · ${b.animal}띠 글자 · ${b.nature}**: ${b.desc}`,
+      ].join("\n")
+    );
+  }
+  return parts.join("\n\n");
+}
+
 /** 오행 분포 표 — 비율 + 텍스트 막대 */
 export function buildElementsSection(saju: SajuResult): string {
   const order: Array<[string, keyof SajuResult["elements"]]> = [
@@ -155,6 +218,31 @@ export function buildElementsSection(saju: SajuResult): string {
   return [`| 오행 | 비율 | 분포 |`, `|---|---|---|`, ...rows].join("\n");
 }
 
+/** 오행별 상세 풀이 — 사전 + 이 아이의 강약 판정 */
+export function buildWuxingDetailSection(saju: SajuResult): string {
+  const order: Array<[string, keyof SajuResult["elements"]]> = [
+    ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
+  ];
+
+  const parts = order.map(([hanja, key]) => {
+    const d = WUXING_DICT[hanja];
+    const pct = Math.round(saju.elements[key]);
+    let verdict: string;
+    if (pct >= 30) verdict = `**이 아이는 강한 편(${pct}%)** — ${d.strong}`;
+    else if (pct <= 10) verdict = `**이 아이는 옅은 편(${pct}%)** — ${d.weak}`;
+    else verdict = `**이 아이는 보통(${pct}%)** — 치우침 없이 무난하게 작동하는 구간으로 풀이됩니다.`;
+    return [
+      `### ${hanja}(${d.hangul}) — ${d.keyword}`,
+      ``,
+      d.study,
+      ``,
+      verdict,
+    ].join("\n");
+  });
+
+  return parts.join("\n\n");
+}
+
 /** 십성 분포 목록 — 본기 기준 카운트 */
 export function buildTenGodsSection(saju: SajuResult): string {
   const entries = Object.entries(saju.tenGods)
@@ -166,6 +254,35 @@ export function buildTenGodsSection(saju: SajuResult): string {
   return entries
     .map(([god, count]) => `- ${tenGodWithHangul(god)} × ${count}`)
     .join("\n");
+}
+
+/** 십성 10종 사전 — 보유 여부 표시 */
+export function buildTenGodsDictSection(saju: SajuResult): string {
+  const counts: Record<string, number> = {};
+  for (const [k, v] of Object.entries(saju.tenGods)) {
+    const key = TENGOD_KEY_ALIAS[k] ?? k;
+    counts[key] = (counts[key] ?? 0) + v;
+  }
+
+  const rows = Object.entries(TENGOD_DICT).map(([key, d]) => {
+    const count = counts[key] ?? 0;
+    const own = count > 0 ? `**${count}개**` : "—";
+    return `| ${key}(${d.hangul}) | ${d.group} | ${d.meaning} | ${own} |`;
+  });
+
+  const ownedDetails = Object.entries(TENGOD_DICT)
+    .filter(([key]) => (counts[key] ?? 0) > 0)
+    .map(([key, d]) => `- **${key}(${d.hangul})**: ${d.study}`);
+
+  return [
+    `| 십성 | 분류 | 뜻 | 이 아이 |`,
+    `|---|---|---|---|`,
+    ...rows,
+    ``,
+    `#### 이 아이가 가진 십성, 공부에서는`,
+    ``,
+    ...ownedDetails,
+  ].join("\n");
 }
 
 /** 기질 지표 표 — 6축 (해석 지표, 측정치 아님) */
@@ -180,6 +297,28 @@ export function buildTraitsSection(saju: SajuResult): string {
     values,
     "",
     "> 위 수치는 오행·십성 분포를 규칙표로 환산한 **해석 지표**이며, 심리 검사 같은 측정치가 아닙니다.",
+  ].join("\n");
+}
+
+/** 과목 경향 매핑 표 — 전통 오행 관점 + 이 아이의 강한 오행 표시 */
+export function buildSubjectMapSection(saju: SajuResult): string {
+  const pctOf: Record<string, number> = {
+    木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
+    金: saju.elements.금, 水: saju.elements.수,
+  };
+
+  const rows = SUBJECT_MAP.map((m) => {
+    const pct = Math.round(pctOf[m.element] ?? 0);
+    const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
+    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.subjects} | ${mark} |`;
+  });
+
+  return [
+    `| 오행 | 전통적으로 연결해 보는 학습 영역 | 이 아이 |`,
+    `|---|---|---|`,
+    ...rows,
+    ``,
+    `> ${SUBJECT_MAP_NOTICE}`,
   ].join("\n");
 }
 
@@ -214,6 +353,28 @@ export function buildDaeunSection(saju: SajuResult): string {
     `| 시작(만나이) | 대운 | 해당 시기 |`,
     `|---|---|---|`,
     ...rows,
+  ].join("\n");
+}
+
+/** 세운(연운) 표 — 향후 N년 연간지 */
+export function buildAnnualSection(
+  fromYear: number,
+  count: number,
+  birthYear?: number
+): string {
+  const rows: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const y = fromYear + i;
+    const ganji = getYearGanji(y);
+    const age = birthYear !== undefined ? `만 ${y - birthYear}세 무렵` : "—";
+    rows.push(`| ${y}년 | ${withHangul(ganji)} | ${age} |`);
+  }
+  return [
+    `| 연도 | 세운 간지 | 아이 나이 |`,
+    `|---|---|---|`,
+    ...rows,
+    ``,
+    `> 세운(歲運)은 해마다 바뀌는 그해의 기운입니다. 대운이 10년의 큰 계절이라면 세운은 그해의 날씨에 비유됩니다.`,
   ].join("\n");
 }
 
@@ -276,98 +437,172 @@ export function buildFactBlock(schools: SchoolFacts): FactBlock {
 // ──────────────────────────────────────────────────────────────
 
 /**
- * 데이터 블록(코드) + 관점 블록(LLM) + 사실 블록(코드)을 최종 마크다운으로 조립한다.
- *
- * 조립 순서:
- *  1. 사주 원국 표 (데이터)
- *  2. 타고난 결 — 일간 (관점)
- *  3. 오행 에너지 분포 (데이터 표 + 관점)
- *  4. 십성 구조 (데이터 목록 + 관점)
- *  5. 공부 스타일과 학습 환경 (관점 + 기질 지표 표)
- *  6. 부모님을 위한 코칭 포인트 (관점)
- *  7. 학령기 대운 흐름 (데이터 표 + 관점)
- *  8. [Premium] 학교 선택 기질 참고 (관점)
- *  9. [Premium] 예상 배정 학교·학교군 (사실)
- * 10. 기준·면책 표기 (항상)
+ * 데이터 블록(코드) + 정적 콘텐츠(코드) + 관점 블록(LLM) + 사실 블록(코드)을
+ * 최종 마크다운으로 조립한다. SVG 도식은 인라인으로 삽입된다.
  *
  * 관점 블록과 사실 블록 사이에 "이 학교가 정답" 같은 인과 연결은 없다.
  */
 export function assembleReport(
   saju: SajuResult,
   facts: FactBlock,
-  perspective: PerspectiveBlock
+  perspective: PerspectiveBlock,
+  meta: ReportMeta = {}
 ): string {
-  const sections: string[] = [];
+  const currentYear = meta.currentYear ?? new Date().getFullYear();
 
-  // 1. 원국 (데이터)
-  sections.push("## 사주 원국 (四柱原局)\n\n" + buildSajuTableSection(saju));
+  type Section = { title: string; body: string };
+  const sections: Section[] = [];
 
-  // 2. 일간 (관점)
-  sections.push("## 타고난 결 — 일간 이야기\n\n" + perspective.dayMasterProse);
+  // ── 안내·기초 (정적) ─────────────────────────────────────
+  sections.push({ title: "이 리포트를 읽는 법", body: HOW_TO_READ });
+  sections.push({ title: "사주팔자란 무엇인가요?", body: SAJU_BASICS });
 
-  // 3. 오행 (데이터 + 관점)
-  sections.push(
-    "## 오행 에너지 분포\n\n" +
+  // ── 원국 (데이터 + 사전) ─────────────────────────────────
+  sections.push({
+    title: "사주 원국 (四柱原局)",
+    body:
+      "## 사주 원국 (四柱原局)\n\n" +
+      buildSajuTableSection(saju) +
+      "\n\n### 내 여덟 글자 풀이\n\n" +
+      buildGlyphDictSection(saju),
+  });
+
+  // ── 일간 (관점) ──────────────────────────────────────────
+  sections.push({
+    title: "타고난 결 — 일간 이야기",
+    body: "## 타고난 결 — 일간 이야기\n\n" + perspective.dayMasterProse,
+  });
+
+  // ── 오행 (도식 + 데이터 + 관점 + 사전) ───────────────────
+  sections.push({
+    title: "오행 에너지 분포",
+    body:
+      "## 오행 에너지 분포\n\n" +
+      elementsBarChart(saju) +
+      "\n\n" +
       buildElementsSection(saju) +
       "\n\n" +
-      perspective.elementsProse
-  );
+      perspective.elementsProse +
+      "\n\n### 오행은 서로 돕고 누릅니다 — 상생·상극\n\n" +
+      wuxingCycleChart(saju) +
+      "\n\n원 크기는 이 아이 사주에서 해당 기운의 비중입니다. " +
+      "초록 실선은 낳아 주는 관계(상생), 붉은 점선은 눌러 주는 관계(상극)로, " +
+      "다섯 기운은 이렇게 서로 균형을 이룹니다.\n\n" +
+      "### 다섯 기운 하나씩 들여다보기\n\n" +
+      buildWuxingDetailSection(saju),
+  });
 
-  // 4. 십성 (데이터 + 관점)
-  sections.push(
-    "## 십성 구조 — 마음의 도구들\n\n" +
+  // ── 십성 (데이터 + 관점 + 사전) ──────────────────────────
+  sections.push({
+    title: "십성 구조 — 마음의 도구들",
+    body:
+      "## 십성 구조 — 마음의 도구들\n\n" +
       buildTenGodsSection(saju) +
       "\n\n" +
-      perspective.tenGodsProse
-  );
+      perspective.tenGodsProse +
+      "\n\n### 십성 한눈에 보기\n\n" +
+      buildTenGodsDictSection(saju),
+  });
 
-  // 5. 공부 스타일 (관점 + 데이터)
-  sections.push(
-    "## 공부 스타일과 학습 환경\n\n" +
+  // ── 공부 스타일 (관점 + 도식 + 데이터) ───────────────────
+  sections.push({
+    title: "공부 스타일과 학습 환경",
+    body:
+      "## 공부 스타일과 학습 환경\n\n" +
       perspective.studyStyleProse +
       "\n\n### 기질 지표\n\n" +
-      buildTraitsSection(saju)
-  );
+      traitsRadarChart(saju) +
+      "\n\n" +
+      buildTraitsSection(saju),
+  });
 
-  // 6. 부모 코칭 (관점)
-  sections.push(
-    "## 부모님을 위한 코칭 포인트\n\n" + perspective.parentingProse
-  );
+  // ── 학습 영역 5분야 (관점) ───────────────────────────────
+  sections.push({
+    title: "학습 영역별 들여다보기",
+    body:
+      "## 학습 영역별 들여다보기\n\n" +
+      "집중·암기·이해·표현·협동 다섯 영역에서 이 아이의 기질이 어떻게 작동하는지 살펴봅니다.\n\n" +
+      perspective.studyAreasProse,
+  });
 
-  // 7. 대운 (데이터 + 관점)
-  sections.push(
-    "## 학령기 대운 흐름\n\n" +
+  // ── 과목 경향 (데이터 + 관점) ────────────────────────────
+  sections.push({
+    title: "과목 경향 참고",
+    body:
+      "## 과목 경향 참고\n\n" +
+      buildSubjectMapSection(saju) +
+      "\n\n" +
+      perspective.subjectTendencyProse,
+  });
+
+  // ── 부모 코칭 (관점) ─────────────────────────────────────
+  sections.push({
+    title: "부모님을 위한 코칭 포인트",
+    body: "## 부모님을 위한 코칭 포인트\n\n" + perspective.parentingProse,
+  });
+
+  // ── 대운 (도식 + 데이터 + 관점) ──────────────────────────
+  sections.push({
+    title: "학령기 대운 흐름",
+    body:
+      "## 학령기 대운 흐름\n\n" +
+      daeunTimelineChart(saju) +
+      "\n\n" +
       buildDaeunSection(saju) +
       "\n\n" +
-      perspective.daeunProse
-  );
+      perspective.daeunProse,
+  });
 
-  // 8. [Premium] 학교 기질 참고 (관점)
+  // ── 세운 (데이터 + 관점) ─────────────────────────────────
+  sections.push({
+    title: "다가오는 3년 — 세운",
+    body:
+      "## 다가오는 3년 — 세운\n\n" +
+      buildAnnualSection(currentYear, 3, meta.birthYear) +
+      "\n\n" +
+      perspective.annualProse,
+  });
+
+  // ── [Premium] 학교 기질 참고 (관점) ──────────────────────
   if (perspective.schoolConnectionProse) {
-    sections.push(
-      "## 학교 선택 기질 참고\n\n" +
+    sections.push({
+      title: "학교 선택 기질 참고",
+      body:
+        "## 학교 선택 기질 참고\n\n" +
         "> 아래는 사주 기질 관점에서 학교 환경 선택 시 참고할 만한 경향입니다.\n" +
         "> 특정 학교를 추천하거나 정답으로 지목하지 않습니다.\n\n" +
-        perspective.schoolConnectionProse
-    );
+        perspective.schoolConnectionProse,
+    });
   }
 
-  // 9. [Premium] 사실 블록 (코드 삽입)
+  // ── [Premium] 사실 블록 (코드 삽입) ──────────────────────
   if (facts.assignedSchoolSection) {
-    sections.push(
-      "## 예상 배정 학교 (사실 정보)\n\n" +
+    sections.push({
+      title: "예상 배정 학교 (사실 정보)",
+      body:
+        "## 예상 배정 학교 (사실 정보)\n\n" +
         "> 아래 정보는 공공데이터 기반 예상 배정 결과입니다. " +
         "실제 배정은 교육청에 반드시 확인하시기 바랍니다.\n\n" +
-        facts.assignedSchoolSection
-    );
+        facts.assignedSchoolSection +
+        (facts.clusterSection ? "\n\n" + facts.clusterSection : ""),
+    });
   }
 
-  if (facts.clusterSection) {
-    sections.push(facts.clusterSection);
-  }
+  // ── 부록 (정적) ──────────────────────────────────────────
+  sections.push({ title: "자주 묻는 질문", body: FAQ });
+  sections.push({ title: "용어 풀이", body: GLOSSARY });
 
-  // 10. 기준·면책 표기 (항상 마지막)
-  sections.push("---\n\n" + TIME_STANDARD_NOTICE + "\n\n" + INTERPRETATION_NOTICE);
+  // ── 목차 생성 ────────────────────────────────────────────
+  const toc =
+    "## 목차\n\n" +
+    sections.map((s, i) => `${i + 1}. ${s.title}`).join("\n");
 
-  return sections.join("\n\n");
+  // ── 최종 조립 ────────────────────────────────────────────
+  const body = sections.map((s) => s.body).join("\n\n---\n\n");
+
+  return [
+    toc,
+    body,
+    "---\n\n" + TIME_STANDARD_NOTICE + "\n\n" + INTERPRETATION_NOTICE,
+  ].join("\n\n---\n\n");
 }

@@ -11,6 +11,7 @@
  */
 
 import { writeFileSync } from "node:fs";
+import { marked } from "marked";
 import { computeSaju } from "../lib/saju";
 import type { SchoolFacts } from "../lib/schools";
 import { generateReport } from "../lib/report";
@@ -134,6 +135,35 @@ const perspectiveProvider: LlmProvider = {
         "쉬우니, 배운 것을 가족 앞에서 한 줄로 말해 보는 '오늘의 한마디' 같은 작은 장치가 표현",
         "근육을 길러 주는 데 참고가 됩니다.",
       ].join(" "),
+      studyAreasProse: [
+        "**집중** — 금·수 기운이 중심인 이 사주에서 가장 믿을 만한 영역입니다. 조용한 공간이",
+        "확보되면 또래보다 오래 한 가지에 머무는 경향이 있습니다. 다만 주변이 소란하면 집중의",
+        "질이 크게 떨어지는 유형이므로, 공부 자리는 '늘 같은 조용한 자리'로 고정해 주는 것이",
+        "참고가 됩니다.\n\n",
+        "**암기** — 인성(편인·정인)이 세 개로 발달해, 들은 것을 머릿속에 저장하는 힘이 좋은",
+        "구조로 풀이됩니다. 특히 좋아하는 분야의 세부 정보는 누가 시키지 않아도 외우는 경향이",
+        "있습니다. 흥미 없는 내용은 노래·이야기로 바꿔 주면 흡수가 빨라집니다.\n\n",
+        "**이해** — 수 기운의 깊은 사고력 덕분에, 시간이 주어지면 원리까지 파고들어 이해하는",
+        "유형으로 해석됩니다. 빠른 문답보다 '생각할 틈'을 주는 방식이 잘 맞습니다. 이해가 끝나기",
+        "전에 다음으로 넘어가면 흥미를 잃기 쉬운 점을 기억해 주세요.\n\n",
+        "**표현** — 다섯 영역 중 의식적인 연습이 가장 필요한 곳입니다. 원국에 화 기운이 드러나지",
+        "않아, 알고 있는 것의 절반도 말로 안 나오는 날이 많을 수 있습니다. 정답 발표보다 '자기",
+        "생각 한 줄 말하기'부터 시작하는 낮은 계단이 참고가 됩니다.\n\n",
+        "**협동** — 겁재의 승부욕이 있어 또래 자극을 받지만, 기본 결은 소수와 깊게 어울리는",
+        "유형입니다. 대그룹 활동보다 2~3명의 또래와 역할이 분명한 협동 과제에서 힘을 내는",
+        "경향이 있습니다.",
+      ].join(" "),
+      subjectTendencyProse: [
+        "이 아이의 오행 분포를 위 표에 비추어 보면, 강한 금(38%)·수(25%) 기운이 전통적으로",
+        "수학의 연산·도형, 과학의 분류·실험, 그리고 깊이 읽는 독서와 연결되는 영역을 가리키고",
+        "있습니다. 숫자와 규칙처럼 '명확하게 떨어지는 것'을 다룰 때 안정감을 느끼고, 호기심이",
+        "붙으면 한 주제를 깊게 파고드는 탐구형 접근이 잘 맞는 경향으로 풀이됩니다.\n\n",
+        "반대로 화 기운이 드러나지 않아 발표·음악·미술처럼 즉석에서 발산하는 영역은 처음에",
+        "낯설어할 수 있습니다. 이는 재능이 없다는 뜻이 아니라 '준비 시간이 필요한 영역'이라는",
+        "뜻에 가깝습니다. 잘 만든 것을 보여 주는 전시형 활동부터 시작해 무대형 활동으로 넓혀",
+        "가는 순서가 참고가 됩니다. 거듭 말씀드리지만 이 표와 해석은 적성의 단정이 아니라 접근",
+        "방식의 참고이며, 실제 적성은 아이의 경험 속에서 발견됩니다.",
+      ].join(" "),
       parentingProse: [
         "보호자께서 일상에서 참고하실 만한 포인트를 정리합니다.\n\n",
         "첫째, 새로운 활동을 시작할 때는 미리 보여 주세요. 처음 가는 곳, 처음 하는 일에 적응 시간이",
@@ -164,6 +194,20 @@ const perspectiveProvider: LlmProvider = {
         "방향으로 정리되는 시기로 풀이됩니다. 진로를 좁혀 가는 이 무렵에는 외부 기준보다 아이가",
         "오래 파고들어 온 관심사를 단서로 삼는 것이 참고가 될 수 있습니다.",
       ].join(" "),
+      annualProse: [
+        "2026년 병오(丙午)년은 원국에 없던 화 기운이 천간과 지지 양쪽으로 들어오는 해입니다.",
+        "안으로 모으던 아이가 평소보다 활달해지고 표현이 늘어나는 흐름으로 해석되는데, 마침",
+        "초등 입학을 준비하는 해(만 6세)와 겹칩니다. 이 기운을 살려 발표·무대 경험, 입학 전",
+        "기관 적응 활동을 시도해 보기 좋은 해로 풀이됩니다.\n\n",
+        "2027년 정미(丁未)년은 초등학교에 입학하는 해(만 7세)입니다. 은은한 불과 안정된 흙의",
+        "기운이라, 들뜨기보다 차분히 새 환경에 뿌리내리는 흐름으로 해석됩니다. 입학 초기에는",
+        "성적이나 학습량보다 '학교가 안전하고 예측 가능한 곳'이라는 감각을 만들어 주는 것이",
+        "이 아이 기질에 맞는 우선순위로 참고됩니다.\n\n",
+        "2028년 무신(戊申)년(만 8세)은 단단한 흙과 금 기운의 해로, 규칙과 일과가 몸에 붙는",
+        "흐름으로 풀이됩니다. 학교 생활이 익숙해지며 자기 루틴이 생기기 좋은 해이므로, 이때",
+        "숙제 시간·독서 시간 같은 평생 가져갈 학습 습관의 틀을 함께 만들어 보시기를 참고로",
+        "권합니다.",
+      ].join(" "),
       schoolConnectionProse: [
         "금·수 기운이 강하고 인성이 발달한 이 기질은 차분하고 예측 가능한 환경에서 안정감을 얻는",
         "경향이 있습니다. 학교 환경을 살피실 때는 학급 규모와 분위기 — 한 아이에게 눈길이 닿는",
@@ -186,7 +230,7 @@ const perspectiveProvider: LlmProvider = {
 
 async function main() {
   const result = await generateReport(
-    { saju, schools, tier: "premium" },
+    { saju, schools, tier: "premium", birthYear: 2020, currentYear: 2026 },
     { llmProvider: perspectiveProvider }
   );
 
@@ -200,8 +244,40 @@ async function main() {
 
   const md = header + "\n" + result.markdown + "\n";
   writeFileSync("SAMPLE_REPORT.md", md, "utf-8");
-  console.log(md);
-  console.log("\n→ SAMPLE_REPORT.md 저장 완료 (guardrails 통과)");
+
+  // HTML 미리보기 — 도식(SVG)·표가 그대로 보이는 더블클릭용 파일.
+  // Phase 5 결과페이지/Phase 6 PDF 변환과 같은 md→HTML 경로의 시제품.
+  const html = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공부 기질 사주 리포트 (샘플)</title>
+<style>
+  body { font-family: 'Malgun Gothic','Apple SD Gothic Neo',sans-serif; line-height: 1.75;
+         color: #2b2b2b; max-width: 780px; margin: 0 auto; padding: 48px 24px; background: #fffdf9; }
+  h1 { font-size: 1.9em; border-bottom: 3px solid #3b6fb5; padding-bottom: 12px; }
+  h2 { font-size: 1.45em; margin-top: 2.2em; color: #1f3b63; border-left: 5px solid #3b6fb5; padding-left: 12px; }
+  h3 { font-size: 1.15em; margin-top: 1.8em; color: #34507a; }
+  h4 { color: #34507a; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.95em; }
+  th, td { border: 1px solid #d8d4cc; padding: 8px 10px; text-align: left; }
+  th { background: #f3efe7; }
+  blockquote { margin: 14px 0; padding: 10px 16px; background: #f4f7fb; border-left: 4px solid #9db8d9;
+               color: #44505f; font-size: 0.94em; }
+  hr { border: none; border-top: 1px dashed #cfc8bb; margin: 40px 0; }
+  svg { max-width: 100%; height: auto; display: block; margin: 18px auto; }
+  strong { color: #1f3b63; }
+</style>
+</head>
+<body>
+${marked.parse(md)}
+</body>
+</html>`;
+  writeFileSync("SAMPLE_REPORT.html", html, "utf-8");
+
+  console.log(`분량: ${md.length.toLocaleString()}자 (공백 포함)`);
+  console.log("→ SAMPLE_REPORT.md / SAMPLE_REPORT.html 저장 완료 (guardrails 통과)");
 }
 
 main().catch((e) => {

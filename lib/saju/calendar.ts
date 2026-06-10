@@ -79,6 +79,17 @@ export function getSajuMonthExact(
 }
 
 /**
+ * 해당 연도의 연간지(年干支)를 반환한다. (세운 표시용)
+ *
+ * 입춘 경계를 피하기 위해 연중(7월 1일) 기준으로 조회한다.
+ * 특정 시점의 정확한 연주가 필요하면 computeSaju를 사용할 것.
+ */
+export function getYearGanji(year: number): string {
+  const solar = Solar.fromYmd(year, 7, 1);
+  return solar.getLunar().getYearInGanZhiExact() as string;
+}
+
+/**
  * 양력 날짜를 음력으로 변환한다.
  * (사주 月柱에는 사용하지 않음. 음력 표시 목적.)
  */

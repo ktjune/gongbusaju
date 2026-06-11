@@ -477,11 +477,12 @@ describe("computeSaju — 오행·기질 구조", () => {
     expect(Math.abs(sum - 100)).toBeLessThan(1);
   });
 
-  it("기질 점수 6축이 모두 0~100 범위다", () => {
+  it("기질 점수 6축이 모두 전시 대역(35~95) 안에 있다", () => {
+    // 원점수는 구조상 0~50대 — 능력치로 오독되지 않게 +35 시프트 후 35~95 클램프.
     const { traitScores } = sample();
     for (const v of Object.values(traitScores)) {
-      expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThanOrEqual(100);
+      expect(v).toBeGreaterThanOrEqual(35);
+      expect(v).toBeLessThanOrEqual(95);
     }
   });
 

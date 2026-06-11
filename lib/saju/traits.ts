@@ -62,15 +62,27 @@ export function computeTraits(
   const 직관력 =
     elements.수 * 0.7 + godBias("偏印") * 100 * 0.3;
 
-  const clamp = (v: number) =>
-    Math.min(100, Math.max(0, Math.round(v)));
+  /**
+   * 전시 대역 보정 (35~95).
+   *
+   * 원점수 산식(오행%×가중 + 십성비율×가중)은 오행 5축 합 100%·십성 합 100%
+   * 구조라 이론상 0~100이어도 실제로는 0~50대만 나온다. 보정 없이 100점
+   * 척도로 그리면 모든 아이가 "능력 없음"으로 읽히는 표시 왜곡이 생긴다.
+   * 이 수치는 능력 측정이 아니라 성향 강도의 해석 지표이므로,
+   * 원점수의 상대 차이를 보존한 채 +35 시프트 후 35~95로 클램프한다.
+   */
+  const DISPLAY_OFFSET = 35;
+  const DISPLAY_MIN = 35;
+  const DISPLAY_MAX = 95;
+  const toDisplay = (raw: number) =>
+    Math.min(DISPLAY_MAX, Math.max(DISPLAY_MIN, Math.round(raw + DISPLAY_OFFSET)));
 
   return {
-    집중력: clamp(집중력),
-    창의력: clamp(창의력),
-    리더십: clamp(리더십),
-    분석력: clamp(분석력),
-    사교성: clamp(사교성),
-    직관력: clamp(직관력),
+    집중력: toDisplay(집중력),
+    창의력: toDisplay(창의력),
+    리더십: toDisplay(리더십),
+    분석력: toDisplay(분석력),
+    사교성: toDisplay(사교성),
+    직관력: toDisplay(직관력),
   };
 }

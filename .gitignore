@@ -27,6 +27,12 @@ yarn-error.log*
 .env*.local
 .env
 
+# data-pipeline 대용량 산출물 (전국 통학구역 폴리곤 ~76MB)
+# → 프로덕션은 PostGIS 적재. 데모용 서울(zones_sido11)만 커밋.
+/data-pipeline/output/zones.json
+/data-pipeline/output/zones_sido*.json
+!/data-pipeline/output/zones_sido11.json
+
 # vercel
 .vercel
 

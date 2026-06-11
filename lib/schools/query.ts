@@ -37,6 +37,49 @@ export function findSchoolInFixtures(
   return fixtureToRecord(f, requestCoord);
 }
 
+/** 학교명 정규화 — 비교용 (공백 제거, 시·도 접두 무시) */
+function normalizeSchoolName(name: string): string {
+  return name.replace(/\s+/g, "");
+}
+
+/**
+ * 학교명으로 픽스처에서 학교를 찾되, 요청 좌표에 가장 가까운 것을 반환한다.
+ *
+ * 통학구역 표준데이터의 학구ID(Z000…)와 학교위치표준데이터의 학교ID(B000…)는
+ * 체계가 달라 직접 조인이 안 된다(학구도연계정보 필요). 그 전까지는 학교명으로
+ * 잇되, 동명 학교(예: 전국의 '청운초등학교')는 통학구역 안의 좌표에 가장 가까운
+ * 학교가 정답이므로 최근접으로 가린다.
+ *
+ * @returns 매칭 학교 또는 null (정확/부분일치 모두 실패 시 — 거짓 배정 대신 공백)
+ */
+export function findSchoolByNameNearest(
+  schoolName: string,
+  fixtures: SchoolFixture[],
+  requestCoord: Coordinate
+): SchoolRecord | null {
+  const target = normalizeSchoolName(schoolName);
+  if (!target) return null;
+
+  const elementary = fixtures.filter((f) => f.type === "초등학교");
+
+  // 1) 정확 일치
+  let candidates = elementary.filter(
+    (f) => normalizeSchoolName(f.name) === target
+  );
+  // 2) 접두("서울"…) 차이 흡수: 한쪽이 다른 쪽으로 끝나는 경우
+  if (candidates.length === 0) {
+    candidates = elementary.filter((f) => {
+      const n = normalizeSchoolName(f.name);
+      return n.endsWith(target) || target.endsWith(n);
+    });
+  }
+  if (candidates.length === 0) return null;
+
+  return candidates
+    .map((f) => fixtureToRecord(f, requestCoord))
+    .sort((a, b) => a.distanceM - b.distanceM)[0];
+}
+
 /**
  * 픽스처 배열에서 반경 내 학교를 거리순으로 반환한다.
  */

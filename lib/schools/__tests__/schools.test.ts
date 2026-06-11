@@ -257,7 +257,38 @@ describe("getSchoolFacts — 픽스처 모드", () => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// 5. ESLint 경계 규칙 검증 (런타임 테스트 아님, 가이드)
+// 5. findSchoolByNameNearest — 학구ID↔학교ID 체계가 다를 때 이름 매칭
+// ──────────────────────────────────────────────────────────────
+
+describe("findSchoolByNameNearest — 학교명 + 최근접 매칭", () => {
+  // 동명이교(청운초) 2곳 + 다른 학교 — 통학구역 ID와 무관하게 이름으로 매칭
+  const fixtures: SchoolFixture[] = [
+    { schoolId: "B1", name: "청운초등학교", type: "초등학교", address: "서울 종로", lat: 37.585, lng: 126.964, source: "s", asOf: "2026-03-20" },
+    { schoolId: "B2", name: "청운초등학교", type: "초등학교", address: "강원 동해", lat: 37.485, lng: 129.104, source: "s", asOf: "2026-03-20" },
+    { schoolId: "B3", name: "잠원초등학교", type: "초등학교", address: "서울 서초", lat: 37.512, lng: 127.012, source: "s", asOf: "2026-03-20" },
+  ];
+
+  it("동명 학교 중 요청 좌표에 가까운 쪽을 고른다", async () => {
+    const { findSchoolByNameNearest } = await import("../query");
+    const hit = findSchoolByNameNearest("청운초등학교", fixtures, { lat: 37.586, lng: 126.965 });
+    expect(hit?.schoolId).toBe("B1"); // 서울 청운초 (강원 아님)
+  });
+
+  it("'서울' 접두 차이를 흡수해 매칭한다", async () => {
+    const { findSchoolByNameNearest } = await import("../query");
+    const hit = findSchoolByNameNearest("서울잠원초등학교", fixtures, { lat: 37.512, lng: 127.012 });
+    expect(hit?.schoolId).toBe("B3");
+  });
+
+  it("일치하는 학교가 없으면 null (거짓 배정 방지)", async () => {
+    const { findSchoolByNameNearest } = await import("../query");
+    const hit = findSchoolByNameNearest("존재하지않는초등학교", fixtures, { lat: 37.5, lng: 127.0 });
+    expect(hit).toBeNull();
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 6. ESLint 경계 규칙 검증 (런타임 테스트 아님, 가이드)
 // ──────────────────────────────────────────────────────────────
 
 // 이 파일에서 lib/saju 를 import 하면 ESLint 에러 발생.

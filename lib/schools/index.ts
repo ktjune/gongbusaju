@@ -13,6 +13,7 @@ import { geocodeAddress } from "./geocode";
 import { findZoneByPoint, findZoneByPointFromDb, findNearbySchoolsFromDb } from "./zone";
 import {
   findSchoolInFixtures,
+  findSchoolByNameNearest,
   findNearbyInFixtures,
   findSchoolsByIdsFromDb,
 } from "./query";
@@ -90,7 +91,12 @@ async function getSchoolFactsFromFixtures(
 
   let assigned: SchoolFacts["assignedSchool"] | undefined;
   if (zone) {
-    const rec = findSchoolInFixtures(zone.properties.schoolId, schools, coord);
+    // 학구ID(Z…)와 학교ID(B…) 체계가 달라, 학교명+최근접으로 매칭.
+    // (학구도연계정보 적재 시 ID 직접 조인으로 대체 가능)
+    const rec =
+      (zone.properties.schoolName
+        ? findSchoolByNameNearest(zone.properties.schoolName, schools, coord)
+        : null) ?? findSchoolInFixtures(zone.properties.schoolId, schools, coord);
     if (rec) {
       assigned = { ...rec, assignedLabel: ASSIGNED_SCHOOL_LABEL };
     }

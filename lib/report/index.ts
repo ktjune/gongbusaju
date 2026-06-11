@@ -51,10 +51,12 @@ export type ReportInput = {
   /** Premium: 학교 사실 포함 */
   schools?: SchoolFacts;
   tier: "basic" | "premium";
-  /** 세운 나이 표기용 출생 연도 (PII 아님: 연도만) */
+  /** 학령 단계·세운 나이 산출용 출생 연도 */
   birthYear?: number;
-  /** 세운 시작 연도 (기본: 현재 연도 — 테스트·샘플 고정용) */
+  /** 기준 연도 (기본: 현재 연도 — 테스트·샘플 고정용) */
   currentYear?: number;
+  /** 현재 재학 기관명 (보호자 입력 사실 — 코드 표기, LLM 미전달) */
+  currentSchoolName?: string;
 };
 
 export type ReportOutput = {
@@ -88,9 +90,9 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, schools, tier, birthYear, currentYear } = input;
+  const { saju, schools, tier, birthYear, currentYear, currentSchoolName } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
-  const meta = { birthYear, currentYear };
+  const meta = { birthYear, currentYear, currentSchoolName };
 
   // 1. 사실 블록 생성 — 코드만, LLM 없음
   //    Premium + 학교 데이터 있을 때만 사실 블록 포함

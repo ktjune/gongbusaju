@@ -15,6 +15,7 @@
 import type { SajuResult } from "../saju";
 import { getYearGanji } from "../saju";
 import type { PerspectiveBlock, ReportMeta } from "./template";
+import { deriveSchoolStage } from "./stage";
 
 // ──────────────────────────────────────────────────────────────
 // 타입
@@ -35,6 +36,7 @@ export const REQUIRED_PROSE_FIELDS = [
   "studyAreasProse",
   "subjectTendencyProse",
   "parentingProse",
+  "stageProse",
   "daeunProse",
   "annualProse",
 ] as const;
@@ -130,6 +132,8 @@ const FIELD_SPEC_BASIC = `[작성할 산문 — 각 필드는 2~3문단, 공백 
 - studyAreasProse: 집중·암기·이해·표현·협동 5개 학습 영역 각각에 대해 이 아이의 기질이 어떻게 작동하는지. 영역마다 소제목 굵게(**집중** 등) + 1문단씩, 총 5문단.
 - subjectTendencyProse: 오행-학습영역 전통 매핑을 이 아이의 오행 분포에 비추어 풀이. 강한 오행이 가리키는 영역과 옅은 오행 영역의 접근법. 적성 단정 금지, "경향 참고"로 일관.
 - parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.
+- stageProse: [아이 단계] 정보의 현 학령 단계(예: 예비 초등, 초등 3학년)에서 이 아이의 기질을 살리는 법.
+  그 단계의 실제 과업(입학 적응, 첫 시험, 자기주도 전환 등)과 기질을 구체적으로 연결한다. 단계 정보가 없으면 나이 기준으로 작성.
 - daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.
 - annualProse: 입력으로 주어진 향후 3년 세운(연간지) 각각의 기운을 아이의 원국에 비추어 해석. 연도별 1문단씩, 그해의 학습 생활 참고 포인트 포함.`;
 
@@ -145,6 +149,7 @@ const JSON_SHAPE_BASIC = `{
   "studyAreasProse": "...",
   "subjectTendencyProse": "...",
   "parentingProse": "...",
+  "stageProse": "...",
   "daeunProse": "...",
   "annualProse": "..."
 }`;
@@ -157,6 +162,7 @@ const JSON_SHAPE_PREMIUM = `{
   "studyAreasProse": "...",
   "subjectTendencyProse": "...",
   "parentingProse": "...",
+  "stageProse": "...",
   "daeunProse": "...",
   "annualProse": "...",
   "schoolConnectionProse": "..."
@@ -241,6 +247,18 @@ export function buildUserPrompt(
     "[기질 지표 (규칙표 환산값, 참고용)]",
     traitsStr || "(데이터 없음)",
   ];
+
+  // 아이 단계 — 학령 단계·만나이 (stageProse 작성용. 학교명 등 사실은 전달하지 않는다)
+  const baseYear = meta.currentYear ?? new Date().getFullYear();
+  if (meta.birthYear !== undefined) {
+    const stage = deriveSchoolStage(meta.birthYear, baseYear);
+    lines.push(
+      "",
+      "[아이 단계]",
+      `현 단계: ${stage.label} (기준 ${baseYear}년, 만 ${baseYear - meta.birthYear - 1}~${baseYear - meta.birthYear}세)`,
+      `초등 입학: ${stage.elementaryEntryYear}년 3월 / 중학 입학: ${stage.middleEntryYear}년 3월 / 고교 입학: ${stage.highEntryYear}년 3월`
+    );
+  }
 
   // 세운 — 향후 3년 연간지 (annualProse 작성용)
   const fromYear = meta.currentYear ?? new Date().getFullYear();

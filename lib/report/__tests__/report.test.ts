@@ -107,6 +107,9 @@ const samplePerspective = {
   parentingProse:
     "아이가 머뭇거릴 때는 작은 단계로 나눠 주세요. 결과보다 과정을 짚어 칭찬해 주세요. " +
     "하루 일과를 같이 정하면 안정감을 얻는 경향이 있습니다.",
+  stageProse:
+    "지금 단계에서는 짧은 루틴으로 완료 경험을 쌓는 것이 이 아이 기질에 잘 맞는 " +
+    "접근으로 풀이됩니다. 새 환경 적응에는 준비 시간을 넉넉히 주세요.",
   daeunProse:
     "현재 대운(丁卯 구간)은 활동적 에너지가 높아지는 시기로 해석됩니다. " +
     "이 시기에는 다양한 경험을 쌓는 방향이 기질 발현에 도움이 될 수 있습니다.",
@@ -350,6 +353,27 @@ describe("assembleReport — 블록 조립", () => {
     const noHour = { ...sampleSaju, pillars: { ...sampleSaju.pillars, hour: null } };
     const md = assembleReport(noHour, {}, samplePerspective);
     expect(md).toContain("출생 시각 미상");
+  });
+
+  it("birthYear 있으면 학령 단계 섹션 + 진학 타임라인 + 재학 표기", () => {
+    // 2017년생, 기준 2026년 → 초등 입학 2024년 → 3학년
+    const md = assembleReport(sampleSaju, {}, samplePerspective, {
+      birthYear: 2017,
+      currentYear: 2026,
+      currentSchoolName: "테스트초등학교",
+    });
+    expect(md).toContain("지금 우리 아이는 — 초등 3학년");
+    expect(md).toContain("입학·진학 타임라인");
+    expect(md).toContain("중학교 입학 | 2030년 3월");
+    expect(md).toContain("테스트초등학교");
+    expect(md).toContain("보호자 입력 정보");
+    expect(md).toContain("이 단계에서 기질을 살리려면");
+  });
+
+  it("birthYear 없으면 단계 산출 없이 기질 산문만", () => {
+    const md = assembleReport(sampleSaju, {}, samplePerspective);
+    expect(md).not.toContain("입학·진학 타임라인");
+    expect(md).toContain("지금 단계에서 기질을 살리려면");
   });
 });
 

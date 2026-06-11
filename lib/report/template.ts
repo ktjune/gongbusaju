@@ -42,6 +42,7 @@ import {
   traitsRadarChart,
   daeunTimelineChart,
 } from "./charts";
+import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
@@ -94,6 +95,8 @@ export type PerspectiveBlock = {
   subjectTendencyProse: string;
   /** 부모 코칭 — 보호자가 참고할 양육 포인트 */
   parentingProse: string;
+  /** 현 학령 단계 × 기질 결합 해석 산문 ("지금 단계에서 기질을 살리려면") */
+  stageProse: string;
   /** 학령기 대운 흐름 해석 산문 */
   daeunProse: string;
   /** 다가오는 세운(향후 3년) 해석 산문 */
@@ -105,12 +108,17 @@ export type PerspectiveBlock = {
   schoolConnectionProse?: string;
 };
 
-/** 리포트 메타 — 세운 나이 계산 등에 사용 (PII 아님: 연도만) */
+/** 리포트 메타 — 학령 단계·세운 나이 계산 등에 사용 */
 export type ReportMeta = {
-  /** 출생 연도 — 세운 표의 만나이 표기에 사용 */
+  /** 출생 연도 — 학령 단계 산출·세운 표의 만나이 표기에 사용 */
   birthYear?: number;
   /** 세운 시작 연도 (기본: 현재 연도) */
   currentYear?: number;
+  /**
+   * 현재 재학 기관명 (보호자 입력 사실 — 코드가 표기, LLM 미전달).
+   * 예: "청운초등학교", "푸른숲유치원"
+   */
+  currentSchoolName?: string;
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -537,6 +545,33 @@ export function assembleReport(
     title: "부모님을 위한 코칭 포인트",
     body: "## 부모님을 위한 코칭 포인트\n\n" + perspective.parentingProse,
   });
+
+  // ── 지금 우리 아이는 (학령 단계: 데이터 + 정적 가이드 + 관점) ──
+  if (meta.birthYear !== undefined) {
+    const stage = deriveSchoolStage(meta.birthYear, currentYear);
+    const guide = STAGE_GUIDE[stage.key];
+    const schoolLine = meta.currentSchoolName
+      ? `\n\n> 현재 재학: **${meta.currentSchoolName}** (보호자 입력 정보)\n`
+      : "";
+    sections.push({
+      title: `지금 우리 아이는 — ${stage.label}`,
+      body:
+        `## 지금 우리 아이는 — ${stage.label}\n` +
+        schoolLine +
+        `\n### ${guide.title}\n\n` +
+        guide.body +
+        `\n\n### 입학·진학 타임라인\n\n` +
+        buildStageTimeline(stage, meta.birthYear, currentYear) +
+        `\n\n### 이 단계에서 기질을 살리려면\n\n` +
+        perspective.stageProse,
+    });
+  } else {
+    // 출생 연도 미상 — 단계 산출 불가, 기질 결합 산문만
+    sections.push({
+      title: "지금 단계에서 기질을 살리려면",
+      body: "## 지금 단계에서 기질을 살리려면\n\n" + perspective.stageProse,
+    });
+  }
 
   // ── 대운 (도식 + 데이터 + 관점) ──────────────────────────
   sections.push({

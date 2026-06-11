@@ -11,11 +11,15 @@
  */
 
 import { writeFileSync } from "node:fs";
-import { marked } from "marked";
 import { computeSaju } from "../lib/saju";
 import type { SchoolFacts } from "../lib/schools";
-import { generateReport } from "../lib/report";
+import { generateReport, renderReportHtml } from "../lib/report";
 import type { LlmProvider } from "../lib/report";
+
+/** 문장 조각을 이어 붙인다 — 문단 경계(\n\n) 뒤 불필요한 공백 제거 */
+function prose(parts: string[]): string {
+  return parts.join(" ").replace(/\n\n\s+/g, "\n\n").trim();
+}
 
 // ──────────────────────────────────────────────────────────────
 // 1. 사주 실계산 — 2020-09-16 16:43 남 (점신 교차검증 케이스)
@@ -86,7 +90,7 @@ const schools: SchoolFacts = {
 const perspectiveProvider: LlmProvider = {
   async complete() {
     return JSON.stringify({
-      dayMasterProse: [
+      dayMasterProse: prose([
         "이 아이의 일간(日干)은 임수(壬水), 큰 강물입니다. 일간은 사주에서 아이 자신을 나타내는",
         "글자인데, 임수는 시냇물이 아니라 깊고 넓게 흐르는 강의 결로 풀이됩니다. 강물은 소란스럽지",
         "않습니다. 겉으로는 잔잔해 보여도 속에서는 많은 것이 흐르고 있지요. 이 아이도 겉으로 크게",
@@ -96,8 +100,8 @@ const perspectiveProvider: LlmProvider = {
         "거부감 없이 받아들이되, 그것을 자기 속도로 소화해 자기 것으로 만드는 힘이 있습니다.",
         "어린이집이나 유치원에서 무언가를 배워 온 날, 그 자리에서 바로 떠들지 않다가 며칠 뒤 불쑥",
         "정확하게 기억해 말하는 모습이 있다면, 바로 이 임수의 결이 드러난 장면으로 볼 수 있습니다.",
-      ].join(" "),
-      elementsProse: [
+      ]),
+      elementsProse: prose([
         "오행 분포를 보면 금(金) 기운이 38%로 가장 강하고, 수(水)와 토(土)가 각각 25%로 받쳐 주고",
         "있습니다. 금은 가르고 정리하는 기운입니다. 장난감을 종류별로 줄 세우거나, 순서가 어긋나면",
         "불편해하는 모습이 있다면 금 기운의 표현입니다. 그리고 금은 수를 낳는다(金生水)고 보는데,",
@@ -109,8 +113,8 @@ const perspectiveProvider: LlmProvider = {
         "비해 밖으로 꺼내는 힘이 약한 구성이므로, 알고 있는 것을 말로 표현하거나 몸으로 발산하는",
         "활동 — 노래, 율동, 역할놀이, 바깥 놀이 — 을 일상에 의식적으로 곁들여 주시면 기운의 균형에",
         "참고가 될 수 있습니다.",
-      ].join(" "),
-      tenGodsProse: [
+      ]),
+      tenGodsProse: prose([
         "십성(十神)은 일간을 기준으로 나머지 글자들이 아이에게 어떤 역할을 하는지 보여주는",
         "분류입니다. 이 사주에서 가장 두드러지는 것은 인성(印星) 세 개 — 편인(偏印) 둘과 정인(正印)",
         "하나입니다. 인성은 '받아들이고 배우는 힘'입니다. 특히 편인이 강한 아이는 남들이 다 가는",
@@ -121,8 +125,8 @@ const perspectiveProvider: LlmProvider = {
         "모습으로 드러나는 경향이 있습니다. 여기에 겁재(劫财)는 또래와 견주며 자극받는 승부욕을,",
         "상관(伤官)은 이따금 번뜩이는 자기표현 욕구를 더해 줍니다. 정리하면 '깊게 배우고, 스스로",
         "엄격하며, 가끔 반짝 표현하고 싶어 하는' 구조로 풀이됩니다.",
-      ].join(" "),
-      studyStyleProse: [
+      ]),
+      studyStyleProse: prose([
         "이 기질을 종합하면, 이 아이의 공부는 '조용히 쌓아서 단단해지는' 유형으로 해석됩니다.",
         "여럿이 떠들썩하게 경쟁하는 분위기보다, 차분한 공간에서 어른이 차근차근 설명해 주고 아이가",
         "그것을 소화할 시간을 주는 방식이 잘 맞는 경향이 있습니다. 같은 시간, 같은 자리에서 짧게",
@@ -134,8 +138,8 @@ const perspectiveProvider: LlmProvider = {
         "계단은 스스로 오르는 경향이 있습니다. 또 화 기운이 옅어 입으로 꺼내는 연습이 부족해지기",
         "쉬우니, 배운 것을 가족 앞에서 한 줄로 말해 보는 '오늘의 한마디' 같은 작은 장치가 표현",
         "근육을 길러 주는 데 참고가 됩니다.",
-      ].join(" "),
-      studyAreasProse: [
+      ]),
+      studyAreasProse: prose([
         "**집중** — 금·수 기운이 중심인 이 사주에서 가장 믿을 만한 영역입니다. 조용한 공간이",
         "확보되면 또래보다 오래 한 가지에 머무는 경향이 있습니다. 다만 주변이 소란하면 집중의",
         "질이 크게 떨어지는 유형이므로, 공부 자리는 '늘 같은 조용한 자리'로 고정해 주는 것이",
@@ -152,8 +156,8 @@ const perspectiveProvider: LlmProvider = {
         "**협동** — 겁재의 승부욕이 있어 또래 자극을 받지만, 기본 결은 소수와 깊게 어울리는",
         "유형입니다. 대그룹 활동보다 2~3명의 또래와 역할이 분명한 협동 과제에서 힘을 내는",
         "경향이 있습니다.",
-      ].join(" "),
-      subjectTendencyProse: [
+      ]),
+      subjectTendencyProse: prose([
         "이 아이의 오행 분포를 위 표에 비추어 보면, 강한 금(38%)·수(25%) 기운이 전통적으로",
         "수학의 연산·도형, 과학의 분류·실험, 그리고 깊이 읽는 독서와 연결되는 영역을 가리키고",
         "있습니다. 숫자와 규칙처럼 '명확하게 떨어지는 것'을 다룰 때 안정감을 느끼고, 호기심이",
@@ -163,8 +167,8 @@ const perspectiveProvider: LlmProvider = {
         "뜻에 가깝습니다. 잘 만든 것을 보여 주는 전시형 활동부터 시작해 무대형 활동으로 넓혀",
         "가는 순서가 참고가 됩니다. 거듭 말씀드리지만 이 표와 해석은 적성의 단정이 아니라 접근",
         "방식의 참고이며, 실제 적성은 아이의 경험 속에서 발견됩니다.",
-      ].join(" "),
-      parentingProse: [
+      ]),
+      parentingProse: prose([
         "보호자께서 일상에서 참고하실 만한 포인트를 정리합니다.\n\n",
         "첫째, 새로운 활동을 시작할 때는 미리 보여 주세요. 처음 가는 곳, 처음 하는 일에 적응 시간이",
         "필요한 기질이므로, '내일 어디 가서 무엇을 할 거야'라고 하루 전에 그림이나 사진으로 미리",
@@ -177,8 +181,8 @@ const perspectiveProvider: LlmProvider = {
         "합니다.\n\n",
         "넷째, 몸으로 발산하는 시간을 일과에 넣어 주세요. 화 기운을 보완하는 의미에서 하루 한 번은",
         "땀나게 뛰는 시간 — 놀이터, 자전거, 공놀이 — 이 정서 균형에 참고가 됩니다.",
-      ].join(" "),
-      daeunProse: [
+      ]),
+      daeunProse: prose([
         "대운(大運)은 10년 단위로 바뀌는 큰 환경의 흐름입니다. 지금(만 5세)은 첫 대운이 시작되기",
         "전이라 타고난 원국의 기질이 가장 순수하게 드러나는 시기입니다. 위에서 말씀드린 '조용히",
         "받아들이는 결'이 그대로 보이는 구간이므로, 이 시기는 무언가를 많이 시키기보다 좋아하는",
@@ -193,8 +197,8 @@ const perspectiveProvider: LlmProvider = {
         "촛불에 비유되는 정화와 일간과 같은 수 기운이 함께 흐르는 구간으로, 쌓아온 것이 자기만의",
         "방향으로 정리되는 시기로 풀이됩니다. 진로를 좁혀 가는 이 무렵에는 외부 기준보다 아이가",
         "오래 파고들어 온 관심사를 단서로 삼는 것이 참고가 될 수 있습니다.",
-      ].join(" "),
-      annualProse: [
+      ]),
+      annualProse: prose([
         "2026년 병오(丙午)년은 원국에 없던 화 기운이 천간과 지지 양쪽으로 들어오는 해입니다.",
         "안으로 모으던 아이가 평소보다 활달해지고 표현이 늘어나는 흐름으로 해석되는데, 마침",
         "초등 입학을 준비하는 해(만 6세)와 겹칩니다. 이 기운을 살려 발표·무대 경험, 입학 전",
@@ -207,8 +211,8 @@ const perspectiveProvider: LlmProvider = {
         "흐름으로 풀이됩니다. 학교 생활이 익숙해지며 자기 루틴이 생기기 좋은 해이므로, 이때",
         "숙제 시간·독서 시간 같은 평생 가져갈 학습 습관의 틀을 함께 만들어 보시기를 참고로",
         "권합니다.",
-      ].join(" "),
-      schoolConnectionProse: [
+      ]),
+      schoolConnectionProse: prose([
         "금·수 기운이 강하고 인성이 발달한 이 기질은 차분하고 예측 가능한 환경에서 안정감을 얻는",
         "경향이 있습니다. 학교 환경을 살피실 때는 학급 규모와 분위기 — 한 아이에게 눈길이 닿는",
         "정도, 일과의 규칙성 — 를 한 가지 기준으로 참고해 보실 수 있습니다. 자극이 많고 빠르게",
@@ -219,7 +223,7 @@ const perspectiveProvider: LlmProvider = {
         "다만 이는 어디까지나 기질 해석의 관점일 뿐, 어떤 학교가 좋고 나쁘다는 판단이 아닙니다.",
         "통학 거리, 가정의 여건, 아이의 친구 관계 등 여러 요소를 종합해 보호자께서 판단하시기",
         "바랍니다.",
-      ].join(" "),
+      ]),
     });
   },
 };
@@ -234,46 +238,18 @@ async function main() {
     { llmProvider: perspectiveProvider }
   );
 
-  const header = [
-    `# 공부 기질 사주 리포트 (샘플)`,
-    ``,
-    `> 대상: 2020년 9월 16일 16:43 출생 남아 (만 5세) · Premium 샘플`,
-    `> ⚠️ 본 문서는 결과물 미리보기용 샘플입니다. 학교 정보는 샘플 데이터입니다.`,
-    ``,
-  ].join("\n");
-
-  const md = header + "\n" + result.markdown + "\n";
+  // 마크다운 원본 (검수·diff 용)
+  const md = result.markdown + "\n";
   writeFileSync("SAMPLE_REPORT.md", md, "utf-8");
 
-  // HTML 미리보기 — 도식(SVG)·표가 그대로 보이는 더블클릭용 파일.
-  // Phase 5 결과페이지/Phase 6 PDF 변환과 같은 md→HTML 경로의 시제품.
-  const html = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>공부 기질 사주 리포트 (샘플)</title>
-<style>
-  body { font-family: 'Malgun Gothic','Apple SD Gothic Neo',sans-serif; line-height: 1.75;
-         color: #2b2b2b; max-width: 780px; margin: 0 auto; padding: 48px 24px; background: #fffdf9; }
-  h1 { font-size: 1.9em; border-bottom: 3px solid #3b6fb5; padding-bottom: 12px; }
-  h2 { font-size: 1.45em; margin-top: 2.2em; color: #1f3b63; border-left: 5px solid #3b6fb5; padding-left: 12px; }
-  h3 { font-size: 1.15em; margin-top: 1.8em; color: #34507a; }
-  h4 { color: #34507a; }
-  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.95em; }
-  th, td { border: 1px solid #d8d4cc; padding: 8px 10px; text-align: left; }
-  th { background: #f3efe7; }
-  blockquote { margin: 14px 0; padding: 10px 16px; background: #f4f7fb; border-left: 4px solid #9db8d9;
-               color: #44505f; font-size: 0.94em; }
-  hr { border: none; border-top: 1px dashed #cfc8bb; margin: 40px 0; }
-  svg { max-width: 100%; height: auto; display: block; margin: 18px auto; }
-  strong { color: #1f3b63; }
-</style>
-</head>
-<body>
-${marked.parse(md)}
-</body>
-</html>`;
+  // 디자인된 HTML — 웹 결과페이지·카톡 공유·브라우저 인쇄(PDF) 겸용 시제품.
+  // 표지(원국 카드)는 renderReportHtml이 SajuResult에서 직접 생성한다.
+  const html = renderReportHtml(saju, result.markdown, {
+    subjectLabel: "2020년 9월 16일 16:43 출생 · 남아 (만 5세)",
+    tier: "premium",
+    generatedAt: "2026-06-11",
+    sampleNotice: "미리보기용 샘플 — 학교 정보는 샘플 데이터입니다",
+  });
   writeFileSync("SAMPLE_REPORT.html", html, "utf-8");
 
   console.log(`분량: ${md.length.toLocaleString()}자 (공백 포함)`);

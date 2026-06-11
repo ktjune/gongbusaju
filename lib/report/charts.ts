@@ -9,7 +9,7 @@
 import type { SajuResult } from "../saju";
 
 /** 오행 표준 색상 (한국 만세력 관행: 木청·火적·土황·金백·水흑) */
-const WUXING_COLOR: Record<string, string> = {
+export const WUXING_COLOR: Record<string, string> = {
   木: "#3d9a50",
   火: "#d64545",
   土: "#c9a227",

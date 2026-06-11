@@ -39,6 +39,8 @@ export {
   ASSIGNED_SCHOOL_LABEL,
 } from "./template";
 export { checkGuardrails, passesGuardrails } from "./guardrails";
+export { renderReportHtml } from "./html";
+export type { RenderHtmlOptions } from "./html";
 
 // ──────────────────────────────────────────────────────────────
 // 타입

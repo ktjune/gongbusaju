@@ -105,6 +105,16 @@ export function branchMainStem(branch: string): string | null {
   return BRANCH_INFO[branch]?.mainStem ?? null;
 }
 
+/** 천간의 오행 한자를 반환한다. (예: 壬→水) — 리포트 디자인 색상 매핑용 */
+export function stemElement(stem: string): string | null {
+  return STEM_INFO[stem]?.element ?? null;
+}
+
+/** 지지의 오행 한자를 반환한다. (예: 戌→土) — 리포트 디자인 색상 매핑용 */
+export function branchElement(branch: string): string | null {
+  return BRANCH_INFO[branch]?.element ?? null;
+}
+
 /**
  * 4기둥에서 오행 분포(백분율)를 계산한다.
  *

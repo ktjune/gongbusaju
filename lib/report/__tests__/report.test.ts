@@ -22,6 +22,7 @@ import {
   TIME_STANDARD_NOTICE,
   ASSIGNED_SCHOOL_LABEL,
   generateReport,
+  renderReportHtml,
 } from "../index";
 import type { LlmProvider } from "../index";
 
@@ -493,7 +494,52 @@ describe("generateReport — mock LLM 합성 테스트", () => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// 5. 통합 테스트 — 실제 Claude API (키 없으면 skip)
+// 5. renderReportHtml — 디자인 HTML 렌더러
+// ──────────────────────────────────────────────────────────────
+
+describe("renderReportHtml — 디자인 HTML", () => {
+  const md = assembleReport(sampleSaju, {}, samplePerspective);
+
+  it("표지에 원국 4기둥 카드가 들어간다 (일주 강조)", () => {
+    const html = renderReportHtml(sampleSaju, md, { tier: "basic" });
+    expect(html).toContain('class="cover"');
+    expect(html).toContain("pillar-day"); // 일주 강조 카드
+    expect(html).toContain("戊"); // 일간
+    expect(html).toContain("무오"); // 한글 독음
+  });
+
+  it("마크다운 본문이 HTML로 변환된다 (표·제목)", () => {
+    const html = renderReportHtml(sampleSaju, md);
+    expect(html).toContain("<table>");
+    expect(html).toContain("<h2>");
+    expect(html).toContain("타고난 결 — 일간 이야기");
+  });
+
+  it("인쇄(PDF)·모바일 CSS가 포함된다", () => {
+    const html = renderReportHtml(sampleSaju, md);
+    expect(html).toContain("@media print");
+    expect(html).toContain("size: A4");
+    expect(html).toContain("@media (max-width");
+  });
+
+  it("subjectLabel·샘플 표기 옵션이 반영된다", () => {
+    const html = renderReportHtml(sampleSaju, md, {
+      subjectLabel: "테스트 대상",
+      sampleNotice: "샘플입니다",
+    });
+    expect(html).toContain("테스트 대상");
+    expect(html).toContain("샘플입니다");
+  });
+
+  it("시주 null이면 표지 카드에 '시간 모름' 표시", () => {
+    const noHour = { ...sampleSaju, pillars: { ...sampleSaju.pillars, hour: null } };
+    const html = renderReportHtml(noHour, md);
+    expect(html).toContain("시간 모름");
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 6. 통합 테스트 — 실제 Claude API (키 없으면 skip)
 // ──────────────────────────────────────────────────────────────
 
 describe("generateReport — 실제 Claude API 통합 테스트", () => {

@@ -480,8 +480,6 @@ export function assembleReport(
       "## 오행 에너지 분포\n\n" +
       elementsBarChart(saju) +
       "\n\n" +
-      buildElementsSection(saju) +
-      "\n\n" +
       perspective.elementsProse +
       "\n\n### 오행은 서로 돕고 누릅니다 — 상생·상극\n\n" +
       wuxingCycleChart(saju) +
@@ -512,8 +510,7 @@ export function assembleReport(
       perspective.studyStyleProse +
       "\n\n### 기질 지표\n\n" +
       traitsRadarChart(saju) +
-      "\n\n" +
-      buildTraitsSection(saju),
+      "\n\n> 위 수치는 오행·십성 분포를 규칙표로 환산한 **해석 지표**이며, 심리 검사 같은 측정치가 아닙니다.",
   });
 
   // ── 학습 영역 5분야 (관점) ───────────────────────────────

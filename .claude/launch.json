@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sample-report-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3177", "."],
+      "port": 3177
+    }
+  ]
+}

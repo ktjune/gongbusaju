@@ -86,7 +86,9 @@ export class ClaudeLlmProvider implements LlmProvider {
       },
       body: JSON.stringify({
         model: this.model,
-        max_tokens: 8192, // 산문 7개 섹션 — 충분한 출력 길이 확보
+        // 산문 11종(각 400자+, 한국어는 토큰 밀도 높음) — 잘림 방지.
+        // Sonnet 4.6 비스트리밍 권장 상한(~16K, HTTP 타임아웃 안전 범위).
+        max_tokens: 16000,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       }),

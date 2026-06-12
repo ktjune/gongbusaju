@@ -11,9 +11,14 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  // 테스트 파일은 빌드 lint 대상에서 제외
+  // 테스트 파일·생성물은 빌드 lint 대상에서 제외
   {
-    ignores: ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"],
+    ignores: [
+      "**/__tests__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "lib/generated/**", // Prisma 생성 클라이언트
+    ],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {

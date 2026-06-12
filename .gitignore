@@ -37,6 +37,9 @@ yarn-error.log*
 # 저장소 재배포·가공 금지 → git 미추적. 출시 전 data.go.kr 15107734(제1유형)로 교체.
 /data-pipeline/output/schoolinfo_basic*.json
 
+# prisma 생성물 (빌드 시 postinstall로 재생성)
+/lib/generated
+
 # vercel
 .vercel
 

@@ -8,9 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "lunar-javascript": "^1.7.0",
     "next": "15.5.19",
     "pg": "^8.21.0",
@@ -23,10 +27,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.5.1",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "eslint-plugin-import": "^2.31.0",
     "marked": "^18.0.5",
+    "prisma": "^7.8.0",
     "typescript": "^5",
     "vitest": "^3.2.3"
   }

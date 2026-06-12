@@ -158,9 +158,16 @@ export class InMemoryOrderStore implements OrderStore {
 const globalForStore = globalThis as unknown as { __orderStore?: OrderStore };
 
 export function getOrderStore(): OrderStore {
-  // TODO: DATABASE_URL 있으면 PrismaOrderStore 반환 (Supabase 연결 후)
   if (!globalForStore.__orderStore) {
-    globalForStore.__orderStore = new InMemoryOrderStore();
+    // DATABASE_URL 있으면 Supabase(Prisma) 영속화, 없으면 인메모리(개발/데모).
+    // 동적 import로 Prisma 미설정 환경(테스트)에서 generated client 로드를 피한다.
+    if (process.env.DATABASE_URL) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { PrismaOrderStore } = require("./prisma-store") as typeof import("./prisma-store");
+      globalForStore.__orderStore = new PrismaOrderStore();
+    } else {
+      globalForStore.__orderStore = new InMemoryOrderStore();
+    }
   }
   return globalForStore.__orderStore;
 }

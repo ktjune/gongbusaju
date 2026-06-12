@@ -33,6 +33,10 @@ yarn-error.log*
 /data-pipeline/output/zones_sido*.json
 !/data-pipeline/output/zones_sido11.json
 
+# 학교알리미 학교기본정보 = 공공누리 제2유형(변경금지).
+# 저장소 재배포·가공 금지 → git 미추적. 출시 전 data.go.kr 15107734(제1유형)로 교체.
+/data-pipeline/output/schoolinfo_basic*.json
+
 # vercel
 .vercel
 

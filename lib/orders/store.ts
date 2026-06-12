@@ -12,6 +12,7 @@
 
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Order, Subject, Report, OrderStatus } from "./types";
+import { PrismaOrderStore } from "./prisma-store";
 
 export interface OrderStore {
   // ── 주문 ──
@@ -160,14 +161,10 @@ const globalForStore = globalThis as unknown as { __orderStore?: OrderStore };
 export function getOrderStore(): OrderStore {
   if (!globalForStore.__orderStore) {
     // DATABASE_URL 있으면 Supabase(Prisma) 영속화, 없으면 인메모리(개발/데모).
-    // 동적 import로 Prisma 미설정 환경(테스트)에서 generated client 로드를 피한다.
-    if (process.env.DATABASE_URL) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { PrismaOrderStore } = require("./prisma-store") as typeof import("./prisma-store");
-      globalForStore.__orderStore = new PrismaOrderStore();
-    } else {
-      globalForStore.__orderStore = new InMemoryOrderStore();
-    }
+    // 모듈 import는 가벼움 — Prisma 클라이언트는 첫 쿼리 시점에만 생성된다.
+    globalForStore.__orderStore = process.env.DATABASE_URL
+      ? new PrismaOrderStore()
+      : new InMemoryOrderStore();
   }
   return globalForStore.__orderStore;
 }

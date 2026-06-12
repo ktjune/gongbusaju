@@ -25,11 +25,9 @@ let fixtureCache: { schools?: SchoolFixture[]; zones?: ZoneCollection } | null =
 
 function loadFixtures(): { schools?: SchoolFixture[]; zones?: ZoneCollection } {
   if (fixtureCache) return fixtureCache;
-  // DB 모드면 픽스처 불필요
-  if (process.env.DATABASE_URL) {
-    fixtureCache = {};
-    return fixtureCache;
-  }
+  // 학교 사실은 파일 픽스처를 쓴다(PostGIS는 아직 Supabase에 미적재).
+  // 주문 DB(DATABASE_URL)와는 독립 — DATABASE_URL이 있어도 학교는 픽스처 경로.
+  // TODO: 학교 PostGIS를 Supabase에 적재하면 별도 플래그로 DB 경로 전환.
   const dir = path.join(process.cwd(), "data-pipeline", "output");
   const schoolsPath = path.join(dir, "schools.json");
   const zonesPath = path.join(dir, "zones_sido11.json");

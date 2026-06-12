@@ -6,15 +6,17 @@
  * globalThis에 보관한다. 학교 사실 레이어(PostGIS)는 별도 pg 경로를 쓰며 이 클라이언트와 무관.
  */
 
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "./generated/prisma";
 
 const globalForPrisma = globalThis as unknown as { __prisma?: PrismaClient };
 
 export function getPrisma(): PrismaClient {
   if (!globalForPrisma.__prisma) {
-    // Prisma 7 생성 클라이언트는 런타임에 DATABASE_URL(prisma.config.ts datasource.url
-    // 이 참조한 env)을 직접 읽는다. getOrderStore가 DATABASE_URL 있을 때만 생성.
-    globalForPrisma.__prisma = new PrismaClient();
+    // Prisma 7은 드라이버 어댑터가 기본 — pg 어댑터에 연결 문자열을 넘긴다.
+    // getOrderStore가 DATABASE_URL 있을 때만 이 함수를 호출한다.
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    globalForPrisma.__prisma = new PrismaClient({ adapter });
   }
   return globalForPrisma.__prisma;
 }

@@ -14,6 +14,7 @@
     "db:migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "lunar-javascript": "^1.7.0",
     "next": "15.5.19",

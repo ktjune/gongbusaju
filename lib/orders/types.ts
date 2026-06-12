@@ -73,8 +73,10 @@ export type Report = {
   orderId: string;
   /** 결과페이지 접근 토큰 (추측 불가) */
   token: string;
-  /** 최종 마크다운 (assembleReport 출력) */
+  /** 최종 마크다운 (assembleReport 출력 — 검수·재생성 원본) */
   markdown: string;
+  /** 렌더된 디자인 HTML (결과페이지 표시용 캐시) */
+  html: string;
   tier: Tier;
   reviewStatus: "pending" | "approved" | "rejected";
   /** 검수자 메모 (반려 사유 등) */

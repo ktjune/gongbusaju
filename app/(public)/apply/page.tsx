@@ -36,7 +36,7 @@ export default function ApplyPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ orderId: string } | null>(null);
+  const [done, setDone] = useState<{ orderId: string; token: string | null } | null>(null);
 
   const canSubmit =
     birthYear &&
@@ -75,7 +75,19 @@ export default function ApplyPage() {
         setError(data.error ?? "신청에 실패했습니다.");
         return;
       }
-      setDone({ orderId: data.orderId });
+      // 데모: 주문 직후 생성 트리거 (실서비스는 결제 웹훅/큐가 담당)
+      let token: string | null = null;
+      try {
+        const gen = await fetch("/api/generate-trigger", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: data.orderId }),
+        });
+        if (gen.ok) token = (await gen.json()).token ?? null;
+      } catch {
+        /* 생성 실패해도 접수는 완료 — 검수/재시도로 처리 */
+      }
+      setDone({ orderId: data.orderId, token });
     } catch {
       setError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
     } finally {
@@ -96,9 +108,16 @@ export default function ApplyPage() {
               완성되면 입력하신 연락처로 결과 링크를 보내 드립니다.
             </p>
             <p className={styles.hint}>접수번호: {done.orderId}</p>
+            {done.token && (
+              <p style={{ marginTop: 20 }}>
+                <a className={styles.submit} style={{ display: "inline-block", textDecoration: "none", width: "auto", padding: "12px 24px" }} href={`/result/${done.token}?preview=1`}>
+                  리포트 미리보기 (데모)
+                </a>
+              </p>
+            )}
           </div>
           <p className={styles.notice}>
-            * 결제 연동 전 데모입니다. 실제 결제·알림은 준비 중입니다.
+            * 결제 연동 전 데모입니다. 실제로는 전문가 검수 후 결과 링크를 보내 드립니다.
           </p>
         </div>
       </div>

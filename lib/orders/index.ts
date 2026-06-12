@@ -35,6 +35,7 @@ export type {
 export { canTransition, assertTransition, isTerminal } from "./status";
 export type { OrderStore } from "./store";
 export { getOrderStore, InMemoryOrderStore, newReportToken } from "./store";
+export { generateReportForOrder, isGeneratable } from "./generate";
 
 /** SubjectPlain → 암호화된 Subject 필드 (저장 직전 변환) */
 function encryptSubject(

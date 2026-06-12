@@ -41,6 +41,9 @@ export {
 export { checkGuardrails, passesGuardrails } from "./guardrails";
 export { renderReportHtml } from "./html";
 export type { RenderHtmlOptions } from "./html";
+export { buildReportForSubject } from "./pipeline";
+export type { BuildReportSubject, BuildReportOptions, BuiltReport } from "./pipeline";
+export { DemoLlmProvider, buildDemoProse } from "./demo";
 
 // ──────────────────────────────────────────────────────────────
 // 타입

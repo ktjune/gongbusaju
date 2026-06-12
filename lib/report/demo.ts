@@ -1,0 +1,112 @@
+/**
+ * lib/report/demo.ts
+ * 데모용 LLM 목업 — ANTHROPIC_API_KEY 없을 때 폴백.
+ *
+ * 입력 사주(일간·오행 강약·십성)에 맞춰 결정론적으로 산문 11종을 조합한다.
+ * guardrails를 통과하는 안전 문구만 사용한다. 실제 서비스 품질은 Claude API 몫이며,
+ * 이 목업으로 만든 리포트는 결과페이지에 "데모 자동 생성"으로 표기한다.
+ */
+
+import type { SajuResult } from "../saju";
+import { wuxingToHangul, tenGodWithHangul } from "../saju";
+import { STEM_DICT, WUXING_DICT, TENGOD_DICT, TENGOD_KEY_ALIAS } from "./content";
+import type { LlmProvider } from "./generate";
+
+type Ranked = { hanja: string; key: keyof SajuResult["elements"]; pct: number };
+
+function rankElements(saju: SajuResult): Ranked[] {
+  const order: Array<[string, keyof SajuResult["elements"]]> = [
+    ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
+  ];
+  return order
+    .map(([hanja, key]) => ({ hanja, key, pct: Math.round(saju.elements[key]) }))
+    .sort((a, b) => b.pct - a.pct);
+}
+
+function topTenGods(saju: SajuResult): Array<[string, number]> {
+  return Object.entries(saju.tenGods)
+    .map(([k, v]) => [TENGOD_KEY_ALIAS[k] ?? k, v] as [string, number])
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
+}
+
+/** 데모 산문 11종 생성 — 입력 사주 데이터를 문장에 녹인다 */
+export function buildDemoProse(saju: SajuResult): Record<string, string> {
+  const dayStem = saju.pillars.day.charAt(0);
+  const stem = STEM_DICT[dayStem];
+  const ranked = rankElements(saju);
+  const strong = ranked[0];
+  const weak = ranked[ranked.length - 1];
+  const strongInfo = WUXING_DICT[strong.hanja];
+  const weakInfo = WUXING_DICT[weak.hanja];
+  const gods = topTenGods(saju);
+  const topGod = gods[0];
+  const topGodInfo = topGod ? TENGOD_DICT[topGod[0]] : null;
+
+  const D = "(※ 아래는 데모 자동 생성 문구입니다. 실제 서비스는 전문 해석가가 검수한 맞춤 풀이를 제공합니다.)";
+
+  return {
+    dayMasterProse:
+      `이 아이의 일간(日干), 즉 사주에서 아이 자신을 뜻하는 글자는 ${dayStem}(${stem?.hangul ?? ""})입니다. ` +
+      `${stem?.nature ?? ""}에 비유되며, ${stem?.desc ?? "타고난 고유한 결을 지닌 것으로 풀이됩니다."}\n\n` +
+      `일간은 모든 해석의 기준점입니다. 아이를 이해할 때 "어떤 결을 타고났는가"의 출발점으로 참고해 주세요. ${D}`,
+
+    elementsProse:
+      `오행 분포를 보면 ${strong.hanja}(${wuxingToHangul(strong.hanja)}) 기운이 ${strong.pct}%로 가장 두드러집니다. ` +
+      `${strongInfo?.study ?? ""} ${strongInfo?.strong ?? ""}\n\n` +
+      `반대로 ${weak.hanja}(${wuxingToHangul(weak.hanja)}) 기운은 ${weak.pct}%로 옅은 편입니다. ${weakInfo?.weak ?? ""}`,
+
+    tenGodsProse: topGodInfo
+      ? `십성 구조에서는 ${tenGodWithHangul(topGod[0])}이(가) ${topGod[1]}개로 두드러집니다. ` +
+        `${topGodInfo.meaning} ${topGodInfo.study}\n\n` +
+        `십성은 일간과 다른 글자의 관계를 읽는 분류로, 마음이 어디로 향하는지를 보여주는 것으로 풀이됩니다.`
+      : `십성 분포가 비교적 고른 편으로, 특정 성향에 치우치기보다 균형 잡힌 결로 풀이됩니다.`,
+
+    studyStyleProse:
+      `${strongInfo?.keyword ?? "타고난"} 기운이 강한 이 아이는 ${strongInfo?.study ?? "자기만의 방식으로 배우는 경향"}이 있습니다. ` +
+      `이 결을 살릴 수 있는 학습 환경과 리듬을 찾아 주는 것이 도움이 되는 것으로 풀이됩니다.\n\n` +
+      `반면 ${weak.hanja}(${wuxingToHangul(weak.hanja)}) 기운이 옅으므로, 그 부분을 의식적으로 보완하는 활동을 곁들이면 균형 잡힌 발달에 참고가 됩니다.`,
+
+    studyAreasProse:
+      `**집중** 익숙한 환경에서 안정적으로 몰입하는 경향이 있습니다.\n\n` +
+      `**암기** 흥미가 붙은 분야에서 기억력이 잘 발휘되는 것으로 풀이됩니다.\n\n` +
+      `**이해** 충분한 시간이 주어질 때 원리까지 파고드는 경향이 있습니다.\n\n` +
+      `**표현** 준비 시간을 주면 자기 생각을 더 잘 꺼내는 편으로 해석됩니다.\n\n` +
+      `**협동** 역할이 분명한 상황에서 힘을 내는 경향이 있습니다.`,
+
+    subjectTendencyProse:
+      `${strong.hanja}(${wuxingToHangul(strong.hanja)}) 기운이 강한 점은 전통적으로 위 표의 해당 영역과 연결해 보는 관점이 있습니다. ` +
+      `다만 이는 적성의 단정이 아니라 접근 방식의 참고이며, 실제 적성은 아이의 경험과 흥미 속에서 발견됩니다.`,
+
+    parentingProse:
+      `보호자께서 참고하실 만한 점을 정리합니다.\n\n` +
+      `첫째, 아이의 강한 ${strongInfo?.keyword ?? "기질"}을 억누르기보다 살릴 방향을 함께 찾아 주세요.\n\n` +
+      `둘째, 결과보다 시도와 과정을 짚어 칭찬해 주세요.\n\n` +
+      `셋째, 옅은 ${weak.hanja}(${wuxingToHangul(weak.hanja)}) 기운을 보완하는 활동을 일상에 자연스럽게 곁들여 주세요.`,
+
+    stageProse:
+      `지금 단계에서는 아이의 타고난 ${strongInfo?.keyword ?? "결"}을 살리는 작은 성공 경험을 쌓는 것이 ` +
+      `이 기질에 잘 맞는 접근으로 풀이됩니다. 새로운 환경에는 적응할 시간을 넉넉히 주는 것이 참고가 됩니다.`,
+
+    daeunProse:
+      `대운(大運)은 10년 단위로 바뀌는 큰 흐름입니다. 각 시기마다 들어오는 기운이 달라지므로, ` +
+      `위 타임라인의 시기별 분위기를 참고해 아이의 성장 리듬을 길게 바라보시면 도움이 되는 것으로 풀이됩니다. ${D}`,
+
+    annualProse:
+      `다가오는 해들의 세운(그해의 기운)은 위 표와 같습니다. 세운은 그해의 날씨에 비유되며, ` +
+      `타고난 사주(원국)라는 큰 틀 위에서 해마다 변주를 주는 것으로 해석됩니다. 큰 변화를 단정하기보다 참고로 활용해 주세요.`,
+
+    schoolConnectionProse:
+      `${strongInfo?.keyword ?? "타고난"} 기운이 두드러지는 이 아이의 기질은 그에 맞는 환경에서 더 잘 발현되는 경향이 있습니다. ` +
+      `학교 환경을 살피실 때 분위기·규모·프로그램을 한 가지 참고 기준으로 삼아 보실 수 있습니다. ` +
+      `다만 어떤 학교가 좋고 나쁘다는 판단이 아니며, 통학 거리·가정 여건 등 여러 요소를 종합해 보호자께서 판단하시기 바랍니다.`,
+  };
+}
+
+/** 데모 LLM provider — 주어진 사주로 산문을 즉석 생성 (API 불필요) */
+export class DemoLlmProvider implements LlmProvider {
+  constructor(private readonly saju: SajuResult) {}
+  async complete(): Promise<string> {
+    return JSON.stringify(buildDemoProse(this.saju));
+  }
+}

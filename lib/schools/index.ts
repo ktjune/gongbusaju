@@ -21,6 +21,7 @@ import {
 export type { SchoolFacts, SchoolRecord, Coordinate, ZoneCollection, ZoneFeature } from "./types";
 export type { SchoolFixture } from "./query";
 export { pointInGeoJsonGeometry, haversineDistanceM, findZoneByPoint } from "./zone";
+export { geocodeAddress } from "./geocode";
 
 /** getSchoolFacts() 옵션 */
 export type GetSchoolFactsOptions = {

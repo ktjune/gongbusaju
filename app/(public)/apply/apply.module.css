@@ -1,0 +1,208 @@
+.page {
+  --navy: #1f3b63;
+  --navy-soft: #34507a;
+  --gold: #b08c3e;
+  --paper: #faf7f1;
+  --card: #ffffff;
+  --ink: #2c2c30;
+  --ink-soft: #5a5f6a;
+  --line: #e3ddd1;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  line-height: 1.7;
+  word-break: keep-all;
+  padding: 40px 20px 80px;
+}
+
+.sheet {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.badge {
+  display: inline-block;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  font-size: 0.78rem;
+  color: var(--gold);
+  border-top: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  padding: 5px 4px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+  font-size: 1.7rem;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.subtitle {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin: 0 0 28px;
+}
+
+/* 요금제 선택 */
+.tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.tier {
+  text-align: left;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.tierActive {
+  border-color: var(--navy);
+  box-shadow: 0 4px 14px rgba(31, 59, 99, 0.15);
+}
+
+.tierName {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 1.05rem;
+}
+
+.tierDesc {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+.tierPrice {
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+/* 폼 */
+.section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 14px;
+  font-size: 1rem;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--navy-soft);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row > * {
+  flex: 1;
+}
+
+.checkRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.checkRow input {
+  margin-top: 4px;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+.submit {
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  background: #fdecea;
+  border: 1px solid #f5c6c2;
+  color: #a33;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.notice {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* 완료 화면 */
+.done {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 36px 24px;
+  text-align: center;
+}
+
+.doneIcon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+}

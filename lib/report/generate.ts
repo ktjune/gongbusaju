@@ -47,7 +47,24 @@ export const REQUIRED_PROSE_FIELDS = [
  * 테스트: MockLlmProvider.
  */
 export interface LlmProvider {
-  complete(systemPrompt: string, userPrompt: string): Promise<string>;
+  /**
+   * @param jsonSchema 지정 시 구조화 출력(JSON 유효성 보장) 요청. 미지정이면 일반 텍스트.
+   *   목 구현은 무시해도 된다 (하위 호환).
+   */
+  complete(
+    systemPrompt: string,
+    userPrompt: string,
+    jsonSchema?: Record<string, unknown>
+  ): Promise<string>;
+}
+
+/** 산문 필드 JSON 스키마 — 구조화 출력용 (tier별 필수 필드 결정) */
+export function buildProseSchema(tier: "basic" | "premium"): Record<string, unknown> {
+  const fields: string[] = [...REQUIRED_PROSE_FIELDS];
+  if (tier === "premium") fields.push("schoolConnectionProse");
+  const properties: Record<string, unknown> = {};
+  for (const f of fields) properties[f] = { type: "string" };
+  return { type: "object", properties, required: fields, additionalProperties: false };
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -70,11 +87,29 @@ export class ClaudeLlmProvider implements LlmProvider {
     this.model = model;
   }
 
-  async complete(systemPrompt: string, userPrompt: string): Promise<string> {
+  async complete(
+    systemPrompt: string,
+    userPrompt: string,
+    jsonSchema?: Record<string, unknown>
+  ): Promise<string> {
     if (!this.apiKey) {
       throw new Error(
         "ANTHROPIC_API_KEY 없음 — 통합 테스트 환경에서만 실행 가능"
       );
+    }
+
+    // 산문 11종(한국어, 토큰 밀도 높음) → 16K로는 잘린다. 32K로 올리되
+    // 비스트리밍 고(高) max_tokens는 HTTP 타임아웃 위험 → 스트리밍 필수.
+    // 구조화 출력(output_config.format)으로 JSON 유효성을 API가 보장(잘림 외 파싱 실패 차단).
+    const body: Record<string, unknown> = {
+      model: this.model,
+      max_tokens: 32000,
+      stream: true,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+    };
+    if (jsonSchema) {
+      body.output_config = { format: { type: "json_schema", schema: jsonSchema } };
     }
 
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
@@ -84,25 +119,52 @@ export class ClaudeLlmProvider implements LlmProvider {
         "x-api-key": this.apiKey,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model: this.model,
-        // 산문 11종(각 400자+, 한국어는 토큰 밀도 높음) — 잘림 방지.
-        // Sonnet 4.6 비스트리밍 권장 상한(~16K, HTTP 타임아웃 안전 범위).
-        max_tokens: 16000,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
-      }),
+      body: JSON.stringify(body),
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
+    if (!resp.ok || !resp.body) {
+      const errText = await resp.text().catch(() => "");
       throw new Error(`Claude API 오류: ${resp.status} — ${errText}`);
     }
 
-    const data = (await resp.json()) as {
-      content: Array<{ type: string; text: string }>;
-    };
-    return data.content.find((c) => c.type === "text")?.text ?? "";
+    // SSE 스트림 파싱 — content_block_delta의 text_delta를 누적
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let text = "";
+    let stopReason: string | null = null;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        try {
+          const evt = JSON.parse(payload) as {
+            type?: string;
+            delta?: { type?: string; text?: string; stop_reason?: string };
+          };
+          if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+            text += evt.delta.text ?? "";
+          } else if (evt.type === "message_delta" && evt.delta?.stop_reason) {
+            stopReason = evt.delta.stop_reason;
+          }
+        } catch {
+          /* SSE 비-JSON 라인(ping 등) 무시 */
+        }
+      }
+    }
+
+    // max_tokens로 잘렸으면 JSON이 불완전 → 명시적 오류 (조용한 파싱 실패 방지)
+    if (stopReason === "max_tokens") {
+      throw new Error("Claude 응답이 max_tokens로 잘렸습니다 — max_tokens 상향 필요");
+    }
+    return text;
   }
 }
 
@@ -306,7 +368,7 @@ export async function generatePerspective(
     tier === "premium" ? SYSTEM_PROMPT_PREMIUM : SYSTEM_PROMPT_BASIC;
   const userPrompt = buildUserPrompt(saju, tier, meta);
 
-  const raw = await provider.complete(systemPrompt, userPrompt);
+  const raw = await provider.complete(systemPrompt, userPrompt, buildProseSchema(tier));
 
   // JSON 추출 — LLM이 앞뒤로 불필요한 텍스트를 붙일 수 있으므로
   const jsonMatch = raw.match(/\{[\s\S]*\}/);

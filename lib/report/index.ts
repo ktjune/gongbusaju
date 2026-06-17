@@ -35,6 +35,7 @@ export {
   buildTraitsSection,
   buildDaeunSection,
   buildCareerMapSection,
+  buildMajorMapSection,
   TIME_STANDARD_NOTICE,
   INTERPRETATION_NOTICE,
   ASSIGNED_SCHOOL_LABEL,

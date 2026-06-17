@@ -9,7 +9,7 @@
 
 import type { SajuResult } from "../saju";
 import { wuxingToHangul, tenGodWithHangul } from "../saju";
-import { STEM_DICT, WUXING_DICT, TENGOD_DICT, TENGOD_KEY_ALIAS, CAREER_MAP } from "./content";
+import { STEM_DICT, WUXING_DICT, TENGOD_DICT, TENGOD_KEY_ALIAS, CAREER_MAP, MAJOR_MAP } from "./content";
 import type { LlmProvider } from "./generate";
 
 type Ranked = { hanja: string; key: keyof SajuResult["elements"]; pct: number };
@@ -93,6 +93,16 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
       })() +
       `이는 어디까지나 기질에 비추어 본 **경향 참고**이며, 특정 직업을 권하거나 단정하는 것이 아닙니다. ` +
       `진로는 아이의 흥미·노력·시대 변화 속에서 스스로 만들어 가는 것입니다.`,
+
+    majorProse:
+      ((): string => {
+        const m = MAJOR_MAP.find((x) => x.element === strong.hanja);
+        const majors = m?.majors ?? "다양한 전공";
+        return `대학 전공·학문 계열로는 **${majors}** 계열이 이 아이의 ${strongInfo?.keyword ?? "타고난"} 기운과 잘 맞는 경향으로 참고됩니다.\n\n`;
+      })() +
+      `기질로 보면 차분히 깊게 파고드는 환경에서 힘을 내는 편이라, 급격한 변화보다 충분히 탐구할 수 있는 진학 환경이 잘 어울리는 경향입니다. ` +
+      `국내 진학과 해외 유학 어느 쪽이든, 관심 전공이 또렷해진 뒤 **그 분야가 강한 국내외 대학을 직접 살펴보시기**를 권합니다.\n\n` +
+      `특정 대학을 사주로 정하는 것이 아니며, 진학·유학 방향은 아이의 흥미와 가정 여건을 함께 고려해 결정하실 참고자료입니다.`,
 
     parentingProse:
       `보호자께서 참고하실 만한 점을 정리합니다.\n\n` +

@@ -35,8 +35,11 @@ export const REQUIRED_PROSE_FIELDS = [
   "studyStyleProse",
   "studyAreasProse",
   "subjectTendencyProse",
+  "aptitudeProse",
+  "careerProse",
   "parentingProse",
   "stageProse",
+  "eduStagesProse",
   "daeunProse",
   "annualProse",
 ] as const;
@@ -195,9 +198,12 @@ const FIELD_SPEC_BASIC = `[작성할 산문 — 각 필드는 2~3문단, 공백 
 - studyStyleProse: 위 기질을 종합한 공부 스타일 — 잘 맞는 학습 방식·환경·시간 운용, 흔들리기 쉬운 지점과 대처.
 - studyAreasProse: 집중·암기·이해·표현·협동 5개 학습 영역 각각에 대해 이 아이의 기질이 어떻게 작동하는지. 영역마다 소제목 굵게(**집중** 등) + 1문단씩, 총 5문단.
 - subjectTendencyProse: 오행-학습영역 전통 매핑을 이 아이의 오행 분포에 비추어 풀이. 강한 오행이 가리키는 영역과 옅은 오행 영역의 접근법. 적성 단정 금지, "경향 참고"로 일관.
+- aptitudeProse: 이 아이가 기질적으로 뛰어난/잘 발현되는 강점 분야(예: 분석·탐구형, 표현·창작형, 사람·관계형 등)를 구체적으로 짚고, 그 강점을 어떤 방향으로 북돋아 주면 좋을지 제안. 약점은 "보완하며 함께 키울 결"로 따뜻하게. 단정("천재")이 아니라 "~한 강점 경향".
+- careerProse: 위 강점·오행·십성을 종합해, 기질 관점에서 잘 맞을 수 있는 **직업/진로 분야를 2~3개 군으로 복수 제시**(각 군에 왜 맞는지 한 줄). 반드시 "참고 경향"으로, 단정·확정 금지. "진로는 아이의 흥미·노력·시대 변화 속에서 만들어진다"는 안내로 마무리.
 - parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.
 - stageProse: [아이 단계] 정보의 현 학령 단계(예: 예비 초등, 초등 3학년)에서 이 아이의 기질을 살리는 법.
   그 단계의 실제 과업(입학 적응, 첫 시험, 자기주도 전환 등)과 기질을 구체적으로 연결한다. 단계 정보가 없으면 나이 기준으로 작성.
+- eduStagesProse: **초등 / 중등 / 고등** 세 단계 각각에서 이 아이가 무엇을 챙기고 어떻게 접근하면 좋을지. 단계마다 소제목 굵게(**초등**, **중등**, **고등**) + 1문단씩, 총 3문단. 단계별로 부모의 역할·학습 초점이 어떻게 달라지는지 이 아이 기질에 맞춰 구체적으로.
 - daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.
 - annualProse: 입력으로 주어진 향후 3년 세운(연간지) 각각의 기운을 아이의 원국에 비추어 해석. 연도별 1문단씩, 그해의 학습 생활 참고 포인트 포함.`;
 
@@ -212,8 +218,11 @@ const JSON_SHAPE_BASIC = `{
   "studyStyleProse": "...",
   "studyAreasProse": "...",
   "subjectTendencyProse": "...",
+  "aptitudeProse": "...",
+  "careerProse": "...",
   "parentingProse": "...",
   "stageProse": "...",
+  "eduStagesProse": "...",
   "daeunProse": "...",
   "annualProse": "..."
 }`;
@@ -225,8 +234,11 @@ const JSON_SHAPE_PREMIUM = `{
   "studyStyleProse": "...",
   "studyAreasProse": "...",
   "subjectTendencyProse": "...",
+  "aptitudeProse": "...",
+  "careerProse": "...",
   "parentingProse": "...",
   "stageProse": "...",
+  "eduStagesProse": "...",
   "daeunProse": "...",
   "annualProse": "...",
   "schoolConnectionProse": "..."

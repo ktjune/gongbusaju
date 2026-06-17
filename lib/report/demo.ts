@@ -9,7 +9,7 @@
 
 import type { SajuResult } from "../saju";
 import { wuxingToHangul, tenGodWithHangul } from "../saju";
-import { STEM_DICT, WUXING_DICT, TENGOD_DICT, TENGOD_KEY_ALIAS } from "./content";
+import { STEM_DICT, WUXING_DICT, TENGOD_DICT, TENGOD_KEY_ALIAS, CAREER_MAP } from "./content";
 import type { LlmProvider } from "./generate";
 
 type Ranked = { hanja: string; key: keyof SajuResult["elements"]; pct: number };
@@ -78,6 +78,22 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
       `${strong.hanja}(${wuxingToHangul(strong.hanja)}) 기운이 강한 점은 전통적으로 위 표의 해당 영역과 연결해 보는 관점이 있습니다. ` +
       `다만 이는 적성의 단정이 아니라 접근 방식의 참고이며, 실제 적성은 아이의 경험과 흥미 속에서 발견됩니다.`,
 
+    aptitudeProse:
+      `이 아이는 **${strongInfo?.keyword ?? "타고난"} 기운이 두드러져, 그와 맞닿은 분야에서 강점이 잘 드러나는 경향**이 있습니다. ` +
+      `${strongInfo?.study ?? "자기 결에 맞는 활동에서 몰입이 깊어집니다."}\n\n` +
+      `이런 강점은 억지로 다른 틀에 맞추기보다, 아이가 흥미를 보이는 지점을 한 걸음 더 깊이 파고들도록 북돋아 줄 때 가장 잘 자랍니다. ` +
+      `옅은 ${weak.hanja}(${wuxingToHangul(weak.hanja)}) 영역은 약점이라기보다 천천히 함께 키워 갈 결로 보아 주세요.`,
+
+    careerProse:
+      `기질 관점에서 잘 맞을 수 있는 직업 분야를 참고로 짚어 봅니다.\n\n` +
+      ((): string => {
+        const m = CAREER_MAP.find((c) => c.element === strong.hanja);
+        const fields = m?.fields ?? "다양한 분야";
+        return `**${strong.hanja}(${wuxingToHangul(strong.hanja)}) 계열** — ${fields}. ${m?.trait ?? ""}\n\n`;
+      })() +
+      `이는 어디까지나 기질에 비추어 본 **경향 참고**이며, 특정 직업을 권하거나 단정하는 것이 아닙니다. ` +
+      `진로는 아이의 흥미·노력·시대 변화 속에서 스스로 만들어 가는 것입니다.`,
+
     parentingProse:
       `보호자께서 참고하실 만한 점을 정리합니다.\n\n` +
       `첫째, 아이의 강한 ${strongInfo?.keyword ?? "기질"}을 억누르기보다 살릴 방향을 함께 찾아 주세요.\n\n` +
@@ -87,6 +103,12 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
     stageProse:
       `지금 단계에서는 아이의 타고난 ${strongInfo?.keyword ?? "결"}을 살리는 작은 성공 경험을 쌓는 것이 ` +
       `이 기질에 잘 맞는 접근으로 풀이됩니다. 새로운 환경에는 적응할 시간을 넉넉히 주는 것이 참고가 됩니다.`,
+
+    eduStagesProse:
+      `**초등** — 성적보다 "공부는 매일 하는 것"이라는 습관과, 좋아하는 것을 깊게 파 보는 경험이 중요한 시기입니다. ` +
+      `이 아이의 ${strongInfo?.keyword ?? "타고난"} 기운을 살린 활동으로 자신감을 먼저 쌓아 주세요.\n\n` +
+      `**중등** — 첫 지필고사와 내신이 시작됩니다. 결과보다 '계획-실행-복기'의 틀을 익히게 돕고, 자유학기 활동을 기질과 연결해 진로를 탐색해 보기 좋은 시기입니다.\n\n` +
+      `**고등** — 학습 전략의 비중이 가장 커집니다. 이 아이에게 맞는 공부 방식을 아는 것이 학습량만큼 중요하며, 오래 흥미를 둔 분야를 단서로 진로를 좁혀 가는 것이 참고가 됩니다.`,
 
     daeunProse:
       `대운(大運)은 10년 단위로 바뀌는 큰 흐름입니다. 각 시기마다 들어오는 기운이 달라지므로, ` +

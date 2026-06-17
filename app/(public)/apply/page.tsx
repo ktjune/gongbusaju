@@ -14,7 +14,11 @@ import styles from "./apply.module.css";
 
 type Tier = "basic" | "premium";
 
-const YEARS = Array.from({ length: 25 }, (_, i) => new Date().getFullYear() - i);
+const FIRST_YEAR = 1980;
+const YEARS = Array.from(
+  { length: new Date().getFullYear() - FIRST_YEAR + 1 },
+  (_, i) => new Date().getFullYear() - i
+);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const HOURS = Array.from({ length: 24 }, (_, i) => i);

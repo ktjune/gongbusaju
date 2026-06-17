@@ -33,6 +33,8 @@ import {
   TENGOD_KEY_ALIAS,
   SUBJECT_MAP,
   SUBJECT_MAP_NOTICE,
+  CAREER_MAP,
+  CAREER_MAP_NOTICE,
   FAQ,
   GLOSSARY,
 } from "./content";
@@ -93,10 +95,16 @@ export type PerspectiveBlock = {
   studyAreasProse: string;
   /** 과목 경향 — 오행 관점 매핑 표에 대한 이 아이 기준 해석 */
   subjectTendencyProse: string;
+  /** 강점 분야 + 진로 방향 — 뛰어난 기질 영역과 북돋울 방향 */
+  aptitudeProse: string;
+  /** 직업군 경향 — 기질에 맞는 직업/진로 분야 복수 제시 (참고) */
+  careerProse: string;
   /** 부모 코칭 — 보호자가 참고할 양육 포인트 */
   parentingProse: string;
   /** 현 학령 단계 × 기질 결합 해석 산문 ("지금 단계에서 기질을 살리려면") */
   stageProse: string;
+  /** 초·중·고 단계별 로드맵 — 각 단계 챙길 것·접근법 */
+  eduStagesProse: string;
   /** 학령기 대운 흐름 해석 산문 */
   daeunProse: string;
   /** 다가오는 세운(향후 3년) 해석 산문 */
@@ -330,6 +338,28 @@ export function buildSubjectMapSection(saju: SajuResult): string {
   ].join("\n");
 }
 
+/** 직업군 경향 매핑 표 — 전통 오행 관점 + 이 아이의 강한 오행 표시 */
+export function buildCareerMapSection(saju: SajuResult): string {
+  const pctOf: Record<string, number> = {
+    木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
+    金: saju.elements.금, 水: saju.elements.수,
+  };
+
+  const rows = CAREER_MAP.map((m) => {
+    const pct = Math.round(pctOf[m.element] ?? 0);
+    const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
+    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.fields} | ${mark} |`;
+  });
+
+  return [
+    `| 오행 | 전통적으로 연결해 보는 직업 분야 | 이 아이 |`,
+    `|---|---|---|`,
+    ...rows,
+    ``,
+    `> ${CAREER_MAP_NOTICE}`,
+  ].join("\n");
+}
+
 /** 대운 시작 나이 구간 → 학령기 라벨 */
 function schoolStageLabel(startAge: number): string {
   const endAge = startAge + 9;
@@ -540,6 +570,24 @@ export function assembleReport(
       perspective.subjectTendencyProse,
   });
 
+  // ── 강점 분야 · 진로 방향 (관점) ─────────────────────────
+  sections.push({
+    title: "강점 분야와 진로 방향",
+    body:
+      "## 강점 분야와 진로 방향\n\n" +
+      perspective.aptitudeProse,
+  });
+
+  // ── 직업군 경향 (데이터 + 관점) ──────────────────────────
+  sections.push({
+    title: "직업군 경향 참고",
+    body:
+      "## 직업군 경향 참고\n\n" +
+      buildCareerMapSection(saju) +
+      "\n\n" +
+      perspective.careerProse,
+  });
+
   // ── 부모 코칭 (관점) ─────────────────────────────────────
   sections.push({
     title: "부모님을 위한 코칭 포인트",
@@ -572,6 +620,15 @@ export function assembleReport(
       body: "## 지금 단계에서 기질을 살리려면\n\n" + perspective.stageProse,
     });
   }
+
+  // ── 초·중·고 단계별 로드맵 (관점) ────────────────────────
+  sections.push({
+    title: "초·중·고 단계별 로드맵",
+    body:
+      "## 초·중·고 단계별 로드맵\n\n" +
+      "학령 단계마다 부모의 역할과 학습 초점은 달라집니다. 이 아이 기질에 맞춘 단계별 안내입니다.\n\n" +
+      perspective.eduStagesProse,
+  });
 
   // ── 대운 (도식 + 데이터 + 관점) ──────────────────────────
   sections.push({

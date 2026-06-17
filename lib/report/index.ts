@@ -34,6 +34,7 @@ export {
   buildTenGodsSection,
   buildTraitsSection,
   buildDaeunSection,
+  buildCareerMapSection,
   TIME_STANDARD_NOTICE,
   INTERPRETATION_NOTICE,
   ASSIGNED_SCHOOL_LABEL,

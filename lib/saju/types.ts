@@ -45,6 +45,12 @@ export type SajuResult = {
   daeun: DaeunStep[];
   /** 레이더 6축 — 해석 지표, 측정치 아님 */
   traitScores: Record<string, number>;
+  /**
+   * 한국 서머타임(1987·1988년) 보정 적용 여부.
+   * true이면 입력 시각에서 -60분 보정 후 계산됨.
+   * 리포트에서 "출생 증명서 시각이 서머타임 기준인지 확인 권장" 안내에 사용.
+   */
+  dstApplied: boolean;
 };
 
 export type SajuInput = {

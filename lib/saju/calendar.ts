@@ -128,15 +128,54 @@ export function solarFromLunar(
 }
 
 /**
+ * 한국 서머타임(DST) 보정.
+ *
+ * 출생연도 1980 이상에서 해당하는 기간:
+ *   1987-05-10 02:00 ~ 1987-10-11 03:00  (시계: KST+1 = UTC+10)
+ *   1988-05-08 02:00 ~ 1988-10-09 03:00  (시계: KST+1 = UTC+10)
+ *
+ * 이 기간 중 출생증명서에 기재된 "로컬 시각"은 실제 KST보다 1시간 앞선다.
+ * 사주 계산에는 KST 기준 시각이 필요하므로 -60분 보정이 필요하다.
+ *
+ * @param year  양력 년
+ * @param month 양력 월 (1-12)
+ * @param day   양력 일
+ * @param hour  시 (0-23) — DST 전환 경계 시각 처리를 위해 필요
+ * @returns { isDst: boolean; correctionMinutes: number }
+ *          isDst = true면 correctionMinutes = -60
+ */
+export function getKoreanDstCorrection(
+  year: number,
+  month: number,
+  day: number,
+  hour: number
+): { isDst: boolean; correctionMinutes: number } {
+  // DST 구간 [시작 포함, 종료 미포함] — (year, month, day, hour) 4-tuple
+  const DST_PERIODS: Array<{
+    start: [number, number, number, number];
+    end: [number, number, number, number];
+  }> = [
+    { start: [1987, 5, 10, 2], end: [1987, 10, 11, 3] },
+    { start: [1988, 5, 8, 2], end: [1988, 10, 9, 3] },
+  ];
+
+  const ts = new Date(year, month - 1, day, hour).getTime();
+  for (const { start, end } of DST_PERIODS) {
+    const startTs = new Date(start[0], start[1] - 1, start[2], start[3]).getTime();
+    const endTs = new Date(end[0], end[1] - 1, end[2], end[3]).getTime();
+    if (ts >= startTs && ts < endTs) {
+      return { isDst: true, correctionMinutes: -60 };
+    }
+  }
+  return { isDst: false, correctionMinutes: 0 };
+}
+
+/**
  * 진태양시(眞太陽時) 보정 분(minutes)
  *
  * 한국 표준시(KST)는 동경 135° 기준.
  * 임의의 경도에 대한 보정값을 계산한다.
  * 공식: (출생지 경도 - 135) × 4분/도
- *
- * TODO [서머타임]: 한국 서머타임 적용 연도(1948~1960, 1987~1988 등)에 대한
- * 보정값은 확정되지 않았습니다. 해당 연도 출생자는 반드시 사용자가 실제
- * 시간을 확인해야 합니다.
  *
  * @param longitude 출생지 동경 (기본값: 서울 126.97)
  * @returns 분 단위 보정값 (음수 = 빼기)

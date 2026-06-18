@@ -27,7 +27,7 @@
 
 import { Solar } from "lunar-javascript";
 import type { SajuInput, SajuResult } from "./types";
-import { applyTrueSolarTime, toJieqiBasis } from "./calendar";
+import { applyTrueSolarTime, toJieqiBasis, getKoreanDstCorrection } from "./calendar";
 import { computeElements, computeTenGods } from "./elements";
 import { computeDaeun } from "./daeun";
 import { computeTraits } from "./traits";
@@ -67,8 +67,19 @@ export function computeSaju(input: SajuInput): SajuResult {
 
   const hasTime = birthHour !== undefined;
   // 시간 모름 시 정오 임시값 (時柱에 미사용. 자정 0:00을 쓰면 자시 경계로 日柱가 흔들림)
-  const hour = hasTime ? birthHour! : 12;
-  const minute = hasTime ? birthMinute : 0;
+  let hour = hasTime ? birthHour! : 12;
+  let minute = hasTime ? birthMinute : 0;
+
+  // 서머타임 보정: 1987·1988년 출생자 중 DST 기간이면 입력 로컬 시각 → KST (-60분)
+  // 보정 후 hour/minute을 KST 기준으로 재계산 (이후 longitude 보정에 사용)
+  const { isDst, correctionMinutes: dstMinutes } = getKoreanDstCorrection(
+    birthYear, birthMonth, birthDay, hour
+  );
+  if (isDst) {
+    const shifted = new Date(birthYear, birthMonth - 1, birthDay, hour, minute + dstMinutes, 0);
+    hour = shifted.getHours();
+    minute = shifted.getMinutes();
+  }
 
   // 1. 연주·월주·대운용 EightChar — 절기 비교 기준 (KST → CST 어댑터)
   const ecJieqi = eightCharOf(
@@ -101,5 +112,5 @@ export function computeSaju(input: SajuInput): SajuResult {
   // 7. 기질 점수 (레이더 6축, 해석 지표)
   const traitScores = computeTraits(elements, tenGods);
 
-  return { pillars, elements, tenGods, daeun, traitScores };
+  return { pillars, elements, tenGods, daeun, traitScores, dstApplied: isDst };
 }

@@ -40,6 +40,7 @@ const sampleSaju: SajuResult = {
     { age: 28, startMonths: 6, ganji: "己巳" },
   ],
   traitScores: { 집중력: 70, 창의성: 60, 사교성: 50, 리더십: 65, 인내력: 75, 직관력: 55 },
+  dstApplied: false,
 };
 
 const sampleSchools: SchoolFacts = {

@@ -21,6 +21,7 @@ import {
   getTrueSolarTimeOffsetMinutes,
   applyTrueSolarTime,
   LONGITUDE_CORRECTION_MINUTES,
+  getKoreanDstCorrection,
 } from "../calendar";
 import { computeSaju } from "../pillars";
 
@@ -507,5 +508,132 @@ describe("computeSaju — 오행·기질 구조", () => {
     for (let i = 1; i < daeun.length; i++) {
       expect(daeun[i].age).toBeGreaterThan(daeun[i - 1].age);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 12. 한국 서머타임(DST) 보정 — getKoreanDstCorrection
+//
+// 실제 DST 기간:
+//   1987-05-10 02:00 ~ 1987-10-11 03:00 (KST+1 = UTC+10)
+//   1988-05-08 02:00 ~ 1988-10-09 03:00 (KST+1 = UTC+10)
+// ---------------------------------------------------------------------------
+
+describe("getKoreanDstCorrection — DST 구간 판정", () => {
+  it("DST 기간 안(1987-07-15 12:00) → isDst: true, correctionMinutes: -60", () => {
+    const r = getKoreanDstCorrection(1987, 7, 15, 12);
+    expect(r.isDst).toBe(true);
+    expect(r.correctionMinutes).toBe(-60);
+  });
+
+  it("DST 기간 안(1988-09-01 08:00) → isDst: true", () => {
+    expect(getKoreanDstCorrection(1988, 9, 1, 8).isDst).toBe(true);
+  });
+
+  it("1987 DST 시작 이전(1987-05-10 01:59) → isDst: false", () => {
+    expect(getKoreanDstCorrection(1987, 5, 10, 1).isDst).toBe(false);
+  });
+
+  it("1987 DST 시작 시각(1987-05-10 02:00) → isDst: true", () => {
+    expect(getKoreanDstCorrection(1987, 5, 10, 2).isDst).toBe(true);
+  });
+
+  it("1987 DST 종료 시각(1987-10-11 03:00) → isDst: false (종료 미포함)", () => {
+    expect(getKoreanDstCorrection(1987, 10, 11, 3).isDst).toBe(false);
+  });
+
+  it("1988 DST 종료 이전(1988-10-09 02:59) → isDst: true", () => {
+    expect(getKoreanDstCorrection(1988, 10, 9, 2).isDst).toBe(true);
+  });
+
+  it("1988 DST 종료 시각(1988-10-09 03:00) → isDst: false", () => {
+    expect(getKoreanDstCorrection(1988, 10, 9, 3).isDst).toBe(false);
+  });
+
+  it("DST 외 연도(1990-07-15 12:00) → isDst: false", () => {
+    expect(getKoreanDstCorrection(1990, 7, 15, 12).isDst).toBe(false);
+  });
+
+  it("DST 외 연도(2024-08-01 12:00) → isDst: false", () => {
+    expect(getKoreanDstCorrection(2024, 8, 1, 12).isDst).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. DST 보정이 computeSaju에 적용되는지 확인
+// ---------------------------------------------------------------------------
+
+describe("computeSaju — 서머타임(DST) 보정 플래그 및 시각 보정", () => {
+  it("1987년 DST 기간 출생 → dstApplied: true", () => {
+    const r = computeSaju({
+      birthYear: 1987,
+      birthMonth: 7,
+      birthDay: 15,
+      birthHour: 12,
+      birthMinute: 0,
+      gender: "male",
+    });
+    expect(r.dstApplied).toBe(true);
+  });
+
+  it("1988년 DST 기간 출생 → dstApplied: true", () => {
+    const r = computeSaju({
+      birthYear: 1988,
+      birthMonth: 9,
+      birthDay: 1,
+      birthHour: 10,
+      birthMinute: 0,
+      gender: "female",
+    });
+    expect(r.dstApplied).toBe(true);
+  });
+
+  it("DST 외 출생 → dstApplied: false", () => {
+    const r = computeSaju({
+      birthYear: 1990,
+      birthMonth: 7,
+      birthDay: 15,
+      birthHour: 12,
+      birthMinute: 0,
+      gender: "male",
+    });
+    expect(r.dstApplied).toBe(false);
+  });
+
+  it("시간 모름이어도 DST 기간이면 dstApplied: true (정오 기준 판정)", () => {
+    // 시간 모름 → 정오(12:00) 임시값. 1987년 여름 정오 = DST 기간
+    const r = computeSaju({
+      birthYear: 1987,
+      birthMonth: 7,
+      birthDay: 15,
+      gender: "male",
+    });
+    expect(r.dstApplied).toBe(true);
+  });
+
+  it("DST 적용 시각과 -60분 KST 시각의 기둥이 일치한다 (DST 보정 효과)", () => {
+    // 1987-08-15 12:00 (DST 적용 → 내부적으로 11:00 KST로 보정)
+    // 1987-08-15 11:00 (DST 없는 11:00, 서머타임 없는 연도라면 동일 결과여야 함)
+    // 비교는 1990년 동일 날짜·시각으로 DST 없이 11:00 입력과 비교
+    // 동일 기둥이 나오면 보정이 올바르게 작동하는 것
+    const withDst = computeSaju({
+      birthYear: 1987,
+      birthMonth: 8,
+      birthDay: 15,
+      birthHour: 12, // DST: 12:00 로컬 → 11:00 KST로 보정됨
+      birthMinute: 0,
+      gender: "male",
+    });
+    const withoutDst = computeSaju({
+      birthYear: 1987,
+      birthMonth: 8,
+      birthDay: 15,
+      birthHour: 11, // 같은 KST 11:00, DST 미적용
+      birthMinute: 0,
+      gender: "male",
+    });
+    // DST 보정이 제대로 적용되면 12:00(DST)과 11:00(비보정)의 일주·시주가 일치해야 한다
+    expect(withDst.pillars.day).toBe(withoutDst.pillars.day);
+    expect(withDst.pillars.hour).toBe(withoutDst.pillars.hour);
   });
 });

@@ -62,13 +62,20 @@ export interface LlmProvider {
   ): Promise<string>;
 }
 
-/** 산문 필드 JSON 스키마 — 구조화 출력용 (tier별 필수 필드 결정) */
+/** 산문 필드 JSON 스키마 — 단일 호출용 (그룹 병렬화에는 buildGroupSchema를 사용) */
 export function buildProseSchema(tier: "basic" | "premium"): Record<string, unknown> {
   const fields: string[] = [...REQUIRED_PROSE_FIELDS];
   if (tier === "premium") fields.push("schoolConnectionProse");
   const properties: Record<string, unknown> = {};
   for (const f of fields) properties[f] = { type: "string" };
   return { type: "object", properties, required: fields, additionalProperties: false };
+}
+
+/** 그룹 단위 JSON 스키마 — 병렬 호출용 */
+function buildGroupSchema(fields: readonly string[]): Record<string, unknown> {
+  const properties: Record<string, unknown> = {};
+  for (const f of fields) properties[f] = { type: "string" };
+  return { type: "object", properties, required: [...fields], additionalProperties: false };
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -192,88 +199,148 @@ const WRITING_STYLE = `[문체 — 가독성 우선]
 - 각 산문은 추상적 칭찬이 아니라 "일상·공부 장면에서 어떻게 드러나는지"를 구체적 예시로 보여준다.
 - 아이의 나이(대운 데이터의 만나이)에 맞는 생활 장면을 사용한다.`;
 
-const FIELD_SPEC_BASIC = `[작성할 산문 — 각 필드는 2~3문단, 공백 포함 400자 이상]
-- dayMasterProse: 일간(日干)이 뜻하는 아이의 타고난 본질·결. 일간 글자의 자연 상징(예: 壬=큰 물)으로 시작해 일상 모습으로 연결.
-- elementsProse: 오행 분포에서 강한 기운과 약한(없는) 기운이 공부·생활에서 드러나는 방식. 약한 기운은 "보완 활동" 제안으로 마무리.
-- tenGodsProse: 두드러진 십성 구조가 뜻하는 마음의 습관(배우는 방식·욕구·절제). 십성 명칭은 한글 병기.
-- studyStyleProse: 위 기질을 종합한 공부 스타일 — 잘 맞는 학습 방식·환경·시간 운용, 흔들리기 쉬운 지점과 대처.
-- studyAreasProse: 집중·암기·이해·표현·협동 5개 학습 영역 각각에 대해 이 아이의 기질이 어떻게 작동하는지. 영역마다 소제목 굵게(**집중** 등) + 1문단씩, 총 5문단.
-- subjectTendencyProse: 오행-학습영역 전통 매핑을 이 아이의 오행 분포에 비추어 풀이. 강한 오행이 가리키는 영역과 옅은 오행 영역의 접근법. 적성 단정 금지, "경향 참고"로 일관.
-- aptitudeProse: 이 아이가 기질적으로 뛰어난/잘 발현되는 강점 분야(예: 분석·탐구형, 표현·창작형, 사람·관계형 등)를 구체적으로 짚고, 그 강점을 어떤 방향으로 북돋아 주면 좋을지 제안. 약점은 "보완하며 함께 키울 결"로 따뜻하게. 단정("천재")이 아니라 "~한 강점 경향".
-- careerProse: 위 강점·오행·십성을 종합해, 기질 관점에서 잘 맞을 수 있는 **직업/진로 분야를 2~3개 군으로 복수 제시**(각 군에 왜 맞는지 한 줄). 반드시 "참고 경향"으로, 단정·확정 금지. "진로는 아이의 흥미·노력·시대 변화 속에서 만들어진다"는 안내로 마무리.
-- majorProse: 잘 맞을 수 있는 **대학 전공·학문 계열을 2~3개 복수 제시**(각 계열에 왜 맞는지 한 줄)하고, 이 아이 기질이 국내 진학·해외 유학 중 어떤 환경과 잘 맞는 경향인지 참고로 덧붙인다. **특정 대학명을 사주로 단정하지 말 것** — "관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 탐색하라"는 안내로 마무리. 모두 "참고 경향".
-- parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.
-- stageProse: [아이 단계] 정보의 현 학령 단계(예: 예비 초등, 초등 3학년)에서 이 아이의 기질을 살리는 법.
-  그 단계의 실제 과업(입학 적응, 첫 시험, 자기주도 전환 등)과 기질을 구체적으로 연결한다. 단계 정보가 없으면 나이 기준으로 작성.
-- eduStagesProse: **초등 / 중등 / 고등** 세 단계 각각에서 이 아이가 무엇을 챙기고 어떻게 접근하면 좋을지. 단계마다 소제목 굵게(**초등**, **중등**, **고등**) + 1문단씩, 총 3문단. 단계별로 부모의 역할·학습 초점이 어떻게 달라지는지 이 아이 기질에 맞춰 구체적으로.
-- daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.
-- annualProse: 입력으로 주어진 향후 3년 세운(연간지) 각각의 기운을 아이의 원국에 비추어 해석. 연도별 1문단씩, 그해의 학습 생활 참고 포인트 포함.`;
+// ──────────────────────────────────────────────────────────────
+// 필드 스펙 (필드별로 분리 — 그룹 병렬화에 사용)
+// ──────────────────────────────────────────────────────────────
 
-const FIELD_SPEC_PREMIUM_EXTRA = `- schoolConnectionProse: 이 아이의 기질에서 학교 '환경'을 고를 때 참고할 만한 경향 (300자 이상).
-  절대 금지: 학교명·주소·순위·진학률 등 사실 정보. 순수 기질·성향 관점만 작성.
-  마지막은 "여러 요소를 종합해 보호자께서 판단"하라는 안내로 마무리.`;
+const SPEC_HEADER = `[작성할 산문 — 각 필드는 2~3문단, 공백 포함 400자 이상]`;
 
-const JSON_SHAPE_BASIC = `{
-  "dayMasterProse": "...",
-  "elementsProse": "...",
-  "tenGodsProse": "...",
-  "studyStyleProse": "...",
-  "studyAreasProse": "...",
-  "subjectTendencyProse": "...",
-  "aptitudeProse": "...",
-  "careerProse": "...",
-  "majorProse": "...",
-  "parentingProse": "...",
-  "stageProse": "...",
-  "eduStagesProse": "...",
-  "daeunProse": "...",
-  "annualProse": "..."
-}`;
+const FIELD_SPECS: Record<string, string> = {
+  dayMasterProse:
+    `- dayMasterProse: 일간(日干)이 뜻하는 아이의 타고난 본질·결. 일간 글자의 자연 상징(예: 壬=큰 물)으로 시작해 일상 모습으로 연결.`,
+  elementsProse:
+    `- elementsProse: 오행 분포에서 강한 기운과 약한(없는) 기운이 공부·생활에서 드러나는 방식. 약한 기운은 "보완 활동" 제안으로 마무리.`,
+  tenGodsProse:
+    `- tenGodsProse: 두드러진 십성 구조가 뜻하는 마음의 습관(배우는 방식·욕구·절제). 십성 명칭은 한글 병기.`,
+  studyStyleProse:
+    `- studyStyleProse: 위 기질을 종합한 공부 스타일 — 잘 맞는 학습 방식·환경·시간 운용, 흔들리기 쉬운 지점과 대처.`,
+  studyAreasProse:
+    `- studyAreasProse: 집중·암기·이해·표현·협동 5개 학습 영역 각각에 대해 이 아이의 기질이 어떻게 작동하는지. 영역마다 소제목 굵게(**집중** 등) + 1문단씩, 총 5문단.`,
+  subjectTendencyProse:
+    `- subjectTendencyProse: 오행-학습영역 전통 매핑을 이 아이의 오행 분포에 비추어 풀이. 강한 오행이 가리키는 영역과 옅은 오행 영역의 접근법. 적성 단정 금지, "경향 참고"로 일관.`,
+  aptitudeProse:
+    `- aptitudeProse: 이 아이가 기질적으로 뛰어난/잘 발현되는 강점 분야(예: 분석·탐구형, 표현·창작형, 사람·관계형 등)를 구체적으로 짚고, 그 강점을 어떤 방향으로 북돋아 주면 좋을지 제안. 약점은 "보완하며 함께 키울 결"로 따뜻하게. 단정("천재")이 아니라 "~한 강점 경향".`,
+  careerProse:
+    `- careerProse: 위 강점·오행·십성을 종합해, 기질 관점에서 잘 맞을 수 있는 **직업/진로 분야를 2~3개 군으로 복수 제시**(각 군에 왜 맞는지 한 줄). 반드시 "참고 경향"으로, 단정·확정 금지. "진로는 아이의 흥미·노력·시대 변화 속에서 만들어진다"는 안내로 마무리.`,
+  majorProse:
+    `- majorProse: 잘 맞을 수 있는 **대학 전공·학문 계열을 2~3개 복수 제시**(각 계열에 왜 맞는지 한 줄)하고, 이 아이 기질이 국내 진학·해외 유학 중 어떤 환경과 잘 맞는 경향인지 참고로 덧붙인다. **특정 대학명을 사주로 단정하지 말 것** — "관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 탐색하라"는 안내로 마무리. 모두 "참고 경향".`,
+  parentingProse:
+    `- parentingProse: 보호자가 참고할 코칭 포인트. "이럴 때는 ~해 주세요" 형식의 실천 항목 3가지 이상 포함.`,
+  stageProse:
+    `- stageProse: [아이 단계] 정보의 현 학령 단계(예: 예비 초등, 초등 3학년)에서 이 아이의 기질을 살리는 법.\n  그 단계의 실제 과업(입학 적응, 첫 시험, 자기주도 전환 등)과 기질을 구체적으로 연결한다. 단계 정보가 없으면 나이 기준으로 작성.`,
+  eduStagesProse:
+    `- eduStagesProse: **초등 / 중등 / 고등** 세 단계 각각에서 이 아이가 무엇을 챙기고 어떻게 접근하면 좋을지. 단계마다 소제목 굵게(**초등**, **중등**, **고등**) + 1문단씩, 총 3문단. 단계별로 부모의 역할·학습 초점이 어떻게 달라지는지 이 아이 기질에 맞춰 구체적으로.`,
+  daeunProse:
+    `- daeunProse: 학령기 대운 흐름 — 각 대운 구간(초등·중등·고등 시기)이 공부 여정에서 어떤 분위기로 해석되는지, 시기별 참고 포인트.`,
+  annualProse:
+    `- annualProse: 입력으로 주어진 향후 3년 세운(연간지) 각각의 기운을 아이의 원국에 비추어 해석. 연도별 1문단씩, 그해의 학습 생활 참고 포인트 포함.`,
+  schoolConnectionProse:
+    `- schoolConnectionProse: 이 아이의 기질에서 학교 '환경'을 고를 때 참고할 만한 경향 (300자 이상).\n  절대 금지: 학교명·주소·순위·진학률 등 사실 정보. 순수 기질·성향 관점만 작성.\n  마지막은 "여러 요소를 종합해 보호자께서 판단"하라는 안내로 마무리.`,
+};
 
-const JSON_SHAPE_PREMIUM = `{
-  "dayMasterProse": "...",
-  "elementsProse": "...",
-  "tenGodsProse": "...",
-  "studyStyleProse": "...",
-  "studyAreasProse": "...",
-  "subjectTendencyProse": "...",
-  "aptitudeProse": "...",
-  "careerProse": "...",
-  "majorProse": "...",
-  "parentingProse": "...",
-  "stageProse": "...",
-  "eduStagesProse": "...",
-  "daeunProse": "...",
-  "annualProse": "...",
-  "schoolConnectionProse": "..."
-}`;
+// ──────────────────────────────────────────────────────────────
+// 병렬 생성용 필드 그룹 정의
+//
+// 단일 API 호출(전체 14필드, ~174s) → 4그룹 병렬 호출(각 ~35-45s)
+// 그룹은 입출력 토큰 균형을 고려해 설계.
+// ──────────────────────────────────────────────────────────────
 
-/** Basic 시스템 프롬프트 — 사주 해석 산문 6종 */
-const SYSTEM_PROMPT_BASIC = `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
-주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.
+type FieldGroupDef = {
+  readonly name: string;
+  readonly fields: readonly string[];
+};
+
+const FIELD_GROUPS_BASIC: readonly FieldGroupDef[] = [
+  {
+    name: "core",
+    fields: ["dayMasterProse", "elementsProse", "tenGodsProse", "studyStyleProse"],
+  },
+  {
+    name: "learning",
+    fields: ["studyAreasProse", "subjectTendencyProse"],
+  },
+  {
+    name: "career",
+    fields: ["aptitudeProse", "careerProse", "majorProse", "parentingProse"],
+  },
+  {
+    name: "roadmap",
+    fields: ["stageProse", "eduStagesProse", "daeunProse", "annualProse"],
+  },
+];
+
+const FIELD_GROUPS_PREMIUM: readonly FieldGroupDef[] = [
+  ...FIELD_GROUPS_BASIC.slice(0, 3),
+  {
+    name: "roadmap",
+    fields: ["stageProse", "eduStagesProse", "daeunProse", "annualProse"],
+  },
+  {
+    name: "school",
+    fields: ["schoolConnectionProse"],
+  },
+];
+
+/** 그룹 전용 시스템 프롬프트 빌더 */
+function buildGroupSystemPrompt(group: FieldGroupDef, isPremium: boolean): string {
+  const fieldSpecLines = group.fields.map((f) => FIELD_SPECS[f] ?? "").join("\n");
+  const jsonShape = `{\n${group.fields.map((f) => `  "${f}": "..."`).join(",\n")}\n}`;
+  const premiumNote =
+    isPremium && group.name === "school"
+      ? "\n이 리포트는 Premium 요금제입니다. 학교 환경 선택 기질 관점 산문을 작성합니다."
+      : "";
+
+  return `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
+주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.${premiumNote}
 
 ${FORBIDDEN_RULES}
 
 ${WRITING_STYLE}
 
-${FIELD_SPEC_BASIC}
+${SPEC_HEADER}
+${fieldSpecLines}
 
 반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
-${JSON_SHAPE_BASIC}`;
+${jsonShape}`;
+}
 
-/** Premium 시스템 프롬프트 — + 학교 선택 기질 관점 */
-const SYSTEM_PROMPT_PREMIUM = `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
-주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.
+/** 그룹 하나를 생성하고 Partial<LlmPerspective> 반환 */
+async function generateGroup(
+  group: FieldGroupDef,
+  isPremium: boolean,
+  userPrompt: string,
+  provider: LlmProvider
+): Promise<Partial<LlmPerspective>> {
+  const systemPrompt = buildGroupSystemPrompt(group, isPremium);
+  const schema = buildGroupSchema(group.fields);
+  const raw = await provider.complete(systemPrompt, userPrompt, schema);
 
-${FORBIDDEN_RULES}
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error(
+      `[그룹:${group.name}] LLM 응답이 JSON 형식이 아닙니다: "${raw.slice(0, 200)}"`
+    );
+  }
 
-${WRITING_STYLE}
+  let parsed: Partial<LlmPerspective>;
+  try {
+    parsed = JSON.parse(jsonMatch[0]) as Partial<LlmPerspective>;
+  } catch {
+    throw new Error(
+      `[그룹:${group.name}] LLM 응답 JSON 파싱 실패: "${jsonMatch[0].slice(0, 200)}"`
+    );
+  }
 
-${FIELD_SPEC_BASIC}
-${FIELD_SPEC_PREMIUM_EXTRA}
+  // 그룹 내 필수 필드 검증
+  for (const field of group.fields) {
+    const val = (parsed as Record<string, string | undefined>)[field];
+    if (!val?.trim()) {
+      throw new Error(`[그룹:${group.name}] LLM 응답에 ${field} 누락`);
+    }
+  }
 
-반드시 아래 JSON 형식으로만 응답한다. JSON 외 다른 텍스트를 포함하지 않는다:
-${JSON_SHAPE_PREMIUM}`;
+  return parsed;
+}
 
 // ──────────────────────────────────────────────────────────────
 // 사용자 프롬프트 빌더
@@ -371,8 +438,11 @@ export function buildUserPrompt(
 /**
  * LLM을 호출해 관점 블록(해석 산문)을 생성한다.
  *
+ * 4개(premium 5개) 필드 그룹을 병렬로 호출해 단일 호출 대비 ~4배 빠르게 생성한다.
+ * (단일 호출 ~174s → 병렬 ~40-50s, Vercel 60s 함수 한계 내)
+ *
  * 학교 사실은 이 함수 범위 밖 — template.ts(코드)가 별도 삽입.
- * LLM 응답이 JSON 아니거나 필수 필드 누락이면 에러.
+ * 어느 그룹이라도 실패하면 전체 에러로 propagate.
  */
 export async function generatePerspective(
   saju: SajuResult,
@@ -380,36 +450,27 @@ export async function generatePerspective(
   provider: LlmProvider,
   meta: ReportMeta = {}
 ): Promise<LlmPerspective> {
-  const systemPrompt =
-    tier === "premium" ? SYSTEM_PROMPT_PREMIUM : SYSTEM_PROMPT_BASIC;
+  const isPremium = tier === "premium";
+  const groups = isPremium ? FIELD_GROUPS_PREMIUM : FIELD_GROUPS_BASIC;
   const userPrompt = buildUserPrompt(saju, tier, meta);
 
-  const raw = await provider.complete(systemPrompt, userPrompt, buildProseSchema(tier));
+  // 모든 그룹을 동시에 호출 — Promise.all은 하나라도 reject되면 전체 reject
+  const partials = await Promise.all(
+    groups.map((group) => generateGroup(group, isPremium, userPrompt, provider))
+  );
 
-  // JSON 추출 — LLM이 앞뒤로 불필요한 텍스트를 붙일 수 있으므로
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error(
-      `LLM 응답이 JSON 형식이 아닙니다: "${raw.slice(0, 200)}"`
-    );
-  }
+  // 그룹 결과 병합
+  const merged = Object.assign({}, ...partials) as LlmPerspective;
 
-  let parsed: LlmPerspective;
-  try {
-    parsed = JSON.parse(jsonMatch[0]) as LlmPerspective;
-  } catch {
-    throw new Error(`LLM 응답 JSON 파싱 실패: "${jsonMatch[0].slice(0, 200)}"`);
-  }
-
-  // 필수 필드 검증
+  // 최종 필수 필드 검증 (각 그룹 내 검증 후 병합 결과 재확인)
   for (const field of REQUIRED_PROSE_FIELDS) {
-    if (!parsed[field]?.trim()) {
-      throw new Error(`LLM 응답에 ${field} 누락`);
+    if (!merged[field]?.trim()) {
+      throw new Error(`LLM 병렬 생성 후 ${field} 누락`);
     }
   }
-  if (tier === "premium" && !parsed.schoolConnectionProse?.trim()) {
-    throw new Error("LLM Premium 응답에 schoolConnectionProse 누락");
+  if (isPremium && !merged.schoolConnectionProse?.trim()) {
+    throw new Error("LLM Premium 병렬 생성 후 schoolConnectionProse 누락");
   }
 
-  return parsed;
+  return merged;
 }

@@ -20,6 +20,20 @@ export const metadata: Metadata = {
   title: "공부사주 — 우리 아이의 타고난 공부 결",
   description:
     "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 사주 리포트. 사주 해석과 공공데이터를 분리해 단정이 아닌 참고로 전합니다.",
+  openGraph: {
+    title: "공부사주 — 우리 아이의 타고난 공부 결",
+    description:
+      "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 사주 리포트.",
+    type: "website",
+    locale: "ko_KR",
+    siteName: "공부사주",
+  },
+  twitter: {
+    card: "summary",
+    title: "공부사주 — 우리 아이의 타고난 공부 결",
+    description:
+      "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 사주 리포트.",
+  },
 };
 
 export default function RootLayout({

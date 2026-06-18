@@ -9,6 +9,7 @@
 import { getOrderStore } from "./store";
 import { transitionOrder } from "./index";
 import type { Report } from "./types";
+import { sendResultLink, buildResultUrl } from "../notify";
 
 /** 리포트를 승인하고 주문을 발행 상태로 전이한다. */
 export async function approveReport(reportId: string): Promise<Report> {
@@ -21,6 +22,20 @@ export async function approveReport(reportId: string): Promise<Report> {
     reviewNote: null,
   });
   await transitionOrder(report.orderId, "published");
+
+  // 승인 후 보호자에게 결과 링크 발송 (실패해도 메인 플로우 무관)
+  const order = await store.getOrder(report.orderId);
+  if (order) {
+    sendResultLink({
+      orderId: order.id,
+      resultUrl: buildResultUrl(report.token),
+      contactEmail: order.contactEmail,
+      contactPhone: order.contactPhone,
+    }).catch((err) => {
+      console.error("[notify] 발송 중 오류:", err);
+    });
+  }
+
   return updated;
 }
 

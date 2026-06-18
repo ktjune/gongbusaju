@@ -20,6 +20,12 @@ export type SchoolRecord = {
   lat: number;
   lng: number;
   distanceM: number;       // 요청 좌표까지 거리(미터)
+  /**
+   * 고교유형 (고등학교만 해당)
+   * "일반고등학교" | "자율고등학교" | "특수목적고등학교" | "특성화고등학교"
+   * 출처: 학교알리미 기본정보 API (공공데이터 제1유형)
+   */
+  highSchoolType?: string;
   admissionStats?: Record<string, unknown>; // TODO: 학교알리미 연동 후 채움
   /** 공공데이터 출처 (데이터셋 ID 또는 URL) */
   source: string;

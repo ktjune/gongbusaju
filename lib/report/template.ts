@@ -472,12 +472,17 @@ export function buildFactBlock(schools: SchoolFacts): FactBlock {
   if (schools.assignedSchool) {
     const s = schools.assignedSchool;
     const distKm = (Math.round(s.distanceM / 100) / 10).toFixed(1);
+    const typeRows =
+      s.type === "고등학교" && s.highSchoolType
+        ? [`| 고교유형 | ${s.highSchoolType} |`]
+        : [];
     assignedSchoolSection = [
       `**${s.name}** (${s.type})`,
       ``,
       `| 항목 | 내용 |`,
       `|---|---|`,
       `| 라벨 | ${s.assignedLabel} |`,
+      ...typeRows,
       `| 통학거리 | 약 ${distKm}km |`,
       `| 주소 | ${s.address} |`,
       `| 출처 | ${schools.source} |`,
@@ -487,9 +492,25 @@ export function buildFactBlock(schools: SchoolFacts): FactBlock {
 
   // ── 반경 2km 이내 학교군 ─────────────────────────────────
   if (schools.cluster.length > 0) {
+    // 고교유형이 있는 학교가 하나라도 있으면 컬럼 추가
+    const hasHighSchoolType = schools.cluster.some(
+      (s: SchoolRecord) => s.type === "고등학교" && s.highSchoolType
+    );
+
+    const header = hasHighSchoolType
+      ? `| 학교명 | 종류 | 고교유형 | 통학거리 |`
+      : `| 학교명 | 종류 | 통학거리 |`;
+    const separator = hasHighSchoolType
+      ? `|---|---|---|---|`
+      : `|---|---|---|`;
+
     const rows = schools.cluster
       .map((s: SchoolRecord) => {
         const distKm = (Math.round(s.distanceM / 100) / 10).toFixed(1);
+        if (hasHighSchoolType) {
+          const ht = s.highSchoolType ?? (s.type === "고등학교" ? "—" : "");
+          return `| ${s.name} | ${s.type} | ${ht} | 약 ${distKm}km |`;
+        }
         return `| ${s.name} | ${s.type} | 약 ${distKm}km |`;
       })
       .join("\n");
@@ -497,8 +518,8 @@ export function buildFactBlock(schools: SchoolFacts): FactBlock {
     clusterSection = [
       `### 반경 2km 이내 학교`,
       ``,
-      `| 학교명 | 종류 | 통학거리 |`,
-      `|---|---|---|`,
+      header,
+      separator,
       rows,
       ``,
       `출처: ${schools.source} | 기준일: ${schools.asOf}`,

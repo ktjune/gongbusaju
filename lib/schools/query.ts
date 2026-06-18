@@ -12,7 +12,7 @@ import { haversineDistanceM } from "./zone";
 // 픽스처 기반 조회 (개발·테스트 — DB 불필요)
 // ──────────────────────────────────────────────────────────────
 
-/** 픽스처 데이터 형식 (sample_schools.json 와 동일) */
+/** 픽스처 데이터 형식 (schools.json 와 동일) */
 export type SchoolFixture = {
   schoolId: string;
   name: string;
@@ -20,6 +20,7 @@ export type SchoolFixture = {
   address: string;
   lat: number;
   lng: number;
+  highSchoolType?: string;
   source: string;
   asOf: string;
 };
@@ -108,6 +109,7 @@ function fixtureToRecord(
     distanceM: Math.round(
       haversineDistanceM(requestCoord, { lat: f.lat, lng: f.lng })
     ),
+    ...(f.highSchoolType ? { highSchoolType: f.highSchoolType } : {}),
     source: f.source,
     asOf: f.asOf,
   };

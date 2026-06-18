@@ -1,6 +1,8 @@
 /**
  * app/not-found.tsx — 커스텀 404 페이지
  */
+import Link from "next/link";
+
 export default function NotFound() {
   return (
     <div
@@ -31,7 +33,7 @@ export default function NotFound() {
           <br />
           리포트 링크는 발행 시 발급된 고유 주소입니다.
         </p>
-        <a
+        <Link
           href="/"
           style={{
             display: "inline-block",
@@ -45,7 +47,7 @@ export default function NotFound() {
           }}
         >
           홈으로
-        </a>
+        </Link>
       </div>
     </div>
   );

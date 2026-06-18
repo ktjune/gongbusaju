@@ -20,8 +20,16 @@ type Item = {
   createdAt: string;
 };
 
+type OrderItem = {
+  id: string;
+  tier: string;
+  status: string;
+  createdAt: string;
+};
+
 export default function AdminPage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [regenOrders, setRegenOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -29,9 +37,12 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/reports");
-      const data = await res.json();
-      setItems(data.items ?? []);
+      const [rep, ord] = await Promise.all([
+        fetch("/api/admin/reports").then((r) => r.json()),
+        fetch("/api/admin/orders").then((r) => r.json()),
+      ]);
+      setItems(rep.items ?? []);
+      setRegenOrders(ord.items ?? []);
     } finally {
       setLoading(false);
     }
@@ -40,6 +51,27 @@ export default function AdminPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function regenerate(orderId: string) {
+    setBusy(orderId);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/generate-trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg(`오류: ${data.error}`);
+      } else {
+        setMsg(`재생성 완료 — 검수 대기로 이동됨`);
+        await load();
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function review(reportId: string, action: "approve" | "reject") {
     let note = "";
@@ -132,6 +164,53 @@ export default function AdminPage() {
             </tbody>
           </table>
         )}
+
+        <h2 style={S.section}>재생성 대기</h2>
+        <p style={S.sub}>반려됨·생성 오류 {regenOrders.length}건</p>
+        {!loading && regenOrders.length === 0 ? (
+          <div style={S.empty}>재생성 대기 중인 주문이 없습니다.</div>
+        ) : (
+          !loading && (
+            <table style={S.table}>
+              <thead>
+                <tr>
+                  <th style={S.th}>요금제</th>
+                  <th style={S.th}>상태</th>
+                  <th style={S.th}>접수</th>
+                  <th style={S.th}>재생성</th>
+                </tr>
+              </thead>
+              <tbody>
+                {regenOrders.map((ord) => (
+                  <tr key={ord.id}>
+                    <td style={S.td}>
+                      <span style={ord.tier === "premium" ? S.chipP : S.chipB}>
+                        {ord.tier}
+                      </span>
+                    </td>
+                    <td style={S.td}>
+                      <span style={ord.status === "rejected" ? S.statusRej : S.statusFail}>
+                        {ord.status === "rejected" ? "반려됨" : "생성 오류"}
+                      </span>
+                    </td>
+                    <td style={S.td}>
+                      {new Date(ord.createdAt).toLocaleString("ko-KR")}
+                    </td>
+                    <td style={S.td}>
+                      <button
+                        style={S.approve}
+                        disabled={busy === ord.id}
+                        onClick={() => regenerate(ord.id)}
+                      >
+                        {busy === ord.id ? "처리 중…" : "재생성"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        )}
       </div>
     </div>
   );
@@ -218,5 +297,24 @@ const S: Record<string, React.CSSProperties> = {
     padding: "7px 14px",
     cursor: "pointer",
     fontSize: "0.85rem",
+  },
+  section: {
+    color: "#1f3b63",
+    fontSize: "1.2rem",
+    margin: "36px 0 6px",
+  },
+  statusRej: {
+    background: "#fdf0ee",
+    color: "#a33",
+    borderRadius: 12,
+    padding: "2px 10px",
+    fontSize: "0.8rem",
+  },
+  statusFail: {
+    background: "#fff8ec",
+    color: "#9a6200",
+    borderRadius: 12,
+    padding: "2px 10px",
+    fontSize: "0.8rem",
   },
 };

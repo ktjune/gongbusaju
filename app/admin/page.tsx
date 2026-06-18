@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * /admin — 검수 큐 (Phase 5d)
+ * /admin — 검수 큐
  *
  * 검수 대기(pending) 리포트 목록 → 미리보기 → 승인/반려.
  * 승인 시 결과페이지 공개(published), 반려 시 재생성 대상(rejected).
  *
- * [경고] 데모용 무인증. 프로덕션은 운영자 인증을 반드시 앞단에 둘 것.
+ * 인증: middleware.ts — HTTP Basic Auth (ADMIN_PASSWORD env var)
  */
 
 import { useEffect, useState, useCallback } from "react";
@@ -72,7 +72,7 @@ export default function AdminPage() {
       <div style={S.sheet}>
         <h1 style={S.title}>검수 큐</h1>
         <p style={S.sub}>
-          검수 대기 {items.length}건 · 데모 무인증 (운영 배포 전 인증 필수)
+          검수 대기 {items.length}건
         </p>
         {msg && <div style={S.msg}>{msg}</div>}
 

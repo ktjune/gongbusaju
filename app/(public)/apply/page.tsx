@@ -198,6 +198,12 @@ export default function ApplyPage() {
               <input type="checkbox" checked={timeUnknown} onChange={(e) => setTimeUnknown(e.target.checked)} />
               <span>출생 시각을 모릅니다 (시주를 제외하고 풀이합니다)</span>
             </label>
+            {(birthYear === "1987" || birthYear === "1988") && (
+              <p className={styles.hint} style={{ marginTop: 8, color: "#7a5c1e" }}>
+                ⓘ 1987·1988년은 서머타임(5~10월 시계 +1시간) 적용 연도입니다.
+                출생증명서의 시각이 당시 시계 기준이면 그대로 입력하세요 — 해당 기간이면 자동 보정됩니다.
+              </p>
+            )}
           </div>
 
           <div className={styles.field}>

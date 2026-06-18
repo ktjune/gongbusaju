@@ -1,8 +1,8 @@
 /**
  * GET /api/admin/reports — 검수 대기 리포트 목록
  *
- * [경고] 데모용 무인증. 리포트 본문은 자녀 PII 파생물이므로,
- * 프로덕션에서는 반드시 운영자 인증(세션/IP 제한)을 앞단에 둘 것.
+ * 인증: middleware.ts — HTTP Basic Auth (ADMIN_PASSWORD env var)
+ * 리포트 본문은 자녀 PII 파생물이므로 middleware 인증 없이는 응답하지 않는다.
  */
 
 import { listPendingReports } from "@/lib/orders";

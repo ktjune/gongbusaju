@@ -2,7 +2,7 @@
  * POST /api/admin/review — 리포트 승인/반려
  * body: { reportId, action: "approve" | "reject", note? }
  *
- * [경고] 데모용 무인증 — 프로덕션은 운영자 인증 필수.
+ * 인증: middleware.ts — HTTP Basic Auth (ADMIN_PASSWORD env var)
  */
 
 import { approveReport, rejectReport } from "@/lib/orders";

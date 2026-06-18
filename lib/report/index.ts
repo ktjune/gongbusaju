@@ -37,6 +37,7 @@ export {
   buildCareerMapSection,
   buildMajorMapSection,
   TIME_STANDARD_NOTICE,
+  DST_CORRECTION_NOTICE,
   INTERPRETATION_NOTICE,
   ASSIGNED_SCHOOL_LABEL,
 } from "./template";

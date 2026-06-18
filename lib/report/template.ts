@@ -57,6 +57,18 @@ export const TIME_STANDARD_NOTICE =
   "본 리포트의 사주 계산 기준: 일주·시주는 동경 127.5° 경도 보정(-30분), " +
   "연주·월주는 한국천문연구원(KASI) 절입시각(KST)을 따릅니다.";
 
+/**
+ * 한국 서머타임(1987·1988년) 보정이 적용된 경우 리포트 하단에 추가되는 안내.
+ * 출생 시각이 서머타임(UTC+10) 기준인지 표준시(KST, UTC+9) 기준인지 보호자가 확인하도록 안내.
+ */
+export const DST_CORRECTION_NOTICE =
+  "⚠️ **서머타임 보정 안내**: 이 아이는 한국 서머타임 적용 기간(1987년 5월 10일 ~ 10월 11일, " +
+  "또는 1988년 5월 8일 ~ 10월 9일) 중 출생했습니다. " +
+  "해당 기간 시계는 표준시(KST)보다 1시간 앞당겨졌으므로, 본 리포트는 입력 시각에서 " +
+  "자동으로 -60분 보정을 적용했습니다. " +
+  "출생증명서에 기재된 시각이 서머타임 기준인지 표준시(KST) 기준인지 확인 후, " +
+  "다를 경우 실제 KST 시각으로 재신청하시기 바랍니다.";
+
 /** 해석 면책 표기 — 모든 리포트 하단 필수 포함 */
 export const INTERPRETATION_NOTICE =
   "본 리포트의 기질·대운 해석은 사주 명리의 관점이며, 실측된 심리·적성 검사 결과가 아닙니다. " +
@@ -725,9 +737,13 @@ export function assembleReport(
   // ── 최종 조립 ────────────────────────────────────────────
   const body = sections.map((s) => s.body).join("\n\n---\n\n");
 
+  const notices = [TIME_STANDARD_NOTICE];
+  if (saju.dstApplied) notices.push(DST_CORRECTION_NOTICE);
+  notices.push(INTERPRETATION_NOTICE);
+
   return [
     toc,
     body,
-    "---\n\n" + TIME_STANDARD_NOTICE + "\n\n" + INTERPRETATION_NOTICE,
+    "---\n\n" + notices.join("\n\n") ,
   ].join("\n\n---\n\n");
 }

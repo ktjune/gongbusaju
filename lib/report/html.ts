@@ -224,7 +224,27 @@ body {
   .report table, .report blockquote, .report svg { break-inside: avoid; }
   .report tr:nth-child(even) td { background: #fff; }
   a { color: inherit; text-decoration: none; }
+  .print-btn { display: none; }
 }
+
+/* ── 인쇄 버튼 ─────────────────────────────────────── */
+.print-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1f3b63;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 22px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(31,59,99,0.25);
+  z-index: 100;
+  font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+.print-btn:hover { background: #2a4f8a; }
 `;
 
 // ──────────────────────────────────────────────────────────────
@@ -260,6 +280,7 @@ ${cover}
 ${body}
 </main>
 </div>
+<button class="print-btn" onclick="window.print()">PDF 저장 / 인쇄</button>
 </body>
 </html>`;
 }

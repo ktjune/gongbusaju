@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
       "./data-pipeline/output/schools.json",
       "./data-pipeline/output/zones_sido11.json",
     ],
+    "/api/worker/run": [
+      "./data-pipeline/output/schools.json",
+      "./data-pipeline/output/zones_sido11.json",
+    ],
   },
 
   async headers() {

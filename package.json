@@ -16,6 +16,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@vercel/functions": "^3.7.1",
     "lunar-javascript": "^1.7.0",
     "next": "15.5.19",
     "pg": "^8.21.0",

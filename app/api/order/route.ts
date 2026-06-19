@@ -8,10 +8,12 @@
  * Node 런타임 필수 (lib/crypto가 node:crypto 사용).
  */
 
-import { createOrder } from "@/lib/orders";
+import { waitUntil } from "@vercel/functions";
+import { createOrder, generateReportForOrder } from "@/lib/orders";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
 
 export const runtime = "nodejs";
+export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
 
 type Body = {
   tier?: string;
@@ -64,6 +66,15 @@ export async function POST(req: Request) {
 
   try {
     const order = await createOrder(input);
+
+    // 주문 생성 직후 백그라운드로 리포트 생성 시작.
+    // waitUntil: 응답을 즉시 반환하고 생성(~40-50s)은 백그라운드에서 완료된다.
+    waitUntil(
+      generateReportForOrder(order.id).catch((err: unknown) => {
+        console.error(`[order] 리포트 생성 실패 — 주문: ${order.id}`, err);
+      })
+    );
+
     return Response.json(
       { orderId: order.id, status: order.status, tier: order.tier },
       { status: 201 }

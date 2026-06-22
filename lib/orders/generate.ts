@@ -20,14 +20,11 @@ import { getOrderStore } from "./store";
 import { decryptSubject } from "./index";
 import type { Order, Report } from "./types";
 
-// 픽스처는 한 번만 읽어 캐시
+// 픽스처는 한 번만 읽어 캐시 (DATABASE_URL 없는 로컬 개��� 전용)
 let fixtureCache: { schools?: SchoolFixture[]; zones?: ZoneCollection } | null = null;
 
 function loadFixtures(): { schools?: SchoolFixture[]; zones?: ZoneCollection } {
   if (fixtureCache) return fixtureCache;
-  // 학교 사실은 파일 픽스처를 쓴다(PostGIS는 아직 Supabase에 미적재).
-  // 주문 DB(DATABASE_URL)와는 독립 — DATABASE_URL이 있어도 학교는 픽스처 경로.
-  // TODO: 학교 PostGIS를 Supabase에 적재하면 별도 플래그로 DB 경로 전환.
   const dir = path.join(process.cwd(), "data-pipeline", "output");
   const schoolsPath = path.join(dir, "schools.json");
   const zonesPath = path.join(dir, "zones_sido11.json");
@@ -64,7 +61,12 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
 
     // PII 복호화 — 이 스코프 안에서만 평문 사용
     const subject = decryptSubject(subjectRow);
-    const { schools, zones } = loadFixtures();
+
+    // 학교 조회 경로 결정:
+    //   DATABASE_URL 있음 → PostGIS DB 모드 (fixtureSchools/Zones 미전달)
+    //   DATABASE_URL 없음 → 로컬 픽스처 파일 (개발 환경)
+    const useDb = !!process.env.DATABASE_URL;
+    const { schools, zones } = useDb ? {} : loadFixtures();
 
     const built = await buildReportForSubject(subject, order.tier, {
       fixtureSchools: schools,

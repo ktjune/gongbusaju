@@ -24,6 +24,7 @@ model Order {
   tier         String   // "basic" | "premium"
   status       String   @default("paid")
   // paid → generating → review → published / rejected / failed
+  userId       String?  // Supabase auth.users UUID (null = 비회원)
   subjectId    String   // subjects 외래키 (PII 분리)
   reportId     String?
   // 알림 발송용 연락처 (보호자) — 별도 동의
@@ -33,6 +34,7 @@ model Order {
   updatedAt    DateTime @updatedAt
 
   @@index([status])
+  @@index([userId])
   @@map("orders")
 }
 
@@ -92,4 +94,25 @@ model Report {
 
   @@index([reviewStatus])
   @@map("reports")
+}
+
+// ──────────────────────────────────────────────────────────────
+// 아이 프로필 (회원용 — 재신청 편의)
+// ──────────────────────────────────────────────────────────────
+model ChildProfile {
+  id             String   @id @default(cuid())
+  userId         String   // Supabase auth.users UUID
+  nickname       String   // 예: "첫째", "민준이" 등 (암호화 불필요 - 사용자 직접 입력 라벨)
+  encBirthYear   String   // PII 암호화
+  encBirthMonth  String
+  encBirthDay    String
+  encBirthHour   String?  // null = 시간 모름
+  encBirthMinute String?
+  encGender      String
+  encAddress     String?  // Premium용
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@map("child_profiles")
 }

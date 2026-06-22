@@ -259,16 +259,19 @@ export function buildWuxingDetailSection(saju: SajuResult): string {
   const parts = order.map(([hanja, key]) => {
     const d = WUXING_DICT[hanja];
     const pct = Math.round(saju.elements[key]);
-    let verdict: string;
-    if (pct >= 30) verdict = `**이 아이는 강한 편(${pct}%)** — ${d.strong}`;
-    else if (pct <= 10) verdict = `**이 아이는 옅은 편(${pct}%)** — ${d.weak}`;
-    else verdict = `**이 아이는 보통(${pct}%)** — 치우침 없이 무난하게 작동하는 구간으로 풀이됩니다.`;
+    let level: string;
+    let levelDesc: string;
+    if (pct >= 30) { level = `강한 편 (${pct}%)`; levelDesc = d.strong; }
+    else if (pct <= 10) { level = `옅은 편 (${pct}%)`; levelDesc = d.weak; }
+    else { level = `보통 (${pct}%)`; levelDesc = d.normal; }
     return [
       `### ${hanja}(${d.hangul}) — ${d.keyword}`,
       ``,
       d.study,
       ``,
-      verdict,
+      `**이 아이에게 ${hanja}는 ${level}입니다.**`,
+      ``,
+      levelDesc,
     ].join("\n");
   });
 
@@ -332,7 +335,7 @@ export function buildTraitsSection(saju: SajuResult): string {
   ].join("\n");
 }
 
-/** 과목 경향 매핑 표 — 전통 오행 관점 + 이 아이의 강한 오행 표시 */
+/** 과목 경향 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
 export function buildSubjectMapSection(saju: SajuResult): string {
   const pctOf: Record<string, number> = {
     木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
@@ -342,19 +345,19 @@ export function buildSubjectMapSection(saju: SajuResult): string {
   const rows = SUBJECT_MAP.map((m) => {
     const pct = Math.round(pctOf[m.element] ?? 0);
     const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.subjects} | ${mark} |`;
+    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.subjects} | ${m.why} | ${mark} |`;
   });
 
   return [
-    `| 오행 | 전통적으로 연결해 보는 학습 영역 | 이 아이 |`,
-    `|---|---|---|`,
+    `| 오행 | 전통적으로 연결해 보는 학습 영역 | 왜 이렇게 연결되나요? | 이 아이 |`,
+    `|---|---|---|---|`,
     ...rows,
     ``,
     `> ${SUBJECT_MAP_NOTICE}`,
   ].join("\n");
 }
 
-/** 직업군 경향 매핑 표 — 전통 오행 관점 + 이 아이의 강한 오행 표시 */
+/** 직업군 경향 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
 export function buildCareerMapSection(saju: SajuResult): string {
   const pctOf: Record<string, number> = {
     木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
@@ -364,19 +367,19 @@ export function buildCareerMapSection(saju: SajuResult): string {
   const rows = CAREER_MAP.map((m) => {
     const pct = Math.round(pctOf[m.element] ?? 0);
     const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.fields} | ${mark} |`;
+    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.fields} | ${m.trait} | ${mark} |`;
   });
 
   return [
-    `| 오행 | 전통적으로 연결해 보는 직업 분야 | 이 아이 |`,
-    `|---|---|---|`,
+    `| 오행 | 전통적으로 연결해 보는 직업 분야 | 연결 기운 | 이 아이 |`,
+    `|---|---|---|---|`,
     ...rows,
     ``,
     `> ${CAREER_MAP_NOTICE}`,
   ].join("\n");
 }
 
-/** 전공·학문 계열 매핑 표 — 전통 오행 관점 + 이 아이의 강한 오행 표시 */
+/** 전공·학문 계열 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
 export function buildMajorMapSection(saju: SajuResult): string {
   const pctOf: Record<string, number> = {
     木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
@@ -386,12 +389,12 @@ export function buildMajorMapSection(saju: SajuResult): string {
   const rows = MAJOR_MAP.map((m) => {
     const pct = Math.round(pctOf[m.element] ?? 0);
     const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.majors} | ${mark} |`;
+    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.majors} | ${m.trait} | ${mark} |`;
   });
 
   return [
-    `| 오행 | 전통적으로 연결해 보는 전공·학문 계열 | 이 아이 |`,
-    `|---|---|---|`,
+    `| 오행 | 전통적으로 연결해 보는 전공·학문 계열 | 연결 기운 | 이 아이 |`,
+    `|---|---|---|---|`,
     ...rows,
     ``,
     `> ${MAJOR_MAP_NOTICE}`,
@@ -869,28 +872,51 @@ export function assembleReport(
       perspective.annualProse,
   });
 
-  // ── [Premium] 학교 기질 참고 (관점) ──────────────────────
+  // ── [Premium] 학교 기질 참고 (관점 + 기질 유형 표) ──────────
   if (perspective.schoolConnectionProse) {
+    // 기질 유형 점수 표 — 학교 데이터 유무와 무관하게 항상 표시
+    const typeScores = deriveSchoolTypeScores(saju);
+    const starsStr = (n: number) => "★".repeat(n) + "☆".repeat(3 - n);
+    const scoreRows = typeScores.map(
+      (s) => `| ${s.label} | ${starsStr(s.stars)} | ${s.reason} |`
+    );
+    // clusterSection에 이미 점수 표가 있는 경우 중복 방지
+    const typeTableBlock = facts.clusterSection
+      ? ""
+      : [
+          "",
+          "### 기질로 본 고교 유형 참고",
+          "",
+          "| 고교 유형 | 기질 적합도 | 참고 |",
+          "|---|---|---|",
+          ...scoreRows,
+          "",
+          "> 위 적합도는 사주 기질 관점의 **참고 경향**입니다. 실제 학교 선택은 성적·거리·아이 의향·입시 전형 등 현실 요소를 종합하시기 바랍니다.",
+        ].join("\n");
+
     sections.push({
       title: "학교 선택 기질 참고",
       body:
         "## 학교 선택 기질 참고\n\n" +
         "> 아래는 사주 기질 관점에서 학교 환경 선택 시 참고할 만한 경향입니다.\n" +
         "> 특정 학교를 추천하거나 정답으로 지목하지 않습니다.\n\n" +
-        perspective.schoolConnectionProse,
+        perspective.schoolConnectionProse +
+        typeTableBlock,
     });
   }
 
   // ── [Premium] 사실 블록 (코드 삽입) ──────────────────────
-  if (facts.assignedSchoolSection) {
+  if (facts.assignedSchoolSection || facts.clusterSection) {
+    const factParts: string[] = [
+      "## 예상 배정 학교 (사실 정보)\n\n" +
+      "> 아래 정보는 공공데이터 기반 예상 배정 결과입니다. " +
+      "실제 배정은 교육청에 반드시 확인하시기 바랍니다.",
+    ];
+    if (facts.assignedSchoolSection) factParts.push(facts.assignedSchoolSection);
+    if (facts.clusterSection) factParts.push(facts.clusterSection);
     sections.push({
       title: "예상 배정 학교 (사실 정보)",
-      body:
-        "## 예상 배정 학교 (사실 정보)\n\n" +
-        "> 아래 정보는 공공데이터 기반 예상 배정 결과입니다. " +
-        "실제 배정은 교육청에 반드시 확인하시기 바랍니다.\n\n" +
-        facts.assignedSchoolSection +
-        (facts.clusterSection ? "\n\n" + facts.clusterSection : ""),
+      body: factParts.join("\n\n"),
     });
   }
 

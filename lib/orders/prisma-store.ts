@@ -16,7 +16,8 @@ const iso = (d: Date): string => d.toISOString();
 // ── row → 도메인 매퍼 ────────────────────────────────────────
 type OrderRow = {
   id: string; tier: string; status: string; subjectId: string;
-  reportId: string | null; contactEmail: string | null; contactPhone: string | null;
+  reportId: string | null; userId: string | null;
+  contactEmail: string | null; contactPhone: string | null;
   createdAt: Date; updatedAt: Date;
 };
 function toOrder(r: OrderRow): Order {
@@ -26,6 +27,7 @@ function toOrder(r: OrderRow): Order {
     status: r.status as OrderStatus,
     subjectId: r.subjectId,
     reportId: r.reportId,
+    userId: r.userId,
     contactEmail: r.contactEmail,
     contactPhone: r.contactPhone,
     createdAt: iso(r.createdAt),
@@ -92,6 +94,7 @@ export class PrismaOrderStore implements OrderStore {
         status: data.status,
         subjectId: data.subjectId,
         reportId: data.reportId,
+        userId: data.userId,
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone,
       },

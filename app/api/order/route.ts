@@ -11,6 +11,7 @@
 import { waitUntil } from "@vercel/functions";
 import { createOrder, generateReportForOrder } from "@/lib/orders";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
@@ -46,6 +47,10 @@ export async function POST(req: Request) {
     );
   }
 
+  // 로그인 상태면 userId 연결 (마이페이지에서 내 주문 조회용)
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const tier: Tier = body.tier === "premium" ? "premium" : "basic";
 
   const input: CreateOrderInput = {
@@ -62,6 +67,7 @@ export async function POST(req: Request) {
     },
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,
+    userId: user?.id ?? undefined,
   };
 
   try {

@@ -29,6 +29,8 @@ export type Order = {
   status: OrderStatus;
   subjectId: string;
   reportId: string | null;
+  /** Supabase Auth 사용자 ID (로그인 후 신청 시 연결) */
+  userId: string | null;
   /** 연락처(알림 발송용) — 보호자, 별도 동의 */
   contactEmail: string | null;
   contactPhone: string | null;
@@ -96,4 +98,6 @@ export type CreateOrderInput = {
   retainMonths?: number;
   contactEmail?: string;
   contactPhone?: string;
+  /** Supabase Auth 사용자 ID (로그인 후 신청 시) */
+  userId?: string;
 };

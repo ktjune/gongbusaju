@@ -128,6 +128,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     status: "paid",
     subjectId: subject.id,
     reportId: null,
+    userId: input.userId ?? null,
     contactEmail: input.contactEmail ?? null,
     contactPhone: input.contactPhone ?? null,
   });

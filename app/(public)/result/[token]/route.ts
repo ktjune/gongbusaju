@@ -11,6 +11,19 @@
 
 import { getOrderStore } from "@/lib/orders";
 
+/**
+ * 저장된 HTML에 PDF 다운로드 링크를 주입한다.
+ * print-btn 옆에 별도 앵커 버튼으로 추가. CSS는 인라인 처리.
+ */
+function injectPdfButton(html: string, token: string): string {
+  const pdfHref = `/result/${token}/pdf`;
+  const btn = `<a href="${pdfHref}" download class="pdf-dl-btn" style="position:fixed;bottom:24px;right:190px;background:#2a5a9a;color:#fff;border-radius:50px;padding:12px 20px;font-size:0.88rem;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(31,59,99,0.25);z-index:100;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">⬇ PDF 저장</a>`;
+  // </body> 직전에 삽입
+  return html.includes("</body>")
+    ? html.replace("</body>", `${btn}\n</body>`)
+    : html + btn;
+}
+
 export const runtime = "nodejs";
 
 const htmlResponse = (html: string, status = 200) =>
@@ -69,6 +82,7 @@ export async function GET(
     );
   }
 
-  // 발행분(또는 미리보기) — 저장된 디자인 HTML 그대로
-  return htmlResponse(report.html);
+  // 발행분(또는 미리보기) — 저장된 디자인 HTML + PDF 다운로드 버튼 주입
+  const html = injectPdfButton(report.html, token);
+  return htmlResponse(html);
 }

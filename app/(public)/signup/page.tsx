@@ -1,17 +1,16 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function SignupPage() {
+function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/mypage";
 
@@ -37,38 +36,44 @@ export default function SignupPage() {
 
   if (done) {
     return (
-      <div style={S.page}>
-        <div style={S.card}>
-          <div style={S.doneIcon}>✉️</div>
-          <h1 style={S.title}>이메일을 확인해주세요</h1>
-          <p style={S.desc}>{email}으로 인증 링크를 보냈습니다.<br />링크를 클릭하면 가입이 완료됩니다.</p>
-          <p style={S.sub}><Link href="/login" style={S.link}>로그인으로 돌아가기</Link></p>
-        </div>
+      <div style={S.card}>
+        <div style={S.doneIcon}>✉️</div>
+        <h1 style={S.title}>이메일을 확인해주세요</h1>
+        <p style={S.desc}>{email}으로 인증 링크를 보냈습니다.<br />링크를 클릭하면 가입이 완료됩니다.</p>
+        <p style={S.sub}><Link href="/login" style={S.link}>로그인으로 돌아가기</Link></p>
       </div>
     );
   }
 
   return (
+    <div style={S.card}>
+      <div style={S.logo}>공부사주</div>
+      <h1 style={S.title}>회원가입</h1>
+      <form onSubmit={handleSubmit}>
+        <input style={S.input} type="email" placeholder="이메일" value={email}
+          onChange={e => setEmail(e.target.value)} required autoFocus />
+        <input style={S.input} type="password" placeholder="비밀번호 (8자 이상)" value={password}
+          onChange={e => setPassword(e.target.value)} required />
+        <input style={S.input} type="password" placeholder="비밀번호 확인" value={confirm}
+          onChange={e => setConfirm(e.target.value)} required />
+        {error && <p style={S.error}>{error}</p>}
+        <button style={S.btn} type="submit" disabled={loading}>
+          {loading ? "가입 중…" : "회원가입"}
+        </button>
+      </form>
+      <p style={S.sub}>
+        이미 계정이 있으신가요? <Link href={`/login?next=${encodeURIComponent(next)}`} style={S.link}>로그인</Link>
+      </p>
+    </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
     <div style={S.page}>
-      <div style={S.card}>
-        <div style={S.logo}>공부사주</div>
-        <h1 style={S.title}>회원가입</h1>
-        <form onSubmit={handleSubmit}>
-          <input style={S.input} type="email" placeholder="이메일" value={email}
-            onChange={e => setEmail(e.target.value)} required autoFocus />
-          <input style={S.input} type="password" placeholder="비밀번호 (8자 이상)" value={password}
-            onChange={e => setPassword(e.target.value)} required />
-          <input style={S.input} type="password" placeholder="비밀번호 확인" value={confirm}
-            onChange={e => setConfirm(e.target.value)} required />
-          {error && <p style={S.error}>{error}</p>}
-          <button style={S.btn} type="submit" disabled={loading}>
-            {loading ? "가입 중…" : "회원가입"}
-          </button>
-        </form>
-        <p style={S.sub}>
-          이미 계정이 있으신가요? <Link href={`/login?next=${encodeURIComponent(next)}`} style={S.link}>로그인</Link>
-        </p>
-      </div>
+      <Suspense fallback={<div style={S.card}><p style={{ color: "#5a5f6a" }}>불러오는 중…</p></div>}>
+        <SignupForm />
+      </Suspense>
     </div>
   );
 }

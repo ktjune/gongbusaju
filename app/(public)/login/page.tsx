@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -29,27 +29,35 @@ export default function LoginPage() {
   }
 
   return (
+    <div style={S.card}>
+      <div style={S.logo}>공부사주</div>
+      <h1 style={S.title}>로그인</h1>
+      <form onSubmit={handleSubmit}>
+        <input style={S.input} type="email" placeholder="이메일" value={email}
+          onChange={e => setEmail(e.target.value)} required autoFocus />
+        <input style={S.input} type="password" placeholder="비밀번호" value={password}
+          onChange={e => setPassword(e.target.value)} required />
+        {error && <p style={S.error}>{error}</p>}
+        <button style={S.btn} type="submit" disabled={loading}>
+          {loading ? "로그인 중…" : "로그인"}
+        </button>
+      </form>
+      <p style={S.sub}>
+        계정이 없으신가요? <Link href={`/signup?next=${encodeURIComponent(next)}`} style={S.link}>회원가입</Link>
+      </p>
+      <p style={S.sub}>
+        <Link href="/apply" style={S.link}>비회원으로 신청하기</Link>
+      </p>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div style={S.page}>
-      <div style={S.card}>
-        <div style={S.logo}>공부사주</div>
-        <h1 style={S.title}>로그인</h1>
-        <form onSubmit={handleSubmit}>
-          <input style={S.input} type="email" placeholder="이메일" value={email}
-            onChange={e => setEmail(e.target.value)} required autoFocus />
-          <input style={S.input} type="password" placeholder="비밀번호" value={password}
-            onChange={e => setPassword(e.target.value)} required />
-          {error && <p style={S.error}>{error}</p>}
-          <button style={S.btn} type="submit" disabled={loading}>
-            {loading ? "로그인 중…" : "로그인"}
-          </button>
-        </form>
-        <p style={S.sub}>
-          계정이 없으신가요? <Link href={`/signup?next=${encodeURIComponent(next)}`} style={S.link}>회원가입</Link>
-        </p>
-        <p style={S.sub}>
-          <Link href="/apply" style={S.link}>비회원으로 신청하기</Link>
-        </p>
-      </div>
+      <Suspense fallback={<div style={S.card}><p style={{ color: "#5a5f6a" }}>불러오는 중…</p></div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }

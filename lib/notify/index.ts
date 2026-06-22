@@ -3,12 +3,18 @@
  *
  * 채널:
  *   - 이메일: Resend (RESEND_API_KEY 설정 시 실 발송)
- *   - 카카오 알림톡: 추후 구현
+ *   - 카카오 알림톡: Solapi REST API (SOLAPI_API_KEY 설정 시 실 발송)
+ *       알림톡 실패 시 → LMS 문자(장문)로 자동 폴백
  *
  * 환경변수:
  *   RESEND_API_KEY        — Resend API 키
  *   NOTIFY_FROM_EMAIL     — 발신 주소 (기본: onboarding@resend.dev)
  *   NOTIFY_FROM_NAME      — 발신자 이름 (기본: 공부사주)
+ *   SOLAPI_API_KEY        — Solapi API 키
+ *   SOLAPI_API_SECRET     — Solapi API 시크릿
+ *   KAKAO_PF_ID           — 카카오 발신 프로필 ID (pfId, KA01PF…)
+ *   KAKAO_TEMPLATE_ID     — 알림톡 템플릿 ID (templateId, KA01TP…)
+ *   NOTIFY_FROM_PHONE     — 발신 전화번호 (Solapi 등록 번호, 예: 01012345678)
  */
 
 export type ResultLinkPayload = {
@@ -39,11 +45,11 @@ export async function sendResultLink(payload: ResultLinkPayload): Promise<void> 
     });
   }
 
-  // 전화번호: 카카오 알림톡 미구현 → 로그만
+  // 카카오 알림톡 (Solapi)
   if (contactPhone) {
-    console.warn(
-      `[notify] 카카오 알림톡 미구현 — 수동 전달 필요. 주문: ${orderId}, 전화: ${contactPhone}, URL: ${resultUrl}`
-    );
+    await sendAlimtalk(orderId, resultUrl, contactPhone).catch((err) => {
+      console.error(`[notify] 알림톡 발송 실패 — 주문: ${orderId}`, err);
+    });
   }
 }
 
@@ -135,6 +141,139 @@ function buildEmailHtml(resultUrl: string): string {
   </table>
 </body>
 </html>`;
+}
+
+// ──────────────────────────────────────────────────────────────
+// 카카오 알림톡 (Solapi REST API)
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * 카카오 알림톡을 발송한다.
+ *
+ * 알림톡 전송 실패(채널 미가입, 템플릿 미일치 등) 시 Solapi가 자동으로
+ * LMS(장문 문자)로 폴백한다 (Solapi 설정에 따름).
+ *
+ * 환경변수 미설정 시 콘솔 경고만 출력하고 정상 반환 (개발 환경).
+ *
+ * Solapi 알림톡 템플릿 등록 절차:
+ *   1. https://console.solapi.com → 카카오채널 → 채널 연결
+ *   2. 알림톡 템플릿 등록 → 내용 입력 → 카카오 심사 요청
+ *   3. 승인 후 templateId(KA01TP…), pfId(KA01PF…) 확인
+ *   4. 환경변수 KAKAO_TEMPLATE_ID, KAKAO_PF_ID 설정
+ *
+ * 권장 템플릿 내용 (#{result_url} 변수 포함):
+ *   "안녕하세요.
+ *   신청하신 공부·진로 사주 리포트가 완성됐습니다.
+ *
+ *   아래 링크에서 리포트를 확인하세요.
+ *   #{result_url}
+ *
+ *   링크는 언제든 재접속할 수 있습니다."
+ */
+async function sendAlimtalk(
+  orderId: string,
+  resultUrl: string,
+  to: string
+): Promise<void> {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[notify:dev] 알림톡 발송 시뮬레이션\n  주문: ${orderId}\n  수신: ${to}\n  URL: ${resultUrl}`
+    );
+    return;
+  }
+
+  const apiKey = process.env.SOLAPI_API_KEY;
+  const apiSecret = process.env.SOLAPI_API_SECRET;
+  const pfId = process.env.KAKAO_PF_ID;
+  const templateId = process.env.KAKAO_TEMPLATE_ID;
+  const from = process.env.NOTIFY_FROM_PHONE;
+
+  if (!apiKey || !apiSecret) {
+    console.warn(
+      `[notify] SOLAPI_API_KEY/SECRET 미설정 — 알림톡 미발송. 주문: ${orderId}, 전화: ${to}, URL: ${resultUrl}`
+    );
+    return;
+  }
+  if (!pfId || !templateId) {
+    console.warn(
+      `[notify] KAKAO_PF_ID/TEMPLATE_ID 미설정 — 알림톡 미발송. 주문: ${orderId}`
+    );
+    return;
+  }
+  if (!from) {
+    console.warn(
+      `[notify] NOTIFY_FROM_PHONE 미설정 — 알림톡 미발송. 주문: ${orderId}`
+    );
+    return;
+  }
+
+  const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
+  const body = {
+    message: {
+      to: normalizePhone(to),
+      from,
+      type: "ATA", // AlimTalk
+      kakaoOptions: {
+        pfId,
+        templateId,
+        variables: {
+          "#{result_url}": resultUrl,
+        },
+      },
+    },
+  };
+
+  const res = await fetch("https://api.solapi.com/messages/v4/send", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: auth,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = (await res.json()) as Record<string, unknown>;
+
+  if (!res.ok) {
+    throw new Error(
+      `Solapi 오류 ${res.status}: ${data.errorCode ?? ""} ${data.errorMessage ?? ""}`
+    );
+  }
+
+  console.log(`[notify] 알림톡 발송 완료 — 주문: ${orderId}, 수신: ${to}`);
+}
+
+/**
+ * Solapi HMAC-SHA256 인증 헤더를 생성한다.
+ * 참고: https://docs.solapi.com/authentication/hmac
+ */
+async function buildSolapiAuthAsync(
+  apiKey: string,
+  apiSecret: string
+): Promise<string> {
+  const date = new Date().toISOString();
+  const salt = crypto.randomUUID().replace(/-/g, "");
+  const data = date + salt;
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(apiSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  const signature = Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return `HMAC-SHA256 ApiKey=${apiKey}, Date=${date}, Salt=${salt}, Signature=${signature}`;
+}
+
+/** 전화번호를 Solapi 형식(숫자만, 국내 010...)으로 정규화한다. */
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, "");
 }
 
 /**

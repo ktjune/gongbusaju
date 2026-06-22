@@ -103,7 +103,7 @@ export async function generateReport(
   // 1. 사실 블록 생성 — 코드만, LLM 없음
   //    Premium + 학교 데이터 있을 때만 사실 블록 포함
   const factBlock =
-    tier === "premium" && schools ? buildFactBlock(schools) : {};
+    tier === "premium" && schools ? buildFactBlock(schools, saju) : {};
 
   // 2. LLM 관점 블록 생성
   //    buildUserPrompt() 는 학교명·주소·진학률을 LLM에게 전달하지 않는다

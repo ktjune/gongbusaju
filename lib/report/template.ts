@@ -455,6 +455,95 @@ export function buildAnnualSection(
 }
 
 // ──────────────────────────────────────────────────────────────
+// 학교 유형 기질 점수 — 코드만, LLM 없음
+// ──────────────────────────────────────────────────────────────
+
+/** 학교 유형별 기질 적합도 */
+export type SchoolTypeScore = {
+  type: string;        // DB의 highSchoolType 값과 매칭
+  label: string;       // 표시용 이름
+  stars: number;       // 0-3 (★ 개수)
+  reason: string;      // 코드가 계산한 짧은 이유 (1줄, ~30자)
+};
+
+/**
+ * 오행·십성 분포에서 학교 유형별 기질 적합도를 계산한다.
+ * 점수는 사주 관점의 참고 지표이며, 현실적 학교 선택 기준이 아니다.
+ */
+export function deriveSchoolTypeScores(saju: SajuResult): SchoolTypeScore[] {
+  const e = saju.elements;  // { 목, 화, 토, 금, 수 } 각 %
+  const tg = saju.tenGods;  // { 비견, 겁재, 식신, 상관, 편재, 정재, 편관, 정관, 편인, 정인 }
+
+  // 편의 함수
+  const has = (key: string) => (tg[key] ?? 0) > 0;
+  const sum = (...keys: string[]) => keys.reduce((acc, k) => acc + (tg[k] ?? 0), 0);
+
+  // 자율고: 자기주도·탐구·창의 기질 → 水·木 강, 편인·식신
+  let 자율 = 0;
+  if (e.수 >= 30) 자율 += 2;
+  else if (e.수 >= 20) 자율 += 1;
+  if (e.목 >= 30) 자율 += 1;
+  if (has("편인")) 자율 += 1;
+  if (has("식신")) 자율 += 1;
+
+  // 특수목적고: 특화 심화·경쟁·도전 기질 → 金·火 강, 편관·상관·정인
+  let 특목 = 0;
+  if (e.금 >= 30) 특목 += 2;
+  else if (e.금 >= 20) 특목 += 1;
+  if (e.화 >= 30) 특목 += 1;  // 예술고 계통
+  if (has("편관")) 특목 += 2;
+  if (has("상관")) 특목 += 1;
+  if (sum("정인", "편인") >= 2) 특목 += 1;
+
+  // 일반고: 균형·안정·체계 기질 → 土 강, 정관·정인
+  let 일반 = 1;  // 기본 1점 (어디든 무난)
+  if (e.토 >= 25) 일반 += 2;
+  else if (e.토 >= 15) 일반 += 1;
+  if (has("정관")) 일반 += 1;
+  if (has("정인")) 일반 += 1;
+
+  // 특성화고: 실용·기술·경영 기질 → 土·金 실용형, 재성·식신
+  let 특성화 = 0;
+  if (e.토 >= 30) 특성화 += 1;
+  if (e.금 >= 25) 특성화 += 1;
+  if (sum("편재", "정재") >= 2) 특성화 += 2;
+  else if (sum("편재", "정재") >= 1) 특성화 += 1;
+  if (has("식신") && e.토 >= 20) 특성화 += 1;
+
+  // 3점 상한
+  const cap = (n: number) => Math.min(3, n);
+
+  const scores: SchoolTypeScore[] = [
+    {
+      type: "자율고등학교",
+      label: "자율고(자사고·자공고)",
+      stars: cap(자율),
+      reason: 자율 >= 2 ? "탐구·자기주도 기질, 자유로운 환경에서 강점" : 자율 === 1 ? "부분적으로 잘 맞는 환경" : "경직된 환경보다는 맞지만 두드러지지 않음",
+    },
+    {
+      type: "특수목적고등학교",
+      label: "특수목적고(과학고·외고·예술고 등)",
+      stars: cap(특목),
+      reason: 특목 >= 2 ? "특화 분야 심화·경쟁 환경에서 강점 발휘 가능" : 특목 === 1 ? "관심 분야 특화 학교 참고 가능" : "일반 환경이 더 맞는 기질",
+    },
+    {
+      type: "일반고등학교",
+      label: "일반고등학교",
+      stars: cap(일반),
+      reason: 일반 >= 3 ? "균형·체계 환경에 잘 맞는 기질" : 일반 >= 2 ? "안정적 선택, 무난한 환경" : "다양한 가능성 열어두기 좋은 선택",
+    },
+    {
+      type: "특성화고등학교",
+      label: "특성화고(직업·기술계)",
+      stars: cap(특성화),
+      reason: 특성화 >= 2 ? "실용·기술 계통에 강한 기질 경향" : 특성화 === 1 ? "실용 분야 관심 있다면 참고" : "이론·탐구형 기질이 강한 편",
+    },
+  ];
+
+  return scores.sort((a, b) => b.stars - a.stars);
+}
+
+// ──────────────────────────────────────────────────────────────
 // 사실 블록 빌더 — 코드만, LLM 없음
 // ──────────────────────────────────────────────────────────────
 
@@ -464,7 +553,7 @@ export function buildAnnualSection(
  * 이 함수의 출력이 LLM에게 전달되지 않는다.
  * 코드가 학교 사실을 직접 마크다운으로 변환해 리포트에 삽입한다.
  */
-export function buildFactBlock(schools: SchoolFacts): FactBlock {
+export function buildFactBlock(schools: SchoolFacts, saju?: SajuResult): FactBlock {
   let assignedSchoolSection: string | undefined;
   let clusterSection: string | undefined;
 
@@ -490,40 +579,99 @@ export function buildFactBlock(schools: SchoolFacts): FactBlock {
     ].join("\n");
   }
 
-  // ── 반경 2km 이내 학교군 ─────────────────────────────────
+  // ── 반경 2km 이내 학교군 — 고교 유형별 분류 + 기질 참고 ────
   if (schools.cluster.length > 0) {
-    // 고교유형이 있는 학교가 하나라도 있으면 컬럼 추가
-    const hasHighSchoolType = schools.cluster.some(
-      (s: SchoolRecord) => s.type === "고등학교" && s.highSchoolType
+    const parts: string[] = [];
+
+    // 1. 사주 기반 학교 유형 점수 (saju 있을 때만)
+    let typeScores: SchoolTypeScore[] | null = null;
+    if (saju) {
+      typeScores = deriveSchoolTypeScores(saju);
+      const starsStr = (n: number) => "★".repeat(n) + "☆".repeat(3 - n);
+      const scoreRows = typeScores.map(
+        (s) => `| ${s.label} | ${starsStr(s.stars)} | ${s.reason} |`
+      );
+      parts.push(
+        "### 기질로 본 고교 유형 참고",
+        "",
+        "| 고교 유형 | 기질 적합도 | 참고 |",
+        "|---|---|---|",
+        ...scoreRows,
+        "",
+        "> 위 적합도는 사주 기질 관점의 **참고 경향**입니다. 실제 학교 선택은 성적·거리·아이 의향·입시 전형 등 현실 요소를 종합하시기 바랍니다."
+      );
+    }
+
+    // 2. 초등·중학교 (배정 기반, 유형 분류 불필요)
+    const elementaryMiddle = schools.cluster.filter(
+      (s: SchoolRecord) => s.type !== "고등학교"
+    );
+    if (elementaryMiddle.length > 0) {
+      const rows = elementaryMiddle.map((s: SchoolRecord) => {
+        const distKm = (Math.round(s.distanceM / 100) / 10).toFixed(1);
+        return `| ${s.name} | ${s.type} | 약 ${distKm}km |`;
+      });
+      parts.push(
+        "",
+        "### 인근 초·중학교",
+        "",
+        "| 학교명 | 종류 | 통학거리 |",
+        "|---|---|---|",
+        ...rows
+      );
+    }
+
+    // 3. 고등학교 — 유형별 그룹화, 기질 점수 높은 유형 먼저
+    const highSchools = schools.cluster.filter(
+      (s: SchoolRecord) => s.type === "고등학교"
+    );
+    if (highSchools.length > 0) {
+      // 유형 순서: 기질 점수 순 (typeScores) 또는 기본 순
+      const typeOrder = typeScores
+        ? typeScores.map((s) => s.type)
+        : ["자율고등학교", "특수목적고등학교", "일반고등학교", "특성화고등학교"];
+      const typeOrderMap = new Map(typeOrder.map((t, i) => [t, i]));
+
+      // 유형별 그룹
+      const grouped = new Map<string, SchoolRecord[]>();
+      for (const s of highSchools) {
+        const key = s.highSchoolType ?? "기타";
+        const arr = grouped.get(key) ?? [];
+        arr.push(s);
+        grouped.set(key, arr);
+      }
+
+      // 유형 정렬: 기질 점수 높은 순
+      const sortedTypes = [...grouped.keys()].sort(
+        (a, b) => (typeOrderMap.get(a) ?? 99) - (typeOrderMap.get(b) ?? 99)
+      );
+
+      parts.push("", "### 인근 고등학교 (유형별)");
+
+      for (const type of sortedTypes) {
+        const schools_ = grouped.get(type)!;
+        const score = typeScores?.find((s) => s.type === type);
+        const starsStr = score ? " " + "★".repeat(score.stars) + "☆".repeat(3 - score.stars) : "";
+        parts.push(
+          "",
+          `**▶ ${type}${starsStr}**`,
+          "",
+          "| 학교명 | 통학거리 |",
+          "|---|---|",
+          ...schools_.map((s: SchoolRecord) => {
+            const distKm = (Math.round(s.distanceM / 100) / 10).toFixed(1);
+            return `| ${s.name} | 약 ${distKm}km |`;
+          })
+        );
+      }
+    }
+
+    parts.push(
+      "",
+      `출처: ${schools.source} | 기준일: ${schools.asOf}`
     );
 
-    const header = hasHighSchoolType
-      ? `| 학교명 | 종류 | 고교유형 | 통학거리 |`
-      : `| 학교명 | 종류 | 통학거리 |`;
-    const separator = hasHighSchoolType
-      ? `|---|---|---|---|`
-      : `|---|---|---|`;
-
-    const rows = schools.cluster
-      .map((s: SchoolRecord) => {
-        const distKm = (Math.round(s.distanceM / 100) / 10).toFixed(1);
-        if (hasHighSchoolType) {
-          const ht = s.highSchoolType ?? (s.type === "고등학교" ? "—" : "");
-          return `| ${s.name} | ${s.type} | ${ht} | 약 ${distKm}km |`;
-        }
-        return `| ${s.name} | ${s.type} | 약 ${distKm}km |`;
-      })
-      .join("\n");
-
-    clusterSection = [
-      `### 반경 2km 이내 학교`,
-      ``,
-      header,
-      separator,
-      rows,
-      ``,
-      `출처: ${schools.source} | 기준일: ${schools.asOf}`,
-    ].join("\n");
+    clusterSection = parts.join("\n");
   }
 
   return { assignedSchoolSection, clusterSection };

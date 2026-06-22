@@ -131,8 +131,8 @@ async function getSchoolFactsFromDb(coord: Coordinate): Promise<SchoolFacts> {
     name: r.name,
     type: r.type,
     address: r.address,
-    lat: 0, // DB에서 lat/lng 가져오려면 추가 쿼리 필요 — TODO
-    lng: 0,
+    lat: r.lat,
+    lng: r.lng,
     distanceM: Math.round(r.distanceM),
     source: r.source,
     asOf: r.asOf,

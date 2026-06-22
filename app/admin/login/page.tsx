@@ -1,39 +1,30 @@
-"use client";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { useState, FormEvent } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; error?: string }>;
+}) {
+  const { from = "/admin", error } = await searchParams;
 
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") ?? "/admin";
+  async function login(formData: FormData) {
+    "use server";
+    const password = formData.get("password") as string;
+    const adminPassword = process.env.ADMIN_PASSWORD;
 
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-      if (res.ok) {
-        router.push(from);
-      } else {
-        const data = await res.json();
-        setError(data.error ?? "로그인 실패");
-      }
-    } catch {
-      setError("네트워크 오류");
-    } finally {
-      setLoading(false);
+    if (!adminPassword || password !== adminPassword) {
+      redirect(`/admin/login?from=${encodeURIComponent(from)}&error=1`);
     }
+
+    (await cookies()).set("admin_session", adminPassword, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24, // 24시간
+      path: "/",
+    });
+
+    redirect(from);
   }
 
   return (
@@ -41,7 +32,7 @@ function LoginForm() {
       minHeight: "100vh", display: "flex", alignItems: "center",
       justifyContent: "center", background: "#faf7f1", fontFamily: "sans-serif",
     }}>
-      <form onSubmit={handleSubmit} style={{
+      <form action={login} style={{
         background: "#fff", borderRadius: 16, padding: "40px 36px",
         boxShadow: "0 2px 16px rgba(0,0,0,0.08)", width: 320,
       }}>
@@ -50,9 +41,8 @@ function LoginForm() {
         </h1>
         <input
           type="password"
+          name="password"
           placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           autoFocus
           style={{
             width: "100%", padding: "10px 12px", borderRadius: 8,
@@ -62,28 +52,19 @@ function LoginForm() {
         />
         {error && (
           <p style={{ color: "#c0392b", fontSize: "0.85rem", margin: "0 0 12px" }}>
-            {error}
+            비밀번호가 틀렸습니다.
           </p>
         )}
         <button
           type="submit"
-          disabled={loading}
           style={{
             width: "100%", padding: "11px", background: "#1f3b63", color: "#fff",
             border: "none", borderRadius: 8, fontSize: "1rem", cursor: "pointer",
           }}
         >
-          {loading ? "로그인 중..." : "로그인"}
+          로그인
         </button>
       </form>
     </div>
-  );
-}
-
-export default function AdminLoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   );
 }

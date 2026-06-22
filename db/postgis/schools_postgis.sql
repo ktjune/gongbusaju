@@ -79,6 +79,8 @@ RETURNS TABLE (
   name        TEXT,
   type        TEXT,
   address     TEXT,
+  lat         DOUBLE PRECISION,
+  lng         DOUBLE PRECISION,
   distance_m  DOUBLE PRECISION,
   source      TEXT,
   as_of       TEXT
@@ -91,6 +93,8 @@ AS $$
     s.name,
     s.type,
     s.address,
+    ST_Y(s.location)           AS lat,
+    ST_X(s.location)           AS lng,
     ST_Distance(
       s.location::geography,
       ST_SetSRID(ST_Point(p_lng, p_lat), 4326)::geography
@@ -120,6 +124,8 @@ RETURNS TABLE (
   name        TEXT,
   type        TEXT,
   address     TEXT,
+  lat         DOUBLE PRECISION,
+  lng         DOUBLE PRECISION,
   distance_m  DOUBLE PRECISION,
   source      TEXT,
   as_of       TEXT
@@ -132,6 +138,8 @@ AS $$
     s.name,
     s.type,
     s.address,
+    ST_Y(s.location)           AS lat,
+    ST_X(s.location)           AS lng,
     ST_Distance(
       s.location::geography,
       ST_SetSRID(ST_Point(p_lng, p_lat), 4326)::geography

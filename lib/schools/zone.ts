@@ -122,10 +122,39 @@ export type DbZoneResult = {
   name: string;
   type: string;
   address: string;
+  lat: number;
+  lng: number;
   distanceM: number;
   source: string;
   asOf: string;
 };
+
+/** pg가 반환하는 snake_case 행 (SQL 함수 출력 그대로) */
+type DbZoneRow = {
+  school_id: string;
+  name: string;
+  type: string;
+  address: string;
+  lat: number;
+  lng: number;
+  distance_m: number;
+  source: string;
+  as_of: string;
+};
+
+function rowToResult(r: DbZoneRow): DbZoneResult {
+  return {
+    schoolId: r.school_id,
+    name: r.name,
+    type: r.type,
+    address: r.address,
+    lat: r.lat ?? 0,
+    lng: r.lng ?? 0,
+    distanceM: r.distance_m,
+    source: r.source,
+    asOf: r.as_of,
+  };
+}
 
 /**
  * PostGIS에서 point-in-polygon으로 배정 예상 학교를 조회한다.
@@ -143,11 +172,11 @@ export async function findZoneByPointFromDb(
   const { Pool } = await import("pg");
   const pool = new Pool({ connectionString: dbUrl });
   try {
-    const { rows } = await pool.query<DbZoneResult>(
+    const { rows } = await pool.query<DbZoneRow>(
       `SELECT * FROM find_assigned_school($1, $2)`,
       [coord.lat, coord.lng]
     );
-    return rows[0] ?? null;
+    return rows[0] ? rowToResult(rows[0]) : null;
   } finally {
     await pool.end();
   }
@@ -167,11 +196,11 @@ export async function findNearbySchoolsFromDb(
   const { Pool } = await import("pg");
   const pool = new Pool({ connectionString: dbUrl });
   try {
-    const { rows } = await pool.query<DbZoneResult>(
+    const { rows } = await pool.query<DbZoneRow>(
       `SELECT * FROM find_nearby_schools($1, $2, $3)`,
       [coord.lat, coord.lng, radiusM]
     );
-    return rows;
+    return rows.map(rowToResult);
   } finally {
     await pool.end();
   }

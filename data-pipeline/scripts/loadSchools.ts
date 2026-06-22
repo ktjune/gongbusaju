@@ -76,10 +76,10 @@ async function main() {
     process.exit(1);
   }
 
-  const csvPath = process.argv[2];
-  if (!csvPath) {
+  const filePath = process.argv[2];
+  if (!filePath) {
     // 파라미터 없으면 샘플 데이터로 실행
-    console.log("CSV 경로 미지정 → 샘플 픽스처로 실행 (개발용)");
+    console.log("경로 미지정 → 샘플 픽스처로 실행 (개발용)");
     const sample = JSON.parse(
       readFileSync(
         new URL("../fixtures/sample_schools.json", import.meta.url).pathname,
@@ -97,10 +97,20 @@ async function main() {
     return;
   }
 
-  const csvContent = readFileSync(csvPath, "utf8");
-  const asOf = new Date().toISOString().slice(0, 10);
-  const rows = parseCsv(csvContent, asOf);
-  console.log(`파싱된 학교 수: ${rows.length}`);
+  let rows: SchoolRow[];
+
+  if (filePath.endsWith(".json")) {
+    // JSON 배열 형식 (SchoolRow[]) — data-pipeline/output/schools.json
+    const content = readFileSync(filePath, "utf8");
+    rows = JSON.parse(content) as SchoolRow[];
+    console.log(`파싱된 학교 수 (JSON): ${rows.length}`);
+  } else {
+    // CSV 형식 (공공데이터 원본)
+    const csvContent = readFileSync(filePath, "utf8");
+    const asOf = new Date().toISOString().slice(0, 10);
+    rows = parseCsv(csvContent, asOf);
+    console.log(`파싱된 학교 수 (CSV): ${rows.length}`);
+  }
 
   const pool = new Pool({ connectionString: DATABASE_URL });
   try {

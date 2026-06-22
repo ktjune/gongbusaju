@@ -54,6 +54,27 @@ interface SchoolFixture {
   lng: number;
 }
 
+// ── 공동통학구역 학교명 파싱 ────────────────────────────────────
+
+/**
+ * "능평초광주광명초공동(일방)" → ["능평초등학교", "광주광명초등학교"]
+ *
+ * 패턴: 여러 학교명이 "초"로 끝나는 형태로 이어 붙여지고, 끝에 "공동" 또는
+ *       "공동(일방)" 등이 붙는다. "초" 경계로 분리 후 각각 "초등학교"로 복원.
+ */
+function parseGongdongNames(schoolName: string): string[] {
+  // 접미사 제거
+  const stripped = schoolName
+    .replace(/공동(\(일방향?\))?$/, "")
+    .trim();
+  if (!stripped) return [];
+  // "초" 경계로 분리
+  return stripped
+    .split("초")
+    .filter(Boolean)
+    .map((p) => p + "초등학교");
+}
+
 // ── Z코드 → B코드 해결 ──────────────────────────────────────────
 
 /** 비교용 학교명 정규화 (공백·특수문자 제거) */
@@ -169,14 +190,33 @@ async function upsertZones(
     const { schoolId: zoneId, schoolName, source, asOf } = feat.properties;
     if (!zoneId) { skipped++; continue; }
 
-    // Z-코드를 B-코드로 해결
-    let resolvedId: string | null = null;
+    const centroid = approxCentroid(feat.geometry as { type: string; coordinates: unknown });
+    const geomGeoJson = JSON.stringify(feat.geometry);
+    const geomExpr =
+      feat.geometry.type === "MultiPolygon"
+        ? `ST_SetSRID(ST_GeomFromGeoJSON($2), 4326)`
+        : `ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON($2), 4326))`;
+    const src = source ?? "전국초등학교통학구역표준데이터(data.go.kr/data/15021149)";
+    const asOfVal = asOf ?? defaultAsOf;
+
+    // 해결할 학교ID 목록 (일반: 1개, 공동: 여러 개)
+    let resolvedIds: string[] = [];
+
     if (nameMap && schoolName) {
-      const centroid = approxCentroid(feat.geometry as { type: string; coordinates: unknown });
-      resolvedId = resolveSchoolId(schoolName, centroid, nameMap);
+      if (schoolName.includes("공동")) {
+        // 공동통학구역: "능평초광주광명초공동" → 각 학교에 동일 구역 삽입
+        const candidates = parseGongdongNames(schoolName);
+        for (const nm of candidates) {
+          const id = resolveSchoolId(nm, centroid, nameMap);
+          if (id) resolvedIds.push(id);
+        }
+      } else {
+        const id = resolveSchoolId(schoolName, centroid, nameMap);
+        if (id) resolvedIds.push(id);
+      }
     }
 
-    if (!resolvedId) {
+    if (resolvedIds.length === 0) {
       skipped++;
       if (skipped <= 10) {
         console.warn(`  [skip] 학교 미해결: ${schoolName ?? zoneId}`);
@@ -186,30 +226,20 @@ async function upsertZones(
       continue;
     }
 
-    const geomGeoJson = JSON.stringify(feat.geometry);
-    // $1=school_id, $2=geojson, $3=source, $4=asOf
-    const geomExpr =
-      feat.geometry.type === "MultiPolygon"
-        ? `ST_SetSRID(ST_GeomFromGeoJSON($2), 4326)`
-        : `ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON($2), 4326))`;
-
-    try {
-      await pool.query(
-        `INSERT INTO school_zones (school_id, geom, source, as_of)
-         VALUES ($1, ${geomExpr}::geometry(MultiPolygon,4326), $3, $4)
-         ON CONFLICT DO NOTHING`,
-        [
-          resolvedId,
-          geomGeoJson,
-          source ?? "전국초등학교통학구역표준데이터(data.go.kr/data/15021149)",
-          asOf ?? defaultAsOf,
-        ]
-      );
-      loaded++;
-    } catch (e) {
-      skipped++;
-      const msg = e instanceof Error ? e.message : String(e);
-      if (skipped <= 10) console.warn(`  [error] ${resolvedId}: ${msg}`);
+    for (const resolvedId of resolvedIds) {
+      try {
+        await pool.query(
+          `INSERT INTO school_zones (school_id, geom, source, as_of)
+           VALUES ($1, ${geomExpr}::geometry(MultiPolygon,4326), $3, $4)
+           ON CONFLICT DO NOTHING`,
+          [resolvedId, geomGeoJson, src, asOfVal]
+        );
+        loaded++;
+      } catch (e) {
+        skipped++;
+        const msg = e instanceof Error ? e.message : String(e);
+        if (skipped <= 10) console.warn(`  [error] ${resolvedId}: ${msg}`);
+      }
     }
 
     if ((loaded + skipped) % 500 === 0) {

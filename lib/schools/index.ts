@@ -134,6 +134,7 @@ async function getSchoolFactsFromDb(coord: Coordinate): Promise<SchoolFacts> {
     lat: r.lat,
     lng: r.lng,
     distanceM: Math.round(r.distanceM),
+    ...(r.highSchoolType ? { highSchoolType: r.highSchoolType } : {}),
     source: r.source,
     asOf: r.asOf,
   } satisfies SchoolRecord));

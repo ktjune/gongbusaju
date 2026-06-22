@@ -12,15 +12,16 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 --       전국초중등학교기본정보표준데이터 (data.go.kr/data/15107734)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS schools (
-  id          BIGSERIAL PRIMARY KEY,
-  school_id   TEXT        NOT NULL UNIQUE,  -- NEIS 학교 코드
-  name        TEXT        NOT NULL,
-  type        TEXT        NOT NULL,          -- '초등학교' | '중학교' | '고등학교'
-  address     TEXT        NOT NULL,
-  location    geometry(Point, 4326),         -- PostGIS WGS84 좌표
-  source      TEXT        NOT NULL,          -- 공공데이터 출처 (URL 또는 데이터셋 ID)
-  as_of       TEXT        NOT NULL,          -- 데이터 기준일 YYYY-MM-DD
-  created_at  TIMESTAMPTZ DEFAULT now()
+  id               BIGSERIAL PRIMARY KEY,
+  school_id        TEXT        NOT NULL UNIQUE,  -- NEIS 학교 코드
+  name             TEXT        NOT NULL,
+  type             TEXT        NOT NULL,          -- '초등학교' | '중학교' | '고등학교'
+  address          TEXT        NOT NULL,
+  location         geometry(Point, 4326),         -- PostGIS WGS84 좌표
+  high_school_type TEXT,                          -- 고교유형 (고등학교만): 일반/자율/특목/특성화
+  source           TEXT        NOT NULL,          -- 공공데이터 출처 (URL 또는 데이터셋 ID)
+  as_of            TEXT        NOT NULL,          -- 데이터 기준일 YYYY-MM-DD
+  created_at       TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_schools_location
@@ -75,15 +76,16 @@ CREATE OR REPLACE FUNCTION find_assigned_school(
   p_lng DOUBLE PRECISION
 )
 RETURNS TABLE (
-  school_id   TEXT,
-  name        TEXT,
-  type        TEXT,
-  address     TEXT,
-  lat         DOUBLE PRECISION,
-  lng         DOUBLE PRECISION,
-  distance_m  DOUBLE PRECISION,
-  source      TEXT,
-  as_of       TEXT
+  school_id        TEXT,
+  name             TEXT,
+  type             TEXT,
+  address          TEXT,
+  lat              DOUBLE PRECISION,
+  lng              DOUBLE PRECISION,
+  distance_m       DOUBLE PRECISION,
+  high_school_type TEXT,
+  source           TEXT,
+  as_of            TEXT
 )
 LANGUAGE sql
 STABLE
@@ -99,6 +101,7 @@ AS $$
       s.location::geography,
       ST_SetSRID(ST_Point(p_lng, p_lat), 4326)::geography
     )                          AS distance_m,
+    s.high_school_type,
     sz.source,
     sz.as_of
   FROM school_zones sz
@@ -120,15 +123,16 @@ CREATE OR REPLACE FUNCTION find_nearby_schools(
   p_radius_m INTEGER DEFAULT 2000
 )
 RETURNS TABLE (
-  school_id   TEXT,
-  name        TEXT,
-  type        TEXT,
-  address     TEXT,
-  lat         DOUBLE PRECISION,
-  lng         DOUBLE PRECISION,
-  distance_m  DOUBLE PRECISION,
-  source      TEXT,
-  as_of       TEXT
+  school_id        TEXT,
+  name             TEXT,
+  type             TEXT,
+  address          TEXT,
+  lat              DOUBLE PRECISION,
+  lng              DOUBLE PRECISION,
+  distance_m       DOUBLE PRECISION,
+  high_school_type TEXT,
+  source           TEXT,
+  as_of            TEXT
 )
 LANGUAGE sql
 STABLE
@@ -144,6 +148,7 @@ AS $$
       s.location::geography,
       ST_SetSRID(ST_Point(p_lng, p_lat), 4326)::geography
     )                          AS distance_m,
+    s.high_school_type,
     s.source,
     s.as_of
   FROM schools s

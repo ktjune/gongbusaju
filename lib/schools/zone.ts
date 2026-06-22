@@ -125,6 +125,7 @@ export type DbZoneResult = {
   lat: number;
   lng: number;
   distanceM: number;
+  highSchoolType?: string;
   source: string;
   asOf: string;
 };
@@ -138,6 +139,7 @@ type DbZoneRow = {
   lat: number;
   lng: number;
   distance_m: number;
+  high_school_type: string | null;
   source: string;
   as_of: string;
 };
@@ -151,6 +153,7 @@ function rowToResult(r: DbZoneRow): DbZoneResult {
     lat: r.lat ?? 0,
     lng: r.lng ?? 0,
     distanceM: r.distance_m,
+    ...(r.high_school_type ? { highSchoolType: r.high_school_type } : {}),
     source: r.source,
     asOf: r.as_of,
   };

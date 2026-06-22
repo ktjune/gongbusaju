@@ -25,6 +25,7 @@ interface SchoolRow {
   address: string;
   lat: number;
   lng: number;
+  highSchoolType?: string;
   source: string;
   asOf: string;
 }
@@ -56,16 +57,18 @@ function parseCsv(csvContent: string, asOf: string): SchoolRow[] {
 async function upsertSchools(pool: Pool, rows: SchoolRow[]): Promise<void> {
   for (const row of rows) {
     await pool.query(
-      `INSERT INTO schools (school_id, name, type, address, location, source, as_of)
-       VALUES ($1, $2, $3, $4, ST_SetSRID(ST_Point($6, $5), 4326), $7, $8)
+      `INSERT INTO schools (school_id, name, type, address, location, high_school_type, source, as_of)
+       VALUES ($1, $2, $3, $4, ST_SetSRID(ST_Point($6, $5), 4326), $7, $8, $9)
        ON CONFLICT (school_id) DO UPDATE SET
-         name     = EXCLUDED.name,
-         type     = EXCLUDED.type,
-         address  = EXCLUDED.address,
-         location = EXCLUDED.location,
-         source   = EXCLUDED.source,
-         as_of    = EXCLUDED.as_of`,
-      [row.schoolId, row.name, row.type, row.address, row.lat, row.lng, row.source, row.asOf]
+         name             = EXCLUDED.name,
+         type             = EXCLUDED.type,
+         address          = EXCLUDED.address,
+         location         = EXCLUDED.location,
+         high_school_type = EXCLUDED.high_school_type,
+         source           = EXCLUDED.source,
+         as_of            = EXCLUDED.as_of`,
+      [row.schoolId, row.name, row.type, row.address, row.lat, row.lng,
+       row.highSchoolType ?? null, row.source, row.asOf]
     );
   }
 }

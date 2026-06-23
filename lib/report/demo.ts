@@ -75,8 +75,8 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
       `**협동** 역할이 분명한 상황에서 힘을 내는 경향이 있습니다.`,
 
     subjectTendencyProse:
-      `${strong.hanja}(${wuxingToHangul(strong.hanja)}) 기운이 강한 점은 전통적으로 위 표의 해당 영역과 연결해 보는 관점이 있습니다. ` +
-      `다만 이는 적성의 단정이 아니라 접근 방식의 참고이며, 실제 적성은 아이의 경험과 흥미 속에서 발견됩니다.`,
+      `${strong.hanja}(${wuxingToHangul(strong.hanja)}) 기운이 강한 점은 전통적으로 위 표의 해당 영역과 잘 닿아 있습니다. ` +
+      `그 영역의 활동에서 아이가 흥미를 보이는 지점을 한 걸음 더 깊이 파고들도록 곁에서 북돋아 주세요.`,
 
     aptitudeProse:
       `이 아이는 **${strongInfo?.keyword ?? "타고난"} 기운이 두드러져, 그와 맞닿은 분야에서 강점이 잘 드러나는 경향**이 있습니다. ` +
@@ -91,8 +91,7 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
         const fields = m?.fields ?? "다양한 분야";
         return `**${strong.hanja}(${wuxingToHangul(strong.hanja)}) 계열** — ${fields}. ${m?.trait ?? ""}\n\n`;
       })() +
-      `이는 어디까지나 기질에 비추어 본 **경향 참고**이며, 특정 직업을 권하거나 단정하는 것이 아닙니다. ` +
-      `진로는 아이의 흥미·노력·시대 변화 속에서 스스로 만들어 가는 것입니다.`,
+      `진로는 아이의 흥미와 노력 속에서 스스로 넓혀 가는 것이니, 위 분야들을 아이와 대화를 여는 실마리로 삼아 보세요.`,
 
     majorProse:
       ((): string => {
@@ -101,8 +100,7 @@ export function buildDemoProse(saju: SajuResult): Record<string, string> {
         return `대학 전공·학문 계열로는 **${majors}** 계열이 이 아이의 ${strongInfo?.keyword ?? "타고난"} 기운과 잘 맞는 경향으로 참고됩니다.\n\n`;
       })() +
       `기질로 보면 차분히 깊게 파고드는 환경에서 힘을 내는 편이라, 급격한 변화보다 충분히 탐구할 수 있는 진학 환경이 잘 어울리는 경향입니다. ` +
-      `국내 진학과 해외 유학 어느 쪽이든, 관심 전공이 또렷해진 뒤 **그 분야가 강한 국내외 대학을 직접 살펴보시기**를 권합니다.\n\n` +
-      `특정 대학을 사주로 정하는 것이 아니며, 진학·유학 방향은 아이의 흥미와 가정 여건을 함께 고려해 결정하실 참고자료입니다.`,
+      `국내 진학과 해외 유학 어느 쪽이든, 관심 전공이 또렷해진 뒤 **그 분야가 강한 국내외 대학을 직접 살펴보시기**를 권합니다.`,
 
     parentingProse:
       `보호자께서 참고하실 만한 점을 정리합니다.\n\n` +

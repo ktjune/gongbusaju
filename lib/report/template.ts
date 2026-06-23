@@ -299,25 +299,38 @@ export function buildTenGodsDictSection(saju: SajuResult): string {
     counts[key] = (counts[key] ?? 0) + v;
   }
 
-  const rows = Object.entries(TENGOD_DICT).map(([key, d]) => {
+  // 이 아이가 가진 십성만 표로 (없는 십성은 길어지기만 하므로 제외)
+  const ownedEntries = Object.entries(TENGOD_DICT).filter(
+    ([key]) => (counts[key] ?? 0) > 0
+  );
+  const rows = ownedEntries.map(([key, d]) => {
     const count = counts[key] ?? 0;
-    const own = count > 0 ? `**${count}개**` : "—";
-    return `| ${key}(${d.hangul}) | ${d.group} | ${d.meaning} | ${own} |`;
+    return `| ${key}(${d.hangul}) | ${d.group} | ${d.meaning} | ${count}개 |`;
   });
 
-  const ownedDetails = Object.entries(TENGOD_DICT)
-    .filter(([key]) => (counts[key] ?? 0) > 0)
-    .map(([key, d]) => `- **${key}(${d.hangul})**: ${d.study}`);
+  const ownedDetails = ownedEntries.map(
+    ([key, d]) => `- **${key}(${d.hangul})**: ${d.study}`
+  );
 
-  return [
+  // 미보유 십성은 이름만 한 줄로 압축 안내
+  const absent = Object.entries(TENGOD_DICT)
+    .filter(([key]) => (counts[key] ?? 0) === 0)
+    .map(([key, d]) => `${key}(${d.hangul})`);
+
+  const out: string[] = [
     `| 십성 | 분류 | 뜻 | 이 아이 |`,
     `|---|---|---|---|`,
     ...rows,
-    ``,
-    `#### 이 아이가 가진 십성, 공부에서는`,
-    ``,
-    ...ownedDetails,
-  ].join("\n");
+  ];
+  if (absent.length > 0) {
+    out.push(
+      ``,
+      `> 이 아이 사주에서 두드러지지 않는 십성: ${absent.join(", ")} — 없다고 부족한 것이 아니라, 위에 나타난 기운이 더 선명하다는 뜻입니다.`
+    );
+  }
+  out.push(``, `#### 이 아이가 가진 십성, 공부에서는`, ``, ...ownedDetails);
+
+  return out.join("\n");
 }
 
 /** 기질 지표 표 — 6축 (해석 지표, 측정치 아님) */

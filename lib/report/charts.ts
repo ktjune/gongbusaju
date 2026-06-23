@@ -35,11 +35,16 @@ export function elementsBarChart(saju: SajuResult): string {
     const y = 10 + i * ROW;
     const w = Math.max(2, (pct / 100) * BAR_MAX);
     const color = WUXING_COLOR[hanja];
+    // % 라벨: 막대가 충분히 넓으면 막대 안에 흰 글씨, 좁으면 막대 밖에 진한 글씨
+    const inside = w >= 48;
+    const pctLabel = inside
+      ? `<text x="${PAD_L + w - 10}" y="${y + 20}" text-anchor="end" font-size="15" font-weight="bold" fill="#fff" ${FONT}>${Math.round(pct)}%</text>`
+      : `<text x="${PAD_L + w + 8}" y="${y + 20}" font-size="15" font-weight="bold" fill="#222" ${FONT}>${Math.round(pct)}%</text>`;
     return [
       `<text x="${PAD_L - 12}" y="${y + 21}" text-anchor="end" font-size="15" font-weight="bold" fill="${color}" ${FONT}>${hanja}(${key})</text>`,
       `<rect x="${PAD_L}" y="${y}" width="${BAR_MAX}" height="30" rx="6" fill="#f0f0f0"/>`,
       `<rect x="${PAD_L}" y="${y}" width="${w}" height="30" rx="6" fill="${color}"/>`,
-      `<text x="${PAD_L + BAR_MAX + 10}" y="${y + 21}" font-size="14" fill="#333" ${FONT}>${Math.round(pct)}%</text>`,
+      pctLabel,
     ].join("");
   });
 
@@ -54,7 +59,7 @@ export function wuxingCycleChart(saju: SajuResult): string {
   const order: Array<[string, keyof SajuResult["elements"]]> = [
     ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
   ];
-  const W = 480, H = 420, CX = W / 2, CY = H / 2 + 6, R = 150;
+  const W = 520, H = 480, CX = W / 2, CY = H / 2 - 4, R = 162;
 
   // 五行을 정오각형 꼭짓점에 배치 (木이 위, 시계방향 = 상생 순서)
   const pos = order.map(([hanja, key], i) => {
@@ -98,12 +103,18 @@ export function wuxingCycleChart(saju: SajuResult): string {
     const pct = saju.elements[key];
     const r = nodeR(pct);
     const color = WUXING_COLOR[hanja];
-    const opacity = pct === 0 ? 0.28 : 1;
+    const opacity = pct === 0 ? 0.35 : 1;
+    // 노드 안: 한자 + 한글. 노드 아래: 흰 칩에 "한글 NN%" (교차선 위에서도 또렷하게)
+    const label = `${key} ${Math.round(pct)}%`;
+    const chipW = label.length * 9 + 18;
+    const chipY = y + r + 7;
     return [
       `<g opacity="${opacity}">`,
       `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}"/>`,
-      `<text x="${x}" y="${y + 1}" text-anchor="middle" dominant-baseline="middle" font-size="${r * 0.7}" font-weight="bold" fill="#fff" ${FONT}>${hanja}</text>`,
-      `<text x="${x}" y="${y + r + 16}" text-anchor="middle" font-size="13" fill="#444" ${FONT}>${key} ${Math.round(pct)}%</text>`,
+      `<text x="${x}" y="${y - r * 0.12}" text-anchor="middle" dominant-baseline="middle" font-size="${r * 0.66}" font-weight="bold" fill="#fff" ${FONT}>${hanja}</text>`,
+      `<text x="${x}" y="${y + r * 0.42}" text-anchor="middle" dominant-baseline="middle" font-size="${r * 0.34}" fill="#fff" opacity="0.9" ${FONT}>${key}</text>`,
+      `<rect x="${x - chipW / 2}" y="${chipY}" width="${chipW}" height="23" rx="11.5" fill="#fff" stroke="${color}" stroke-width="1.6"/>`,
+      `<text x="${x}" y="${chipY + 16}" text-anchor="middle" font-size="13.5" font-weight="bold" fill="${color}" ${FONT}>${label}</text>`,
       `</g>`,
     ].join("");
   });

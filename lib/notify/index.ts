@@ -91,10 +91,10 @@ async function sendEmail(
 }
 
 function buildFromAddress(): string {
-  const email =
-    process.env.NOTIFY_FROM_EMAIL ?? "onboarding@resend.dev";
-  const name =
-    process.env.NOTIFY_FROM_NAME ?? "공부사주";
+  // 주의: ?? 가 아니라 빈 문자열까지 기본값으로 처리해야 한다.
+  // 환경변수가 "" 로 설정되면 발신 주소가 "공부사주 <>" 가 돼 발송이 조용히 실패한다.
+  const email = process.env.NOTIFY_FROM_EMAIL?.trim() || "onboarding@resend.dev";
+  const name = process.env.NOTIFY_FROM_NAME?.trim() || "공부사주";
   return `${name} <${email}>`;
 }
 

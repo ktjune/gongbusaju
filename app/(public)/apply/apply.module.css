@@ -140,6 +140,45 @@
   flex: 1;
 }
 
+.addrBtn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 10px 16px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.postcodeWrap {
+  margin-top: 10px;
+}
+
+.postcodeBox {
+  width: 100%;
+  height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.addrClear {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .checkRow {
   display: flex;
   align-items: flex-start;

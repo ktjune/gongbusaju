@@ -1,69 +1,133 @@
 "use client";
 
 /**
- * /apply — 신청 폼 (Phase 5b)
+ * /apply — 신청 폼
  *
- * 생년월일시·성별·(Premium)주소/재학학교·연락처·동의 입력 → POST /api/order.
+ * 생년월일시·성별·(선택)주소/재학학교·연락처·동의 입력 → POST /api/order.
  * 결제는 모의(자격증명 전). 제출 성공 시 "제작 중" 안내 화면.
+ *
+ * - 생년월일/시각: 네이티브 피커(달력·시계). 직접 타이핑도 가능.
+ * - 주소: 카카오(다음) 우편번호 검색 위젯으로 도로명주소 선택(선택 입력).
+ *   사주 계산은 출생지를 쓰지 않으므로(동경 127.5° 고정 보정) 주소는 학교 안내용일 뿐이다.
  *
  * PII는 서버(/api/order)에서 즉시 암호화 저장 — 이 폼은 평문을 전송만 하고 보관하지 않는다.
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styles from "./apply.module.css";
 
 const PRICE = "29,000";
+const MIN_DATE = "1980-01-01";
+const MAX_DATE = new Date().toISOString().slice(0, 10);
+const DAUM_POSTCODE_SRC =
+  "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 
-const FIRST_YEAR = 1980;
-const YEARS = Array.from(
-  { length: new Date().getFullYear() - FIRST_YEAR + 1 },
-  (_, i) => new Date().getFullYear() - i
-);
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+declare global {
+  interface Window {
+    daum?: {
+      Postcode: new (opts: {
+        oncomplete: (data: { roadAddress: string; jibunAddress: string }) => void;
+        onclose?: (state: string) => void;
+        width?: string | number;
+        height?: string | number;
+      }) => { open: () => void; embed: (el: HTMLElement) => void };
+    };
+  }
+}
+
+/** 다음 우편번호 스크립트를 1회 로드한다. */
+function loadDaumPostcode(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.daum?.Postcode) return resolve();
+    const existing = document.getElementById("daum-postcode-script");
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("load error")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "daum-postcode-script";
+    s.src = DAUM_POSTCODE_SRC;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("load error"));
+    document.body.appendChild(s);
+  });
+}
 
 export default function ApplyPage() {
   const [gender, setGender] = useState<"male" | "female">("male");
-  const [birthYear, setBirthYear] = useState("");
-  const [birthMonth, setBirthMonth] = useState("");
-  const [birthDay, setBirthDay] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
-  const [birthHour, setBirthHour] = useState("");
-  const [birthMinute, setBirthMinute] = useState("0");
+  const [birthTime, setBirthTime] = useState("");
   const [address, setAddress] = useState("");
   const [currentSchool, setCurrentSchool] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [consent, setConsent] = useState(false);
 
+  const [searching, setSearching] = useState(false);
+  const postcodeBoxRef = useRef<HTMLDivElement>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ orderId: string } | null>(null);
 
+  const birthYear = birthDate.slice(0, 4);
+
   const canSubmit =
-    birthYear &&
-    birthMonth &&
-    birthDay &&
-    (timeUnknown || birthHour !== "") &&
+    birthDate &&
+    (timeUnknown || birthTime !== "") &&
     consent &&
     !submitting;
+
+  async function openAddressSearch() {
+    setError(null);
+    try {
+      await loadDaumPostcode();
+      // 팝업(.open) 대신 페이지 내 임베드(.embed) — 모바일·인앱 브라우저에서 안정적.
+      setSearching(true);
+      requestAnimationFrame(() => {
+        const box = postcodeBoxRef.current;
+        if (!box || !window.daum) return;
+        box.innerHTML = "";
+        new window.daum.Postcode({
+          width: "100%",
+          height: "100%",
+          oncomplete: (data) => {
+            setAddress(data.roadAddress || data.jibunAddress);
+            setSearching(false);
+          },
+        }).embed(box);
+      });
+    } catch {
+      setError("주소 검색을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
+      const [y, m, d] = birthDate.split("-").map(Number);
+      let hour: number | null = null;
+      let minute: number | null = null;
+      if (!timeUnknown && birthTime) {
+        const [hh, mm] = birthTime.split(":").map(Number);
+        hour = hh;
+        minute = mm;
+      }
+
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tier: "premium",
-          birthYear: Number(birthYear),
-          birthMonth: Number(birthMonth),
-          birthDay: Number(birthDay),
-          birthHour: timeUnknown ? null : Number(birthHour),
-          birthMinute: timeUnknown ? null : Number(birthMinute),
+          birthYear: y,
+          birthMonth: m,
+          birthDay: d,
+          birthHour: hour,
+          birthMinute: minute,
           gender,
           address: address.trim() || undefined,
           currentSchool: currentSchool.trim() || undefined,
@@ -77,8 +141,6 @@ export default function ApplyPage() {
         setError(data.error ?? "신청에 실패했습니다.");
         return;
       }
-      // 큐 방식: 생성은 Vercel Cron(1분 주기)이 백그라운드로 처리.
-      // 폼은 접수 완료만 표시한다.
       setDone({ orderId: data.orderId });
     } catch {
       setError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
@@ -126,33 +188,26 @@ export default function ApplyPage() {
 
           <div className={styles.field}>
             <label className={styles.label}>생년월일 (양력)</label>
-            <div className={styles.row}>
-              <select className={styles.select} value={birthYear} onChange={(e) => setBirthYear(e.target.value)}>
-                <option value="">년</option>
-                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-              <select className={styles.select} value={birthMonth} onChange={(e) => setBirthMonth(e.target.value)}>
-                <option value="">월</option>
-                {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <select className={styles.select} value={birthDay} onChange={(e) => setBirthDay(e.target.value)}>
-                <option value="">일</option>
-                {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
+            <input
+              className={styles.input}
+              type="date"
+              value={birthDate}
+              min={MIN_DATE}
+              max={MAX_DATE}
+              onChange={(e) => setBirthDate(e.target.value)}
+            />
+            <p className={styles.hint}>달력에서 고르거나 직접 입력할 수 있습니다.</p>
           </div>
 
           <div className={styles.field}>
             <label className={styles.label}>출생 시각</label>
-            <div className={styles.row}>
-              <select className={styles.select} value={birthHour} disabled={timeUnknown} onChange={(e) => setBirthHour(e.target.value)}>
-                <option value="">시</option>
-                {HOURS.map((h) => <option key={h} value={h}>{h}시</option>)}
-              </select>
-              <select className={styles.select} value={birthMinute} disabled={timeUnknown} onChange={(e) => setBirthMinute(e.target.value)}>
-                {Array.from({ length: 60 }, (_, i) => i).map((m) => <option key={m} value={m}>{m}분</option>)}
-              </select>
-            </div>
+            <input
+              className={styles.input}
+              type="time"
+              value={birthTime}
+              disabled={timeUnknown}
+              onChange={(e) => setBirthTime(e.target.value)}
+            />
             <label className={styles.checkRow} style={{ marginTop: 8 }}>
               <input type="checkbox" checked={timeUnknown} onChange={(e) => setTimeUnknown(e.target.checked)} />
               <span>출생 시각을 모릅니다 (시주를 제외하고 풀이합니다)</span>
@@ -181,15 +236,38 @@ export default function ApplyPage() {
           <h2 className={styles.sectionTitle}>거주지 · 학교 (선택)</h2>
           <div className={styles.field}>
             <label className={styles.label}>주소 (선택)</label>
-            <input
-              className={styles.input}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="예: 서울특별시 종로구 자하문로 105"
-            />
+            <div className={styles.row}>
+              <input
+                className={styles.input}
+                value={address}
+                readOnly
+                placeholder="‘주소 검색’을 눌러 선택하세요"
+                onClick={openAddressSearch}
+              />
+              <button type="button" className={styles.addrBtn} onClick={openAddressSearch}>
+                주소 검색
+              </button>
+            </div>
+            {searching && (
+              <div className={styles.postcodeWrap}>
+                <div ref={postcodeBoxRef} className={styles.postcodeBox} />
+                <button
+                  type="button"
+                  className={styles.addrClear}
+                  onClick={() => setSearching(false)}
+                >
+                  주소 검색 닫기
+                </button>
+              </div>
+            )}
+            {address && !searching && (
+              <button type="button" className={styles.addrClear} onClick={() => setAddress("")}>
+                주소 지우기
+              </button>
+            )}
             <p className={styles.hint}>
-              입력하시면 예상 배정 학교·반경 학교군 안내가 함께 제공됩니다. 도로명 + 건물번호까지면
-              충분하며, 동·호수는 입력하지 않으셔도 됩니다. 비워 두면 사주 해석만 제공됩니다.
+              주소를 선택하시면 예상 배정 학교·반경 학교군 안내가 함께 제공됩니다.
+              비워 두면 사주 해석만 제공됩니다. (사주 계산에는 출생지·주소가 쓰이지 않습니다.)
             </p>
           </div>
           <div className={styles.field}>

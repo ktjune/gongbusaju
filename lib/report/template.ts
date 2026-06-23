@@ -681,6 +681,53 @@ export function buildFactBlock(schools: SchoolFacts, saju?: SajuResult): FactBlo
 }
 
 // ──────────────────────────────────────────────────────────────
+// 한 장 요약 — 코드만, LLM 없음
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * 리포트 맨 앞에 들어가는 "한 장 요약" 섹션.
+ * 사주 계산값(일간·오행·기질 지표·고교 유형 점수)에서 핵심만 추려 보여 준다.
+ * 부모가 긴 본문을 다 읽기 전에 먼저 파악할 수 있도록 한다. LLM 미관여.
+ */
+export function buildSummarySection(saju: SajuResult): string {
+  const order: Array<[string, keyof SajuResult["elements"]]> = [
+    ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
+  ];
+  const withPct = order.map(([hanja, key]) => ({ hanja, pct: saju.elements[key] }));
+  const strong = [...withPct].sort((a, b) => b.pct - a.pct)[0];
+  const weak = [...withPct].sort((a, b) => a.pct - b.pct)[0];
+  const strongD = WUXING_DICT[strong.hanja];
+  const weakD = WUXING_DICT[weak.hanja];
+
+  const dayStem = saju.pillars.day.charAt(0);
+  const dayKr = ganjiToHangul(saju.pillars.day).charAt(0);
+  const sd = STEM_DICT[dayStem];
+
+  const topTraits = Object.entries(saju.traitScores)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([k, v]) => `${k}(${v})`)
+    .join(", ");
+
+  const topType = deriveSchoolTypeScores(saju)[0];
+  const stars = "★".repeat(topType.stars) + "☆".repeat(3 - topType.stars);
+
+  return [
+    "## 우리 아이 한 장 요약",
+    "",
+    "> 리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.",
+    "",
+    `- **타고난 결**: 일간 ${dayStem}(${dayKr})${sd ? ` · ${sd.nature}` : ""}`,
+    `- **가장 강한 기운**: ${strong.hanja}(${strongD.hangul}) ${Math.round(strong.pct)}% · ${strongD.keyword}`,
+    `- **보완하면 좋을 기운**: ${weak.hanja}(${weakD.hangul}) ${Math.round(weak.pct)}%`,
+    `- **돋보이는 기질 지표**: ${topTraits}`,
+    `- **기질로 본 고교 유형 참고(1순위)**: ${topType.label} ${stars} — ${topType.reason}`,
+    "",
+    "> 위 항목은 사주 기질 관점의 **참고 지표**이며, 측정 검사 결과가 아닙니다.",
+  ].join("\n");
+}
+
+// ──────────────────────────────────────────────────────────────
 // 리포트 조립
 // ──────────────────────────────────────────────────────────────
 
@@ -700,6 +747,9 @@ export function assembleReport(
 
   type Section = { title: string; body: string };
   const sections: Section[] = [];
+
+  // ── 한 장 요약 (데이터 기반, 맨 앞) ──────────────────────
+  sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju) });
 
   // ── 안내·기초 (정적) ─────────────────────────────────────
   sections.push({ title: "이 리포트를 읽는 법", body: HOW_TO_READ });
@@ -924,13 +974,15 @@ export function assembleReport(
   sections.push({ title: "자주 묻는 질문", body: FAQ });
   sections.push({ title: "용어 풀이", body: GLOSSARY });
 
-  // ── 목차 생성 ────────────────────────────────────────────
+  // ── 목차 생성 (클릭 가능한 앵커 링크) ────────────────────
   const toc =
     "## 목차\n\n" +
-    sections.map((s, i) => `${i + 1}. ${s.title}`).join("\n");
+    sections.map((s, i) => `${i + 1}. [${s.title}](#sec-${i + 1})`).join("\n");
 
-  // ── 최종 조립 ────────────────────────────────────────────
-  const body = sections.map((s) => s.body).join("\n\n---\n\n");
+  // ── 최종 조립 (각 섹션 앞에 앵커 삽입 → 목차에서 점프) ───
+  const body = sections
+    .map((s, i) => `<a id="sec-${i + 1}"></a>\n\n${s.body}`)
+    .join("\n\n---\n\n");
 
   const notices = [TIME_STANDARD_NOTICE];
   if (saju.dstApplied) notices.push(DST_CORRECTION_NOTICE);

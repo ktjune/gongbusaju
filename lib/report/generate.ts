@@ -304,6 +304,29 @@ ${fieldSpecLines}
 ${jsonShape}`;
 }
 
+/**
+ * 비동기 작업을 실패 시 재시도한다 (지수 백오프).
+ * 일시적 오류(API 흔들림·네트워크·타임아웃) 복구용.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  attempts = 3,
+  baseDelayMs = 500
+): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, baseDelayMs * (i + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 /** 그룹 하나를 생성하고 Partial<LlmPerspective> 반환 */
 async function generateGroup(
   group: FieldGroupDef,
@@ -313,7 +336,11 @@ async function generateGroup(
 ): Promise<Partial<LlmPerspective>> {
   const systemPrompt = buildGroupSystemPrompt(group, isPremium);
   const schema = buildGroupSchema(group.fields);
-  const raw = await provider.complete(systemPrompt, userPrompt, schema);
+  // API 호출만 재시도한다. 일시적 오류(네트워크·5xx·타임아웃)는 복구하되,
+  // 아래의 JSON 파싱·필수 필드 검증 실패는 결정적이므로 재시도하지 않는다.
+  const raw = await withRetry(() =>
+    provider.complete(systemPrompt, userPrompt, schema)
+  );
 
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {

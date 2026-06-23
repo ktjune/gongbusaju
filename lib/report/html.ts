@@ -65,8 +65,6 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
   const { pillars } = saju;
   const date =
     opts.generatedAt ?? new Date().toISOString().slice(0, 10);
-  const tierLabel =
-    opts.tier === "premium" ? "Premium" : opts.tier === "basic" ? "Basic" : "";
 
   return `<header class="cover">
   ${opts.sampleNotice ? `<div class="sample-band">${opts.sampleNotice}</div>` : ""}
@@ -81,7 +79,6 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
   </div>
   <p class="cover-hint">가운데 강조된 기둥(日柱)의 윗글자가 아이 자신을 뜻하는 <b>일간</b>입니다.</p>
   <div class="cover-meta">
-    ${tierLabel ? `<span class="meta-chip">${tierLabel}</span>` : ""}
     <span class="meta-chip">발행 ${date}</span>
   </div>
   <p class="cover-note">본 리포트의 해석은 사주 명리의 관점이며, 실측 검사 결과가 아닙니다.</p>

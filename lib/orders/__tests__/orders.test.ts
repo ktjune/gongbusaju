@@ -167,13 +167,13 @@ describe("createOrder — PII 암호화 저장", () => {
     expect(plain.gender).toBe("female");
   });
 
-  it("Premium은 주소가 없으면 거부", async () => {
-    await expect(
-      createOrder({ tier: "premium", subject: basicInput.subject })
-    ).rejects.toThrow(/주소/);
+  it("주소가 없어도 주문이 생성된다 (주소는 선택 입력)", async () => {
+    const order = await createOrder({ tier: "premium", subject: basicInput.subject });
+    expect(order.id).toBeTruthy();
+    expect(order.status).toBe("paid");
   });
 
-  it("Premium 주소가 암호화 저장·복원된다", async () => {
+  it("주소가 암호화 저장·복원된다", async () => {
     const order = await createOrder({
       tier: "premium",
       subject: { ...basicInput.subject, address: "서울특별시 종로구 자하문로 105", currentSchool: "청운초등학교" },

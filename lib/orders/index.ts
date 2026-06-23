@@ -97,9 +97,7 @@ function validateInput(input: CreateOrderInput): void {
   if (s.gender !== "male" && s.gender !== "female") {
     throw new Error("성별이 올바르지 않습니다");
   }
-  if (tier === "premium" && !s.address?.trim()) {
-    throw new Error("Premium은 주소가 필요합니다");
-  }
+  // 주소는 선택 입력 — 있으면 학교 사실 섹션이 추가되고, 없으면 사주 해석만 생성된다.
 }
 
 /**

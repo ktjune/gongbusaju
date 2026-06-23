@@ -12,7 +12,7 @@
 import { useState } from "react";
 import styles from "./apply.module.css";
 
-type Tier = "basic" | "premium";
+const PRICE = "29,000";
 
 const FIRST_YEAR = 1980;
 const YEARS = Array.from(
@@ -24,7 +24,6 @@ const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export default function ApplyPage() {
-  const [tier, setTier] = useState<Tier>("premium");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [birthYear, setBirthYear] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
@@ -48,7 +47,6 @@ export default function ApplyPage() {
     birthDay &&
     (timeUnknown || birthHour !== "") &&
     consent &&
-    (tier === "basic" || address.trim()) &&
     !submitting;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -60,15 +58,15 @@ export default function ApplyPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tier,
+          tier: "premium",
           birthYear: Number(birthYear),
           birthMonth: Number(birthMonth),
           birthDay: Number(birthDay),
           birthHour: timeUnknown ? null : Number(birthHour),
           birthMinute: timeUnknown ? null : Number(birthMinute),
           gender,
-          address: tier === "premium" ? address : undefined,
-          currentSchool: tier === "premium" ? currentSchool : undefined,
+          address: address.trim() || undefined,
+          currentSchool: currentSchool.trim() || undefined,
           contactEmail,
           contactPhone,
           consent,
@@ -121,28 +119,6 @@ export default function ApplyPage() {
         </p>
 
         {error && <div className={styles.error}>{error}</div>}
-
-        {/* 요금제 */}
-        <div className={styles.tiers}>
-          <button
-            type="button"
-            className={`${styles.tier} ${tier === "basic" ? styles.tierActive : ""}`}
-            onClick={() => setTier("basic")}
-          >
-            <div className={styles.tierName}>Basic</div>
-            <div className={styles.tierDesc}>공부·기질 사주 해석</div>
-            <div className={styles.tierPrice}>29,000원</div>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tier} ${tier === "premium" ? styles.tierActive : ""}`}
-            onClick={() => setTier("premium")}
-          >
-            <div className={styles.tierName}>Premium</div>
-            <div className={styles.tierDesc}>+ 지역 학교군 정보</div>
-            <div className={styles.tierPrice}>49,000원</div>
-          </button>
-        </div>
 
         {/* 아이 정보 */}
         <div className={styles.section}>
@@ -200,31 +176,32 @@ export default function ApplyPage() {
           </div>
         </div>
 
-        {/* Premium 추가 정보 */}
-        {tier === "premium" && (
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>거주지 · 학교 (Premium)</h2>
-            <div className={styles.field}>
-              <label className={styles.label}>주소</label>
-              <input
-                className={styles.input}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="예: 서울특별시 종로구 자하문로 105"
-              />
-              <p className={styles.hint}>예상 배정 학교·반경 학교군 안내에 사용됩니다.</p>
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>현재 재학 기관 (선택)</label>
-              <input
-                className={styles.input}
-                value={currentSchool}
-                onChange={(e) => setCurrentSchool(e.target.value)}
-                placeholder="예: 청운초등학교 / 푸른숲유치원"
-              />
-            </div>
+        {/* 거주지 · 학교 (선택) */}
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>거주지 · 학교 (선택)</h2>
+          <div className={styles.field}>
+            <label className={styles.label}>주소 (선택)</label>
+            <input
+              className={styles.input}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="예: 서울특별시 종로구 자하문로 105"
+            />
+            <p className={styles.hint}>
+              입력하시면 예상 배정 학교·반경 학교군 안내가 함께 제공됩니다. 도로명 + 건물번호까지면
+              충분하며, 동·호수는 입력하지 않으셔도 됩니다. 비워 두면 사주 해석만 제공됩니다.
+            </p>
           </div>
-        )}
+          <div className={styles.field}>
+            <label className={styles.label}>현재 재학 기관 (선택)</label>
+            <input
+              className={styles.input}
+              value={currentSchool}
+              onChange={(e) => setCurrentSchool(e.target.value)}
+              placeholder="예: 청운초등학교 / 푸른숲유치원"
+            />
+          </div>
+        </div>
 
         {/* 연락처 */}
         <div className={styles.section}>
@@ -251,7 +228,7 @@ export default function ApplyPage() {
         </div>
 
         <button className={styles.submit} type="submit" disabled={!canSubmit}>
-          {submitting ? "접수 중…" : `신청하기 (${tier === "premium" ? "49,000" : "29,000"}원)`}
+          {submitting ? "접수 중…" : `신청하기 (${PRICE}원)`}
         </button>
 
         <p className={styles.notice}>

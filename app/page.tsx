@@ -79,7 +79,7 @@ export default function Home() {
               <div className={styles.stepNum}>1</div>
               <div className={styles.stepName}>정보 입력</div>
               <div className={styles.stepDesc}>
-                자녀의 생년월일시·성별<br />(Premium은 주소·재학 학교)
+                자녀의 생년월일시·성별<br />(주소·재학 학교는 선택)
               </div>
             </div>
             <div className={styles.stepArrow} aria-hidden="true">→</div>
@@ -133,7 +133,7 @@ export default function Home() {
             <div className={styles.featureDesc}>현 학령 단계에 맞춘 안내와 진학 타임라인</div>
           </div>
           <div className={`${styles.feature} ${styles.featurePremium}`}>
-            <div className={styles.featurePremiumBadge}>Premium</div>
+            <div className={styles.featurePremiumBadge}>주소 입력 시</div>
             <div className={styles.featureIcon}>🏫</div>
             <div className={styles.featureName}>학교 정보</div>
             <div className={styles.featureDesc}>예상 배정 학교·반경 학교군 (교육청 확인 필요)</div>
@@ -149,7 +149,7 @@ export default function Home() {
           <div className={styles.previewCard}>
             <div className={styles.previewHeader}>
               <div className={styles.previewTitle}>공부사주 리포트 — 甲木 일간 (예시)</div>
-              <div className={styles.previewTier}>Premium</div>
+              <div className={styles.previewTier}>예시</div>
             </div>
             <div className={styles.previewBody}>
               <div className={styles.previewSection}>
@@ -173,41 +173,26 @@ export default function Home() {
         </section>
       </div>
 
-      {/* ── 요금제 ── */}
+      {/* ── 가격 ── */}
       <div className={styles.sectionBand}>
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>요금제</h2>
+          <h2 className={styles.sectionTitle}>가격</h2>
           <p className={styles.sectionLead}>아이 한 명, 한 부의 리포트</p>
           <div className={styles.tiers}>
-            <div className={styles.tier}>
-              <div className={styles.tierName}>Basic</div>
+            <div className={`${styles.tier} ${styles.tierFeatured}`}>
+              <div className={styles.tierName}>공부사주 리포트</div>
               <div className={styles.tierPrice}>
                 29,000<span>원</span>
               </div>
               <ul className={styles.tierList}>
                 <li>사주 원국·오행·십성 해석</li>
                 <li>공부 스타일·부모 코칭</li>
-                <li>대운·세운 흐름</li>
+                <li>대운·세운 흐름 · 학령 단계 맞춤 안내</li>
+                <li>예상 배정 학교·반경 학교군 <b>(주소 입력 시)</b></li>
                 <li>웹 결과 페이지 + PDF</li>
               </ul>
-              <Link href="/apply" className={styles.tierBtnGhost}>
-                Basic 신청
-              </Link>
-            </div>
-            <div className={`${styles.tier} ${styles.tierFeatured}`}>
-              <div className={styles.tierFlag}>추천</div>
-              <div className={styles.tierName}>Premium</div>
-              <div className={styles.tierPrice}>
-                49,000<span>원</span>
-              </div>
-              <ul className={styles.tierList}>
-                <li>Basic의 모든 내용</li>
-                <li>지금 학령 단계 맞춤 안내</li>
-                <li>예상 배정 학교·반경 학교군</li>
-                <li>학교 선택 기질 참고</li>
-              </ul>
               <Link href="/apply" className={styles.tierBtn}>
-                Premium 신청
+                리포트 신청
               </Link>
             </div>
           </div>

@@ -158,6 +158,14 @@ describe("checkGuardrails — 금지 표현 차단", () => {
     expect(() => checkGuardrails("틀림없이 좋은 결과가 있을 것입니다.")).toThrow(GuardrailError);
   });
 
+  it('"무조건" → GuardrailError', () => {
+    expect(() => checkGuardrails("이 방법이면 무조건 성적이 오릅니다.")).toThrow(GuardrailError);
+  });
+
+  it('"100% 보장/성공" → GuardrailError', () => {
+    expect(() => checkGuardrails("이 진로는 100% 성공합니다.")).toThrow(GuardrailError);
+  });
+
   it('"반드시 이 학교" → GuardrailError', () => {
     expect(() =>
       checkGuardrails("반드시 이 학교에 보내시기 바랍니다.")

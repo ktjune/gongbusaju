@@ -46,46 +46,6 @@
   margin: 0 0 28px;
 }
 
-/* 요금제 선택 */
-.tiers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.tier {
-  text-align: left;
-  background: var(--card);
-  border: 2px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.tierActive {
-  border-color: var(--navy);
-  box-shadow: 0 4px 14px rgba(31, 59, 99, 0.15);
-}
-
-.tierName {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 1.05rem;
-}
-
-.tierDesc {
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-  margin-top: 4px;
-}
-
-.tierPrice {
-  margin-top: 10px;
-  font-weight: 700;
-}
-
 /* 폼 */
 .section {
   background: var(--card);

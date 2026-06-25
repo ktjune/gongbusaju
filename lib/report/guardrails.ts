@@ -64,6 +64,14 @@ const FORBIDDEN_RULES: GuardrailRule[] = [
     reason: '단정 표현 "틀림없이"',
   },
   {
+    pattern: /무조건/,
+    reason: '단정 표현 "무조건"',
+  },
+  {
+    pattern: /100\s*%\s*(?:보장|확실|성공|합격|효과)/,
+    reason: '수치 보장 단정 "100% …"',
+  },
+  {
     pattern: /반드시\s*(?:이|저|그|해당|배정|가까운|주변)?[\s가-힣]{0,6}학교/,
     reason: '단정 표현 "반드시 [학교]"',
   },

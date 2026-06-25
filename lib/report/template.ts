@@ -562,7 +562,17 @@ export function deriveSchoolTypeScores(saju: SajuResult): SchoolTypeScore[] {
     },
   ];
 
-  return scores.sort((a, b) => b.stars - a.stars);
+  // 별점 내림차순. 동점이면 보수적(무난한) 유형을 앞에 둔다:
+  // 일반고 > 자율고 > 특수목적고 > 특성화고. (예: 土 강한 아이가 특목·일반 동점일 때 일반고가 1순위)
+  const tiePriority: Record<string, number> = {
+    일반고등학교: 0,
+    자율고등학교: 1,
+    특수목적고등학교: 2,
+    특성화고등학교: 3,
+  };
+  return scores.sort(
+    (a, b) => b.stars - a.stars || tiePriority[a.type] - tiePriority[b.type]
+  );
 }
 
 // ──────────────────────────────────────────────────────────────

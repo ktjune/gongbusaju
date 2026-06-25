@@ -300,7 +300,10 @@ export default function ApplyPage() {
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span>
               (필수) 만 14세 미만 자녀의 개인정보(생년월일시·주소·학교) 수집·이용에
-              <b> 법정대리인으로서 동의</b>합니다. 정보는 암호화 저장되며 리포트 제작·보관기간(12개월) 후 파기됩니다.
+              <b> 법정대리인으로서 동의</b>합니다. 정보는 암호화 저장되며 리포트 제작·보관기간(12개월) 후 파기됩니다.{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>개인정보처리방침</a>
+              {" · "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>이용약관</a>
             </span>
           </label>
         </div>

@@ -1,0 +1,103 @@
+.page {
+  --navy: #1f3b63;
+  --ink: #2c2c30;
+  --ink-soft: #5a5f6a;
+  --line: #e3ddd1;
+  --paper: #faf7f1;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  line-height: 1.8;
+  word-break: keep-all;
+  padding: 48px 20px 96px;
+}
+
+.sheet {
+  max-width: 760px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 40px 36px;
+}
+
+.title {
+  font-family: "Nanum Myeongjo", "Noto Serif KR", serif;
+  font-size: 1.7rem;
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.meta {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin: 0 0 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.h2 {
+  font-size: 1.12rem;
+  color: var(--navy);
+  margin: 30px 0 10px;
+}
+
+.p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.ul {
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 0.95rem;
+}
+
+.li {
+  margin: 5px 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.88rem;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  background: #efe9dd;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.callout {
+  background: #f3f6fb;
+  border-left: 4px solid #9db8d9;
+  border-radius: 0 10px 10px 0;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 0.9rem;
+  color: #44505f;
+}
+
+.todo {
+  color: #a36a00;
+  font-weight: 600;
+}
+
+.back {
+  display: inline-block;
+  margin-top: 32px;
+  color: var(--navy);
+  font-size: 0.9rem;
+  text-decoration: underline;
+}

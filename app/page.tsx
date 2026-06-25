@@ -303,6 +303,10 @@ export default function Home() {
         <div className={styles.footerLinks}>
           <Link href="/apply">리포트 신청</Link>
           <span>·</span>
+          <Link href="/terms">이용약관</Link>
+          <span>·</span>
+          <Link href="/privacy">개인정보처리방침</Link>
+          <span>·</span>
           <a href="mailto:ktjune0514@gmail.com">문의</a>
         </div>
         <div className={styles.footerNote}>

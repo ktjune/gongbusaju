@@ -184,13 +184,11 @@ export default function PrivacyPage() {
           <tbody>
             <tr>
               <th>책임자</th>
-              <td>
-                <span className={styles.todo}>[확인 필요: 성명/직책]</span>
-              </td>
+              <td>권태준 (대표)</td>
             </tr>
             <tr>
               <th>연락처</th>
-              <td>ktjune0514@gmail.com</td>
+              <td>moondoor_main@naver.com</td>
             </tr>
           </tbody>
         </table>

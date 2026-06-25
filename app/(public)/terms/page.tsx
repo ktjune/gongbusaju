@@ -23,17 +23,13 @@ export default function TermsPage() {
         <div className={styles.callout}>
           <b>사업자 정보</b>
           <br />
-          상호: <span className={styles.todo}>[확인 필요]</span> · 대표자:{" "}
-          <span className={styles.todo}>[확인 필요]</span> · 사업자등록번호:{" "}
-          <span className={styles.todo}>[확인 필요]</span> · 통신판매업신고번호:{" "}
-          <span className={styles.todo}>[확인 필요]</span>
+          상호: 문도어 · 대표자: 권태준 · 사업자등록번호: 732-46-01157
           <br />
-          주소: <span className={styles.todo}>[확인 필요]</span> · 연락처: ktjune0514@gmail.com
+          통신판매업신고번호: 제2026-서울동대문-0436호
           <br />
-          <span className={styles.todo}>
-            ※ 전자상거래법 제10조에 따라 위 사업자 식별정보는 정식 판매(유료 결제) 개시 전 반드시 기재해야
-            합니다.
-          </span>
+          주소: 서울특별시 동대문구 답십리로68길 31, 3층 s46호
+          <br />
+          고객문의: moondoor_main@naver.com
         </div>
 
         <h2 className={styles.h2}>제1조 (목적)</h2>

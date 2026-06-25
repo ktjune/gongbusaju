@@ -307,7 +307,7 @@ export default function Home() {
           <span>·</span>
           <Link href="/privacy">개인정보처리방침</Link>
           <span>·</span>
-          <a href="mailto:ktjune0514@gmail.com">문의</a>
+          <a href="mailto:moondoor_main@naver.com">문의</a>
         </div>
         <div className={styles.footerNote}>
           미성년 자녀 정보는 법정대리인 동의 하에 암호화·분리 저장됩니다.

@@ -3433,7 +3433,7 @@
   "lng": 126.6742921,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000003151",
@@ -7424,7 +7424,7 @@
   "lng": 129.4061983,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "특수목적고등학교"
+  "highSchoolType": "특성화고등학교"
  },
  {
   "schoolId": "B000002027",
@@ -8274,7 +8274,7 @@
   "lng": 127.2231017,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000006971",
@@ -9260,7 +9260,7 @@
   "lng": 127.0223892,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000007278",
@@ -9597,7 +9597,7 @@
   "lng": 126.8450461,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000007091",
@@ -10095,7 +10095,7 @@
   "lng": 129.0366296,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000012078",
@@ -11267,7 +11267,7 @@
   "lng": 128.7256251,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000003521",
@@ -12593,7 +12593,7 @@
   "lng": 129.4091804,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000010194",
@@ -14607,7 +14607,7 @@
   "lng": 127.0855078,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000001850",
@@ -16746,7 +16746,7 @@
   "lng": 128.4627608,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000009668",
@@ -20485,7 +20485,7 @@
   "lng": 126.7869189,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000010553",
@@ -24268,7 +24268,7 @@
   "lng": 126.8498691,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000004037",
@@ -24739,7 +24739,7 @@
   "lng": 128.3665156,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000008864",
@@ -25699,7 +25699,7 @@
   "lng": 127.0312746,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000011852",
@@ -25843,7 +25843,7 @@
   "lng": 129.3643118,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000003843",
@@ -26188,7 +26188,7 @@
   "lng": 126.6678412,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000006658",
@@ -27684,7 +27684,7 @@
   "lng": 127.0163213,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000009930",
@@ -29942,7 +29942,7 @@
   "lng": 127.1287623,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000008384",
@@ -31058,7 +31058,7 @@
   "lng": 126.7276188,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000009483",
@@ -34153,7 +34153,7 @@
   "lng": 128.3327162,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000004064",
@@ -38379,7 +38379,7 @@
   "lng": 127.7796338,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000011001",
@@ -46005,7 +46005,7 @@
   "lng": 126.485927,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000010821",
@@ -50869,7 +50869,7 @@
   "lng": 126.8437327,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000011798",
@@ -51329,7 +51329,8 @@
   "lat": 35.60490699,
   "lng": 126.2961849,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
-  "asOf": "2026-03-20"
+  "asOf": "2026-03-20",
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000010371",
@@ -52606,7 +52607,7 @@
   "lng": 126.4685602,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000006652",
@@ -57422,7 +57423,7 @@
   "lng": 126.4361801,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "특성화고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000001977",
@@ -60189,7 +60190,7 @@
   "lng": 126.9457596,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000005909",
@@ -66361,7 +66362,7 @@
   "lng": 126.94907,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000022969",
@@ -67819,7 +67820,7 @@
   "lng": 126.7000666,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "특성화고등학교"
  },
  {
   "schoolId": "B000011480",
@@ -70623,7 +70624,7 @@
   "lng": 126.1291567,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "특성화고등학교"
  },
  {
   "schoolId": "B000002491",
@@ -70999,7 +71000,7 @@
   "lng": 128.1918031,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000005569",
@@ -71419,7 +71420,7 @@
   "lng": 127.4834553,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000005660",
@@ -71987,7 +71988,7 @@
   "lng": 127.0972706,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000005299",
@@ -72688,7 +72689,7 @@
   "lng": 126.9585076,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000024013",
@@ -74764,7 +74765,7 @@
   "lng": 127.2654973,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000007946",
@@ -75685,7 +75686,7 @@
   "lng": 127.051311,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000009001",
@@ -81343,7 +81344,7 @@
   "lng": 126.9756383,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000010216",
@@ -84889,7 +84890,7 @@
   "lng": 126.9162285,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000005536",
@@ -86688,7 +86689,7 @@
   "lng": 127.0121354,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000012484",
@@ -87266,7 +87267,7 @@
   "lng": 126.8259386,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000006474",
@@ -88515,7 +88516,7 @@
   "lng": 126.9659967,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000024043",
@@ -91392,7 +91393,7 @@
   "lng": 126.7239075,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000010187",
@@ -93490,7 +93491,7 @@
   "lng": 127.053571,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000008070",
@@ -94277,7 +94278,7 @@
   "lng": 126.8744458,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000005450",
@@ -102763,7 +102764,7 @@
   "lng": 129.3359984,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000011359",
@@ -110269,7 +110270,7 @@
   "lng": 126.9434322,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "특성화고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000030439",
@@ -112366,7 +112367,7 @@
   "lng": 130.9073535,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "특성화고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000003345",
@@ -113732,7 +113733,8 @@
   "lat": 35.16520011,
   "lng": 129.0257844,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
-  "asOf": "2026-03-20"
+  "asOf": "2026-03-20",
+  "highSchoolType": "특수목적고등학교"
  },
  {
   "schoolId": "B000012208",
@@ -114889,7 +114891,7 @@
   "lng": 127.9306001,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000003927",
@@ -116541,7 +116543,7 @@
   "lng": 126.8840075,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000012943",
@@ -116798,7 +116800,7 @@
   "lng": 126.6548626,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "자율고등학교"
+  "highSchoolType": "일반고등학교"
  },
  {
   "schoolId": "B000005387",
@@ -117052,7 +117054,7 @@
   "lng": 126.7849803,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000003873",
@@ -118075,7 +118077,7 @@
   "lng": 126.8811345,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000012663",
@@ -118414,7 +118416,7 @@
   "lng": 127.1195678,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000009265",
@@ -119578,7 +119580,7 @@
   "lng": 126.9342464,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000007260",
@@ -121819,7 +121821,7 @@
   "lng": 129.3725721,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000007311",
@@ -122095,7 +122097,7 @@
   "lng": 128.6287893,
   "source": "전국초중등학교위치표준데이터(data.go.kr/data/15021148)",
   "asOf": "2026-03-20",
-  "highSchoolType": "일반고등학교"
+  "highSchoolType": "자율고등학교"
  },
  {
   "schoolId": "B000012534",

@@ -1,24 +1,27 @@
 "use client";
 
 /**
- * /apply — 신청 폼
+ * /apply — 신청 폼 + 결제
  *
- * 생년월일시·성별·(선택)주소/재학학교·연락처·동의 입력 → POST /api/order.
- * 결제는 모의(자격증명 전). 제출 성공 시 "제작 중" 안내 화면.
+ * 1단계(form): 생년월일시·성별·(선택)주소/재학학교·연락처·동의 입력
+ * 2단계(pay):  토스페이먼츠 결제위젯 → 결제 요청
  *
- * - 생년월일/시각: 네이티브 피커(달력·시계). 직접 타이핑도 가능.
- * - 주소: 카카오(다음) 우편번호 검색 위젯으로 도로명주소 선택(선택 입력).
- *   사주 계산은 출생지를 쓰지 않으므로(동경 127.5° 고정 보정) 주소는 학교 안내용일 뿐이다.
+ * 결제 성공 시 토스가 /order/result 로 리다이렉트하며, 그 페이지가 서버에 결제 승인 +
+ * 주문 생성을 요청한다. 신청 데이터는 결제 직전 sessionStorage에 저장해 전달한다.
  *
- * PII는 서버(/api/order)에서 즉시 암호화 저장 — 이 폼은 평문을 전송만 하고 보관하지 않는다.
+ * PII는 서버(/api/order)에서 즉시 암호화 저장 — 이 폼/세션스토리지는 평문을 잠시 보관만 한다.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import styles from "./apply.module.css";
 
 const PRICE = "29,000";
+const PRICE_VALUE = 29000;
 const MIN_DATE = "1980-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
+const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
+const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 const DAUM_POSTCODE_SRC =
   "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 
@@ -27,15 +30,11 @@ declare global {
     daum?: {
       Postcode: new (opts: {
         oncomplete: (data: { roadAddress: string; jibunAddress: string }) => void;
-        onclose?: (state: string) => void;
-        width?: string | number;
-        height?: string | number;
       }) => { open: () => void; embed: (el: HTMLElement) => void };
     };
   }
 }
 
-/** 다음 우편번호 스크립트를 1회 로드한다. */
 function loadDaumPostcode(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.daum?.Postcode) return resolve();
@@ -54,7 +53,23 @@ function loadDaumPostcode(): Promise<void> {
   });
 }
 
+// 토스 위젯 인스턴스 타입(부분) — SDK 반환값
+type TossWidgets = {
+  setAmount: (a: { value: number; currency: string }) => Promise<void>;
+  renderPaymentMethods: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  renderAgreement: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
+  requestPayment: (o: {
+    orderId: string;
+    orderName: string;
+    successUrl: string;
+    failUrl: string;
+    customerEmail?: string;
+  }) => Promise<void>;
+};
+
 export default function ApplyPage() {
+  const [step, setStep] = useState<"form" | "pay">("form");
+
   const [gender, setGender] = useState<"male" | "female">("male");
   const [birthDate, setBirthDate] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
@@ -68,31 +83,50 @@ export default function ApplyPage() {
   const [searching, setSearching] = useState(false);
   const postcodeBoxRef = useRef<HTMLDivElement>(null);
 
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{ orderId: string } | null>(null);
+  const [paying, setPaying] = useState(false);
+  const widgetsRef = useRef<TossWidgets | null>(null);
 
   const birthYear = birthDate.slice(0, 4);
 
-  const canSubmit =
-    birthDate &&
-    (timeUnknown || birthTime !== "") &&
-    consent &&
-    !submitting;
+  const canProceed =
+    birthDate && (timeUnknown || birthTime !== "") && consent;
+
+  // 결제 단계 진입 시 토스 결제위젯 렌더
+  useEffect(() => {
+    if (step !== "pay") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!TOSS_CLIENT_KEY) throw new Error("결제 설정 오류(클라이언트 키 없음)");
+        const toss = await loadTossPayments(TOSS_CLIENT_KEY);
+        const widgets = toss.widgets({ customerKey: ANONYMOUS }) as unknown as TossWidgets;
+        if (cancelled) return;
+        widgetsRef.current = widgets;
+        await widgets.setAmount({ value: PRICE_VALUE, currency: "KRW" });
+        await Promise.all([
+          widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
+          widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+        ]);
+      } catch {
+        if (!cancelled) setError("결제창을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [step]);
 
   async function openAddressSearch() {
     setError(null);
     try {
       await loadDaumPostcode();
-      // 팝업(.open) 대신 페이지 내 임베드(.embed) — 모바일·인앱 브라우저에서 안정적.
       setSearching(true);
       requestAnimationFrame(() => {
         const box = postcodeBoxRef.current;
         if (!box || !window.daum) return;
         box.innerHTML = "";
         new window.daum.Postcode({
-          width: "100%",
-          height: "100%",
           oncomplete: (data) => {
             setAddress(data.roadAddress || data.jibunAddress);
             setSearching(false);
@@ -104,76 +138,103 @@ export default function ApplyPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      const [y, m, d] = birthDate.split("-").map(Number);
-      let hour: number | null = null;
-      let minute: number | null = null;
-      if (!timeUnknown && birthTime) {
-        const [hh, mm] = birthTime.split(":").map(Number);
-        hour = hh;
-        minute = mm;
-      }
+  function buildPayload(tossOrderId: string) {
+    const [y, m, d] = birthDate.split("-").map(Number);
+    let hour: number | null = null;
+    let minute: number | null = null;
+    if (!timeUnknown && birthTime) {
+      const [hh, mm] = birthTime.split(":").map(Number);
+      hour = hh;
+      minute = mm;
+    }
+    return {
+      tier: "premium",
+      birthYear: y,
+      birthMonth: m,
+      birthDay: d,
+      birthHour: hour,
+      birthMinute: minute,
+      gender,
+      address: address.trim() || undefined,
+      currentSchool: currentSchool.trim() || undefined,
+      contactEmail: contactEmail.trim() || undefined,
+      contactPhone: contactPhone.trim() || undefined,
+      consent,
+      amount: PRICE_VALUE,
+      tossOrderId,
+    };
+  }
 
-      const res = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tier: "premium",
-          birthYear: y,
-          birthMonth: m,
-          birthDay: d,
-          birthHour: hour,
-          birthMinute: minute,
-          gender,
-          address: address.trim() || undefined,
-          currentSchool: currentSchool.trim() || undefined,
-          contactEmail,
-          contactPhone,
-          consent,
-        }),
+  async function handlePay() {
+    if (!widgetsRef.current) return;
+    setError(null);
+    setPaying(true);
+    try {
+      const tossOrderId = `gbsj_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
+      sessionStorage.setItem(ORDER_PAYLOAD_KEY, JSON.stringify(buildPayload(tossOrderId)));
+      await widgetsRef.current.requestPayment({
+        orderId: tossOrderId,
+        orderName: "공부사주 리포트",
+        successUrl: `${window.location.origin}/order/result`,
+        failUrl: `${window.location.origin}/order/result`,
+        customerEmail: contactEmail.trim() || undefined,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "신청에 실패했습니다.");
-        return;
-      }
-      setDone({ orderId: data.orderId });
+      // requestPayment 성공 시 리다이렉트되므로 이 아래는 실행되지 않음
     } catch {
-      setError("네트워크 오류가 발생했습니다. 다시 시도해 주세요.");
-    } finally {
-      setSubmitting(false);
+      // 사용자가 결제창을 닫는 등 — 조용히 복귀
+      setPaying(false);
     }
   }
 
-  if (done) {
+  // ── 결제 단계 ───────────────────────────────────────────
+  if (step === "pay") {
     return (
       <div className={styles.page}>
         <div className={styles.sheet}>
-          <div className={styles.done}>
-            <div className={styles.doneIcon}>✓</div>
-            <h1 className={styles.title}>신청이 접수되었습니다</h1>
-            <p className={styles.subtitle}>
-              리포트는 사주 계산과 검수를 거쳐 제작됩니다.
-              <br />
-              보통 몇 분 이내에 완성되며, 완성되면 입력하신 연락처로 결과 링크를 보내 드립니다.
-            </p>
-            <p className={styles.hint}>접수번호: {done.orderId}</p>
+          <div className={styles.badge}>공부·기질 사주 리포트</div>
+          <h1 className={styles.title}>결제</h1>
+          <p className={styles.subtitle}>공부사주 리포트 1부 · {PRICE}원</p>
+
+          {error && <div className={styles.error}>{error}</div>}
+
+          <div className={styles.section}>
+            <div id="payment-method" />
+            <div id="agreement" />
           </div>
+
+          <button className={styles.submit} onClick={handlePay} disabled={paying}>
+            {paying ? "결제 진행 중…" : `${PRICE}원 결제하기`}
+          </button>
+          <button
+            type="button"
+            className={styles.addrClear}
+            style={{ display: "block", margin: "12px auto 0" }}
+            onClick={() => {
+              setStep("form");
+              setError(null);
+            }}
+          >
+            ← 정보 다시 입력
+          </button>
+
           <p className={styles.notice}>
-            * 결제 연동 전 데모입니다. 실제로는 전문가 검수 후 결과 링크를 보내 드립니다.
+            테스트 결제 환경입니다. 결제 성공 시 리포트 제작이 접수됩니다.
           </p>
         </div>
       </div>
     );
   }
 
+  // ── 입력 단계 ───────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <form className={styles.sheet} onSubmit={handleSubmit}>
+      <form
+        className={styles.sheet}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (canProceed) setStep("pay");
+        }}
+      >
         <div className={styles.badge}>공부·기질 사주 리포트</div>
         <h1 className={styles.title}>우리 아이 리포트 신청</h1>
         <p className={styles.subtitle}>
@@ -251,11 +312,7 @@ export default function ApplyPage() {
             {searching && (
               <div className={styles.postcodeWrap}>
                 <div ref={postcodeBoxRef} className={styles.postcodeBox} />
-                <button
-                  type="button"
-                  className={styles.addrClear}
-                  onClick={() => setSearching(false)}
-                >
+                <button type="button" className={styles.addrClear} onClick={() => setSearching(false)}>
                   주소 검색 닫기
                 </button>
               </div>
@@ -308,13 +365,11 @@ export default function ApplyPage() {
           </label>
         </div>
 
-        <button className={styles.submit} type="submit" disabled={!canSubmit}>
-          {submitting ? "접수 중…" : `신청하기 (${PRICE}원)`}
+        <button className={styles.submit} type="submit" disabled={!canProceed}>
+          {`결제하기 (${PRICE}원)`}
         </button>
 
         <p className={styles.notice}>
-          * 결제 연동 전 데모입니다. 지금은 결제 없이 신청이 접수됩니다.
-          <br />
           본 리포트의 해석은 사주 명리의 관점이며, 실측 검사 결과가 아닙니다.
         </p>
       </form>

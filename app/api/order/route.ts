@@ -1,9 +1,10 @@
 /**
  * POST /api/order
- * 신청 폼 → 주문 생성 (PII 암호화 저장, status=paid)
+ * 결제 성공 후 → 결제 승인 검증 → 주문 생성 (PII 암호화 저장, status=paid)
  *
- * [모의 결제] PG(토스/카카오페이) 자격증명 연동 전까지, 결제 완료를 가정하고
- * 바로 paid 주문을 만든다. 실결제 연동 시 payment-webhook에서 createOrder를 호출.
+ * 결제: 토스페이먼츠. 클라이언트가 결제위젯으로 결제 후 successUrl로 받은
+ * paymentKey·tossOrderId·amount를 함께 전송하면, 서버가 시크릿 키로 승인 API를
+ * 호출해 검증한 뒤에만 주문을 만든다. (TOSS_SECRET_KEY 미설정 시 모의 결제로 통과 — 개발용)
  *
  * Node 런타임 필수 (lib/crypto가 node:crypto 사용).
  */
@@ -12,6 +13,7 @@ import { waitUntil } from "@vercel/functions";
 import { createOrder, generateReportForOrder } from "@/lib/orders";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
 import { createClient } from "@/lib/supabase/server";
+import { confirmTossPayment } from "@/lib/payments/toss";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
@@ -29,6 +31,10 @@ type Body = {
   contactEmail?: string;
   contactPhone?: string;
   consent?: boolean;
+  // 토스 결제 승인용 (성공 리다이렉트에서 전달)
+  paymentKey?: string;
+  tossOrderId?: string;
+  amount?: number;
 };
 
 export async function POST(req: Request) {
@@ -45,6 +51,24 @@ export async function POST(req: Request) {
       { error: "법정대리인 동의가 필요합니다." },
       { status: 400 }
     );
+  }
+
+  // 결제 승인 — TOSS_SECRET_KEY 설정 시 실결제 검증 필수.
+  // (미설정 환경에서는 모의 결제로 통과 — 로컬 개발용)
+  if (process.env.TOSS_SECRET_KEY) {
+    if (!body.paymentKey || !body.tossOrderId || body.amount == null) {
+      return Response.json({ error: "결제 정보가 없습니다." }, { status: 400 });
+    }
+    try {
+      await confirmTossPayment({
+        paymentKey: body.paymentKey,
+        orderId: body.tossOrderId,
+        amount: Number(body.amount),
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "결제 승인에 실패했습니다.";
+      return Response.json({ error: msg }, { status: 402 });
+    }
   }
 
   // 로그인 상태면 userId 연결 (마이페이지에서 내 주문 조회용)

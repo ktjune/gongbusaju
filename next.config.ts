@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
       "./data-pipeline/output/schools.json",
       "./data-pipeline/output/zones_sido11.json",
     ],
+    // @sparticuz/chromium 의 bin(압축된 크로미움 바이너리)을 PDF 라우트 함수에 포함.
+    // externalize만으로는 런타임 경로 로드를 트레이서가 못 따라가 bin이 누락된다.
+    "/result/[token]/pdf": ["./node_modules/@sparticuz/chromium/bin/**"],
   },
 
   async headers() {

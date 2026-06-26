@@ -53,7 +53,9 @@ export async function generatePdfFromHtml(
     } finally {
       await browser.close();
     }
-  } catch {
+  } catch (err) {
+    // 실패해도 호출부가 HTML 페이지로 폴백하지만, 원인 진단을 위해 로그는 남긴다.
+    console.error("[pdf] 생성 실패:", err);
     return null;
   }
 }

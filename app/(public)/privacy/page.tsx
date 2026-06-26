@@ -107,7 +107,7 @@ export default function PrivacyPage() {
             <tr>
               <td>Supabase</td>
               <td>데이터베이스 저장(암호화된 개인정보)</td>
-              <td>저장 데이터 / <span className={styles.todo}>[확인 필요: 리전·국가]</span></td>
+              <td>암호화 저장 데이터 / 대한민국 (AWS 서울 리전)</td>
             </tr>
             <tr>
               <td>Vercel Inc.</td>
@@ -139,10 +139,14 @@ export default function PrivacyPage() {
           </tbody>
         </table>
         <p className={styles.callout}>
-          <span className={styles.todo}>[확인 필요]</span> 국외 이전을 수반하는 위탁(Vercel·Resend·Anthropic
-          등)은 「개인정보 보호법」 제28조의8에 따라 이전받는 자·국가·이전 일시·방법·항목·보유기간 등을
-          본 방침에 구체적으로 명시하거나 별도 동의를 받아야 합니다. 정식 오픈 전 각 수탁사의 리전과
-          이전 항목을 확정해 보완하세요.
+          <b>개인정보 국외 이전 고지</b> (「개인정보 보호법」 제28조의8)
+          <br />위 수탁사 중 Vercel·Resend·Anthropic은 미국에 서버를 두고 있어, 처리 과정에서 개인정보가
+          국외로 이전됩니다. (Supabase는 대한민국 서울 리전, 카카오·결제대행사는 국내)
+          <br />· 이전받는 자 / 국가: Vercel·Resend·Anthropic / 미국
+          <br />· 이전 항목: 위 표의 수탁사별 항목 (보호자 이메일, 서비스 이용 데이터, 식별정보를 제외한 사주 계산값)
+          <br />· 이전 일시 및 방법: 서비스 이용 시점에 암호화된 통신(HTTPS/TLS)으로 전송
+          <br />· 보유·이용 기간: 위탁 목적 달성 또는 회사의 개인정보 보유기간(12개월)까지
+          <br />· 정보주체는 국외 이전을 거부할 수 있으나, 거부 시 서비스 제공이 제한될 수 있습니다.
         </p>
 
         <h2 className={styles.h2}>7. 개인정보의 파기절차 및 방법</h2>

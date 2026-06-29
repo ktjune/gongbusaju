@@ -17,6 +17,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { verifyAdminSessionToken } from "@/lib/auth/admin-session";
 
 const LOGIN_PATH = "/admin/login";
 const COOKIE_NAME = "admin_session";
@@ -90,7 +91,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     const session = request.cookies.get(COOKIE_NAME)?.value;
-    if (session !== password) {
+    if (!(await verifyAdminSessionToken(session, password))) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = LOGIN_PATH;
       loginUrl.searchParams.set("from", pathname);

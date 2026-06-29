@@ -29,6 +29,8 @@ export default function TermsPage() {
           <br />
           주소: 서울특별시 동대문구 답십리로68길 31, 3층 s46호
           <br />
+          전화번호: 0502-1944-3249
+          <br />
           고객문의: moondoor_main@naver.com
         </div>
 

@@ -192,7 +192,7 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <th>연락처</th>
-              <td>moondoor_main@naver.com</td>
+              <td>0502-1944-3249 · moondoor_main@naver.com</td>
             </tr>
           </tbody>
         </table>

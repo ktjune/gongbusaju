@@ -638,6 +638,14 @@
 .footerLinks a:hover {
   color: #fff;
 }
+.footerBiz {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.55);
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
 .footerNote {
   margin-top: 12px;
   opacity: 0.55;

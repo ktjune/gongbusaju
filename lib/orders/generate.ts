@@ -1,10 +1,13 @@
 /**
  * lib/orders/generate.ts
- * 주문 → 리포트 생성 오케스트레이션 (검수 대기까지)
+ * 주문 → 리포트 생성 오케스트레이션 (자동 QA → 자동 승인/검수 대기까지)
  *
  * 흐름: paid → generating → (사주계산+학교조회+리포트+렌더) → review
  *   - 자녀 PII는 여기서만 복호화해 메모리에서 사용, 즉시 폐기.
- *   - 생성된 리포트는 reviewStatus=pending으로 저장 (검수 후 published).
+ *   - 생성된 리포트는 자동 QA(runReportQa)를 거친다.
+ *     · QA 통과 → 즉시 자동 승인(approveReport) → published, 보호자 발송.
+ *     · QA 실패 → 1회 재생성 후 재검사. 그래도 실패하면 reviewStatus=pending으로
+ *       남겨 사람이 어드민 "검수 큐"에서 확인 (reviewNote에 QA 사유 기록).
  *   - lib/report.buildReportForSubject가 saju·schools 합류를 담당 → orders는
  *     saju·schools를 직접 import하지 않는다.
  *
@@ -14,10 +17,11 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
-import { buildReportForSubject } from "../report";
+import { buildReportForSubject, runAutoQa } from "../report";
 import type { SchoolFixture, ZoneCollection } from "../schools";
 import { getOrderStore } from "./store";
 import { decryptSubject } from "./index";
+import { approveReport } from "./review";
 import type { Order, Report } from "./types";
 
 // 픽스처는 한 번만 읽어 캐시 (DATABASE_URL 없는 로컬 개��� 전용)
@@ -68,11 +72,24 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
     const useDb = !!process.env.DATABASE_URL;
     const { schools, zones } = useDb ? {} : loadFixtures();
 
-    const built = await buildReportForSubject(subject, order.tier, {
+    const buildOpts = {
       fixtureSchools: schools,
       fixtureZones: zones,
       subjectLabel: buildSubjectLabel(subject),
-    });
+    };
+    const hasSchoolFacts = order.tier === "premium" && !!subject.address;
+
+    let built = await buildReportForSubject(subject, order.tier, buildOpts);
+    let qa = await runAutoQa(built.markdown, order.tier, hasSchoolFacts);
+
+    if (!qa.passed) {
+      console.warn(`[order] QA 실패 — 재생성 시도: 주문 ${orderId}`, qa.issues);
+      built = await buildReportForSubject(subject, order.tier, buildOpts);
+      qa = await runAutoQa(built.markdown, order.tier, hasSchoolFacts);
+      if (!qa.passed) {
+        console.warn(`[order] QA 재시도 후에도 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);
+      }
+    }
 
     const report = await store.createReport({
       orderId,
@@ -80,12 +97,17 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       html: built.html,
       tier: built.tier,
       reviewStatus: "pending",
-      reviewNote: null,
+      reviewNote: qa.passed ? null : `[자동 QA] ${qa.issues.join(" / ")}`,
       pdfUrl: null,
     });
 
     await store.setOrderReport(orderId, report.id);
     await store.updateOrderStatus(orderId, "review");
+
+    // QA 통과 → 사람 검수 없이 자동 승인·발행 (보호자 발송 포함)
+    if (qa.passed) {
+      return await approveReport(report.id);
+    }
     return report;
   } catch (e) {
     await store.updateOrderStatus(orderId, "failed");

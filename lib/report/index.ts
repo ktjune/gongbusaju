@@ -19,6 +19,7 @@ import type { SajuResult } from "../saju";
 import type { SchoolFacts } from "../schools";
 import { buildFactBlock, assembleReport } from "./template";
 import { generatePerspective, ClaudeLlmProvider } from "./generate";
+export { ClaudeLlmProvider } from "./generate";
 import type { LlmProvider } from "./generate";
 import { checkGuardrails } from "./guardrails";
 
@@ -47,6 +48,8 @@ export type { RenderHtmlOptions } from "./html";
 export { buildReportForSubject } from "./pipeline";
 export type { BuildReportSubject, BuildReportOptions, BuiltReport } from "./pipeline";
 export { DemoLlmProvider, buildDemoProse } from "./demo";
+export { runReportQa, runStructuralQa, runLlmQaReview, runAutoQa } from "./qa";
+export type { QaResult } from "./qa";
 
 // ──────────────────────────────────────────────────────────────
 // 타입

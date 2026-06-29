@@ -20,12 +20,20 @@ export interface OrderStore {
   getOrder(id: string): Promise<Order | null>;
   updateOrderStatus(id: string, status: OrderStatus): Promise<Order>;
   setOrderReport(id: string, reportId: string): Promise<Order>;
+  /** 환불 처리 — status=refunded + refundedAt/refundReason 기록 */
+  refundOrder(id: string, reason: string): Promise<Order>;
+  /** 결과 링크 발송 결과 기록 — error=null이면 성공(이전 실패 기록도 비움). */
+  recordNotifyResult(id: string, error: string | null): Promise<Order>;
   listOrders(filter?: { status?: OrderStatus }): Promise<Order[]>;
+  /** 발송 실패가 기록된(notifyError != null) 주문 목록 — 어드민 "발송 실패" 큐 */
+  listNotifyFailures(): Promise<Order[]>;
 
   // ── 자녀 PII ──
   createSubject(data: Omit<Subject, "id" | "createdAt">): Promise<Subject>;
   getSubject(id: string): Promise<Subject | null>;
   deleteSubject(id: string): Promise<void>;
+  /** retainUntil(보관기간 만료) < nowIso 인 Subject를 모두 삭제하고 삭제 건수를 반환한다. */
+  deleteExpiredSubjects(nowIso: string): Promise<number>;
 
   // ── 리포트 ──
   createReport(
@@ -83,11 +91,45 @@ export class InMemoryOrderStore implements OrderStore {
     return updated;
   }
 
+  async refundOrder(id: string, reason: string): Promise<Order> {
+    const order = this.orders.get(id);
+    if (!order) throw new Error(`주문 없음: ${id}`);
+    const ts = nowIso();
+    const updated: Order = {
+      ...order,
+      status: "refunded",
+      refundedAt: ts,
+      refundReason: reason,
+      updatedAt: ts,
+    };
+    this.orders.set(id, updated);
+    return updated;
+  }
+
+  async recordNotifyResult(id: string, error: string | null): Promise<Order> {
+    const order = this.orders.get(id);
+    if (!order) throw new Error(`주문 없음: ${id}`);
+    const updated: Order = {
+      ...order,
+      notifyError: error,
+      notifyFailedAt: error ? nowIso() : null,
+      updatedAt: nowIso(),
+    };
+    this.orders.set(id, updated);
+    return updated;
+  }
+
   async listOrders(filter?: { status?: OrderStatus }): Promise<Order[]> {
     const all = [...this.orders.values()].sort((a, b) =>
       b.createdAt.localeCompare(a.createdAt)
     );
     return filter?.status ? all.filter((o) => o.status === filter.status) : all;
+  }
+
+  async listNotifyFailures(): Promise<Order[]> {
+    return [...this.orders.values()]
+      .filter((o) => o.notifyError != null)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   async createSubject(data: Omit<Subject, "id" | "createdAt">): Promise<Subject> {
@@ -102,6 +144,12 @@ export class InMemoryOrderStore implements OrderStore {
 
   async deleteSubject(id: string): Promise<void> {
     this.subjects.delete(id);
+  }
+
+  async deleteExpiredSubjects(nowIso: string): Promise<number> {
+    const expired = [...this.subjects.values()].filter((s) => s.retainUntil < nowIso);
+    for (const s of expired) this.subjects.delete(s.id);
+    return expired.length;
   }
 
   async createReport(
@@ -162,6 +210,13 @@ export function getOrderStore(): OrderStore {
   if (!globalForStore.__orderStore) {
     // DATABASE_URL 있으면 Supabase(Prisma) 영속화, 없으면 인메모리(개발/데모).
     // 모듈 import는 가벼움 — Prisma 클라이언트는 첫 쿼리 시점에만 생성된다.
+    if (!process.env.DATABASE_URL && process.env.NODE_ENV === "production") {
+      // 서버리스 인스턴스마다 메모리가 분리돼 있어 인메모리 스토어로는
+      // "결제는 됐는데 다른 인스턴스에서 주문이 안 보이는" 사고가 난다 — 조용한 폴백 금지.
+      throw new Error(
+        "DATABASE_URL 미설정 — 프로덕션에서 인메모리 주문 저장소 사용 금지"
+      );
+    }
     globalForStore.__orderStore = process.env.DATABASE_URL
       ? new PrismaOrderStore()
       : new InMemoryOrderStore();

@@ -5,18 +5,21 @@
  * paid → generating → review → published
  *                   ↘ failed (생성 오류)
  *          review → rejected → generating (재생성)
+ *
+ * paid / rejected / failed → refunded (환불 — 제작 착수 전이거나 회사 귀책으로 미제공)
  */
 
 import type { OrderStatus } from "./types";
 
 /** 각 상태에서 전이 가능한 다음 상태 목록 */
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  paid: ["generating"],
+  paid: ["generating", "refunded"],
   generating: ["review", "failed"],
   review: ["published", "rejected"],
   published: [], // 종료 상태
-  rejected: ["generating"], // 재생성
-  failed: ["generating"], // 재시도
+  rejected: ["generating", "refunded"], // 재생성 또는 환불
+  failed: ["generating", "refunded"], // 재시도 또는 환불
+  refunded: [], // 종료 상태
 };
 
 /** from → to 전이가 허용되는지 */

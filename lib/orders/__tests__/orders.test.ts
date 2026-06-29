@@ -21,6 +21,8 @@ import {
   canTransition,
   getOrderStore,
   InMemoryOrderStore,
+  refundOrder,
+  retryNotify,
 } from "../index";
 import type { CreateOrderInput } from "../index";
 
@@ -191,6 +193,36 @@ describe("createOrder — PII 암호화 저장", () => {
       createOrder({ tier: "basic", subject: { ...basicInput.subject, birthYear: 1800 } })
     ).rejects.toThrow(/생년/);
   });
+
+  it("이메일 형식이 잘못되면 거부", async () => {
+    await expect(
+      createOrder({ ...basicInput, contactEmail: "not-an-email" })
+    ).rejects.toThrow(/이메일/);
+  });
+
+  it("전화번호 형식이 잘못되면 거부", async () => {
+    await expect(
+      createOrder({ ...basicInput, contactPhone: "<script>alert(1)</script>" })
+    ).rejects.toThrow(/전화번호/);
+  });
+
+  it("정상적인 이메일·전화번호는 통과", async () => {
+    const order = await createOrder({
+      ...basicInput,
+      contactEmail: "parent@example.com",
+      contactPhone: "010-1234-5678",
+    });
+    expect(order.id).toBeTruthy();
+  });
+
+  it("주소가 너무 길면 거부", async () => {
+    await expect(
+      createOrder({
+        tier: "premium",
+        subject: { ...basicInput.subject, address: "a".repeat(201) },
+      })
+    ).rejects.toThrow(/주소/);
+  });
 });
 
 // ──────────────────────────────────────────────────────────────
@@ -211,5 +243,152 @@ describe("transitionOrder", () => {
 
   it("없는 주문 전이 시 에러", async () => {
     await expect(transitionOrder("nonexistent", "generating")).rejects.toThrow(/주문 없음/);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 5. refundOrder — 환불 처리
+// ──────────────────────────────────────────────────────────────
+
+describe("refundOrder", () => {
+  it("paid(제작 착수 전) 주문은 환불 가능 — 모의결제(paymentKey 없음)는 토스 호출 없이 상태만 전이", async () => {
+    const order = await createOrder(basicInput); // paymentKey 미전달 = 모의 결제
+    const refunded = await refundOrder(order.id, "고객 단순 변심");
+    expect(refunded.status).toBe("refunded");
+    expect(refunded.refundReason).toBe("고객 단순 변심");
+    expect(refunded.refundedAt).toBeTruthy();
+  });
+
+  it("사유 미입력 시 기본 사유로 기록된다", async () => {
+    const order = await createOrder(basicInput);
+    const refunded = await refundOrder(order.id);
+    expect(refunded.refundReason).toBe("고객 요청 환불");
+  });
+
+  it("rejected(반려됨) 주문도 환불 가능", async () => {
+    const order = await createOrder(basicInput);
+    await transitionOrder(order.id, "generating");
+    const store = getOrderStore();
+    await store.updateOrderStatus(order.id, "review");
+    await transitionOrder(order.id, "rejected");
+    const refunded = await refundOrder(order.id, "검수 반려 후 재생성 실패");
+    expect(refunded.status).toBe("refunded");
+  });
+
+  it("published(이미 발행) 주문은 환불 불가 — 잘못된 전이 거부", async () => {
+    const order = await createOrder(basicInput);
+    await transitionOrder(order.id, "generating");
+    const store = getOrderStore();
+    await store.updateOrderStatus(order.id, "review");
+    await transitionOrder(order.id, "published");
+    await expect(refundOrder(order.id)).rejects.toThrow(/전이/);
+  });
+
+  it("없는 주문 환불 시 에러", async () => {
+    await expect(refundOrder("nonexistent")).rejects.toThrow(/주문 없음/);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 6. deleteExpiredSubjects — PII 보관기간 만료 삭제
+// ──────────────────────────────────────────────────────────────
+
+describe("deleteExpiredSubjects", () => {
+  it("보관기간이 지난 Subject만 삭제하고 건수를 반환한다", async () => {
+    const store = getOrderStore();
+
+    const order = await createOrder(basicInput);
+    const validSubject = await store.getSubject(order.subjectId);
+    const { id: _id, createdAt: _createdAt, ...subjectFields } = validSubject!;
+
+    const expiredSubject = await store.createSubject({
+      ...subjectFields,
+      retainUntil: new Date(Date.now() - 1000).toISOString(), // 이미 만료
+    });
+
+    const deletedCount = await store.deleteExpiredSubjects(new Date().toISOString());
+    expect(deletedCount).toBe(1);
+
+    expect(await store.getSubject(expiredSubject.id)).toBeNull();
+    expect(await store.getSubject(order.subjectId)).not.toBeNull(); // 보관기간 남은 건 유지
+  });
+
+  it("만료된 Subject가 없으면 0을 반환한다", async () => {
+    const store = getOrderStore();
+    await createOrder(basicInput);
+    const deletedCount = await store.deleteExpiredSubjects(new Date().toISOString());
+    expect(deletedCount).toBe(0);
+  });
+});
+
+// ──────────────────────────────────────────────────────────────
+// 7. 발송 실패 기록·재발송
+// ──────────────────────────────────────────────────────────────
+
+/** 발행(published) 상태 + 리포트가 있는 주문을 인메모리 store에 직접 구성한다. */
+async function createPublishedOrderWithReport() {
+  const store = getOrderStore();
+  const order = await createOrder(basicInput);
+  await transitionOrder(order.id, "generating");
+  const report = await store.createReport({
+    orderId: order.id,
+    markdown: "# 테스트 리포트",
+    html: "<p>테스트</p>",
+    tier: "basic",
+    reviewStatus: "approved",
+    reviewNote: null,
+    pdfUrl: null,
+  });
+  await store.setOrderReport(order.id, report.id);
+  await store.updateOrderStatus(order.id, "review");
+  await transitionOrder(order.id, "published");
+  return { order, report };
+}
+
+describe("recordNotifyResult / listNotifyFailures", () => {
+  it("실패를 기록하면 notifyError·notifyFailedAt이 채워지고 목록에 나타난다", async () => {
+    const store = getOrderStore();
+    const { order } = await createPublishedOrderWithReport();
+
+    const updated = await store.recordNotifyResult(order.id, "이메일: SMTP 오류");
+    expect(updated.notifyError).toBe("이메일: SMTP 오류");
+    expect(updated.notifyFailedAt).toBeTruthy();
+
+    const failures = await store.listNotifyFailures();
+    expect(failures.map((o) => o.id)).toContain(order.id);
+  });
+
+  it("성공(error=null)을 기록하면 목록에서 빠진다", async () => {
+    const store = getOrderStore();
+    const { order } = await createPublishedOrderWithReport();
+
+    await store.recordNotifyResult(order.id, "일시 오류");
+    await store.recordNotifyResult(order.id, null);
+
+    const failures = await store.listNotifyFailures();
+    expect(failures.map((o) => o.id)).not.toContain(order.id);
+  });
+});
+
+describe("retryNotify", () => {
+  it("재발송 성공 시 notifyError가 비워진다", async () => {
+    const store = getOrderStore();
+    const { order } = await createPublishedOrderWithReport();
+    await store.recordNotifyResult(order.id, "이전 실패");
+
+    const result = await retryNotify(order.id);
+    expect(result.hasFailure).toBe(false);
+
+    const updated = await store.getOrder(order.id);
+    expect(updated!.notifyError).toBeNull();
+  });
+
+  it("리포트가 없는 주문은 에러", async () => {
+    const order = await createOrder(basicInput); // 아직 paid, reportId 없음
+    await expect(retryNotify(order.id)).rejects.toThrow(/발행된 리포트가 없는/);
+  });
+
+  it("없는 주문은 에러", async () => {
+    await expect(retryNotify("nonexistent")).rejects.toThrow(/주문 없음/);
   });
 });

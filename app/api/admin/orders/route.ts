@@ -22,6 +22,8 @@ export async function GET() {
       tier: o.tier,
       status: o.status,
       createdAt: o.createdAt,
+      // 실결제 여부 — true면 환불 시 토스 결제취소 API 호출, false면 모의결제(상태만 전이)
+      hasPayment: !!o.paymentKey,
     }));
   return Response.json({ items });
 }

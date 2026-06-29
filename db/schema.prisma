@@ -24,12 +24,21 @@ model Order {
   tier         String   // "basic" | "premium"
   status       String   @default("paid")
   // paid → generating → review → published / rejected / failed
+  // paid / rejected / failed → refunded (환불)
   userId       String?  // Supabase auth.users UUID (null = 비회원)
   subjectId    String   // subjects 외래키 (PII 분리)
   reportId     String?
+  // 토스 결제 승인 키 — 환불(결제취소 API) 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 null.
+  paymentKey   String?
+  refundedAt   DateTime?
+  refundReason String?
   // 알림 발송용 연락처 (보호자) — 별도 동의
   contactEmail String?
   contactPhone String?
+  // 발행 시 결과 링크 발송 실패 기록 — 운영자가 어드민에서 보고 재발송할 수 있게.
+  // 성공하면 null로 비운다.
+  notifyError    String?
+  notifyFailedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

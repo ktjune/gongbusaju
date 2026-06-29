@@ -15,6 +15,8 @@
 export const REPORT_PRICE = 29000;
 
 const CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
+const cancelUrl = (paymentKey: string) =>
+  `https://api.tosspayments.com/v1/payments/${paymentKey}/cancel`;
 
 export type TossConfirmInput = {
   paymentKey: string;
@@ -84,4 +86,45 @@ export async function confirmTossPayment(
   }
 
   return payment;
+}
+
+export type TossCancelResult = {
+  paymentKey: string;
+  status: string; // CANCELED 이면 취소 완료
+};
+
+/**
+ * 토스 결제를 취소(전액 환불)한다.
+ *
+ * @throws 취소 실패(이미 취소됨·존재하지 않는 결제·토스 오류) 시 Error
+ */
+export async function cancelTossPayment(
+  paymentKey: string,
+  cancelReason: string
+): Promise<TossCancelResult> {
+  const secretKey = process.env.TOSS_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("TOSS_SECRET_KEY 미설정 — 결제 취소 불가");
+  }
+
+  const auth = Buffer.from(`${secretKey}:`).toString("base64");
+
+  const res = await fetch(cancelUrl(paymentKey), {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cancelReason }),
+  });
+
+  const data = (await res.json()) as Record<string, unknown>;
+
+  if (!res.ok) {
+    const code = (data.code as string) ?? "";
+    const message = (data.message as string) ?? "결제 취소 실패";
+    throw new Error(`토스 결제 취소 실패 (${code}): ${message}`);
+  }
+
+  return data as unknown as TossCancelResult;
 }

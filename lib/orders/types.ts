@@ -13,6 +13,7 @@ export type Tier = "basic" | "premium";
  *   published  검수 통과, 발행(결과페이지·알림)
  *   rejected   검수 반려 (재생성 필요)
  *   failed     생성 중 오류
+ *   refunded   환불 완료 (paid/rejected/failed에서 전이, 종료 상태)
  */
 export type OrderStatus =
   | "paid"
@@ -20,7 +21,8 @@ export type OrderStatus =
   | "review"
   | "published"
   | "rejected"
-  | "failed";
+  | "failed"
+  | "refunded";
 
 /** 주문 — 결제·상태·연결. PII는 Subject에 분리 저장. */
 export type Order = {
@@ -31,6 +33,13 @@ export type Order = {
   reportId: string | null;
   /** Supabase Auth 사용자 ID (로그인 후 신청 시 연결) */
   userId: string | null;
+  /** 토스 결제 승인 키 — 환불(결제취소) 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 null. */
+  paymentKey: string | null;
+  refundedAt: string | null;
+  refundReason: string | null;
+  /** 결과 링크 발송 실패 사유 — 성공하면 null. 어드민 "발송 실패" 큐에서 사용. */
+  notifyError: string | null;
+  notifyFailedAt: string | null;
   /** 연락처(알림 발송용) — 보호자, 별도 동의 */
   contactEmail: string | null;
   contactPhone: string | null;
@@ -100,4 +109,6 @@ export type CreateOrderInput = {
   contactPhone?: string;
   /** Supabase Auth 사용자 ID (로그인 후 신청 시) */
   userId?: string;
+  /** 토스 결제 승인 키 — 환불 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 미전달. */
+  paymentKey?: string;
 };

@@ -13,7 +13,7 @@ import { waitUntil } from "@vercel/functions";
 import { createOrder, generateReportForOrder } from "@/lib/orders";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
 import { createClient } from "@/lib/supabase/server";
-import { confirmTossPayment } from "@/lib/payments/toss";
+import { confirmTossPayment, cancelTossPayment } from "@/lib/payments/toss";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
@@ -92,6 +92,8 @@ export async function POST(req: Request) {
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,
     userId: user?.id ?? undefined,
+    // 실결제(TOSS_SECRET_KEY 설정 시)에서만 전달됨 — 환불(결제취소) 시 필요
+    paymentKey: body.paymentKey,
   };
 
   try {
@@ -112,6 +114,28 @@ export async function POST(req: Request) {
   } catch (e) {
     // createOrder의 validateInput 에러는 사용자 입력 문제 → 400
     const msg = e instanceof Error ? e.message : "주문 생성에 실패했습니다.";
+
+    // 결제는 이미 승인됐는데 주문 생성이 실패하면 환불할 주문 레코드 자체가
+    // 없는 "돈만 빠지는" 사고가 난다 — 즉시 결제취소를 시도해 막는다.
+    if (body.paymentKey && process.env.TOSS_SECRET_KEY) {
+      try {
+        await cancelTossPayment(body.paymentKey, `주문 생성 실패 — 자동 환불: ${msg}`);
+        return Response.json(
+          { error: `${msg} (결제는 자동으로 환불 처리되었습니다)` },
+          { status: 400 }
+        );
+      } catch (cancelErr) {
+        console.error(
+          `[order] 주문 생성 실패 후 자동 환불도 실패 — paymentKey: ${body.paymentKey}`,
+          cancelErr
+        );
+        return Response.json(
+          { error: `${msg} (자동 환불도 실패했습니다 — 고객센터로 문의해 주세요)` },
+          { status: 400 }
+        );
+      }
+    }
+
     return Response.json({ error: msg }, { status: 400 });
   }
 }

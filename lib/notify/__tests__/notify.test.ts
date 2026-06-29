@@ -30,31 +30,63 @@ describe("buildResultUrl", () => {
 });
 
 describe("sendResultLink", () => {
-  it("연락처 없으면 조용히 반환 (no throw)", async () => {
-    await expect(
-      sendResultLink({ orderId: "ord1", resultUrl: "http://localhost/result/x" })
-    ).resolves.toBeUndefined();
+  it("연락처 없으면 조용히 반환 (no throw) — 실패 없음으로 보고", async () => {
+    const outcome = await sendResultLink({
+      orderId: "ord1",
+      resultUrl: "http://localhost/result/x",
+    });
+    expect(outcome).toEqual({ hasFailure: false, error: null });
   });
 
-  it("개발 환경 + 이메일 있으면 console.log 호출", async () => {
+  it("개발 환경 + 이메일 있으면 console.log 호출, 실패 없음으로 보고", async () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    await sendResultLink({
+    const outcome = await sendResultLink({
       orderId: "ord2",
       resultUrl: "http://localhost/result/y",
       contactEmail: "test@example.com",
     });
     expect(spy).toHaveBeenCalledOnce();
     expect(spy.mock.calls[0][0]).toContain("ord2");
+    expect(outcome.hasFailure).toBe(false);
   });
 
-  it("발송 실패해도 throw 안 함 (에러 격리)", async () => {
-    // sendResultLink는 절대 throw 안 해야 한다
-    await expect(
-      sendResultLink({
-        orderId: "ord3",
-        resultUrl: "http://localhost/result/z",
-        contactPhone: "010-1234-5678",
+  it("발송이 throw하지 않고 결과 객체로 안전하게 반환된다 (에러 격리)", async () => {
+    const outcome = await sendResultLink({
+      orderId: "ord3",
+      resultUrl: "http://localhost/result/z",
+      contactPhone: "010-1234-5678",
+    });
+    expect(outcome).toHaveProperty("hasFailure");
+    expect(outcome).toHaveProperty("error");
+  });
+
+  it("프로덕션에서 알림톡 발송 실패 시 hasFailure=true + 사유를 채널명과 함께 반환", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SOLAPI_API_KEY", "k");
+    vi.stubEnv("SOLAPI_API_SECRET", "s");
+    vi.stubEnv("KAKAO_PF_ID", "pf");
+    vi.stubEnv("KAKAO_TEMPLATE_ID", "tpl");
+    vi.stubEnv("NOTIFY_FROM_PHONE", "01000000000");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({ errorCode: "BadRequest", errorMessage: "잘못된 요청" }),
       })
-    ).resolves.toBeUndefined();
+    );
+
+    const outcome = await sendResultLink({
+      orderId: "ord4",
+      resultUrl: "http://localhost/result/z",
+      contactPhone: "010-1234-5678",
+    });
+
+    expect(outcome.hasFailure).toBe(true);
+    expect(outcome.error).toContain("알림톡:");
+
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 });

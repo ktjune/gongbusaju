@@ -17,6 +17,8 @@ const iso = (d: Date): string => d.toISOString();
 type OrderRow = {
   id: string; tier: string; status: string; subjectId: string;
   reportId: string | null; userId: string | null;
+  paymentKey: string | null; refundedAt: Date | null; refundReason: string | null;
+  notifyError: string | null; notifyFailedAt: Date | null;
   contactEmail: string | null; contactPhone: string | null;
   createdAt: Date; updatedAt: Date;
 };
@@ -28,6 +30,11 @@ function toOrder(r: OrderRow): Order {
     subjectId: r.subjectId,
     reportId: r.reportId,
     userId: r.userId,
+    paymentKey: r.paymentKey,
+    refundedAt: r.refundedAt ? iso(r.refundedAt) : null,
+    refundReason: r.refundReason,
+    notifyError: r.notifyError,
+    notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
     contactEmail: r.contactEmail,
     contactPhone: r.contactPhone,
     createdAt: iso(r.createdAt),
@@ -95,6 +102,11 @@ export class PrismaOrderStore implements OrderStore {
         subjectId: data.subjectId,
         reportId: data.reportId,
         userId: data.userId,
+        paymentKey: data.paymentKey,
+        refundedAt: data.refundedAt ? new Date(data.refundedAt) : null,
+        refundReason: data.refundReason,
+        notifyError: data.notifyError,
+        notifyFailedAt: data.notifyFailedAt ? new Date(data.notifyFailedAt) : null,
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone,
       },
@@ -115,6 +127,30 @@ export class PrismaOrderStore implements OrderStore {
   async setOrderReport(id: string, reportId: string): Promise<Order> {
     const row = await this.db.order.update({ where: { id }, data: { reportId } });
     return toOrder(row);
+  }
+
+  async refundOrder(id: string, reason: string): Promise<Order> {
+    const row = await this.db.order.update({
+      where: { id },
+      data: { status: "refunded", refundedAt: new Date(), refundReason: reason },
+    });
+    return toOrder(row);
+  }
+
+  async recordNotifyResult(id: string, error: string | null): Promise<Order> {
+    const row = await this.db.order.update({
+      where: { id },
+      data: { notifyError: error, notifyFailedAt: error ? new Date() : null },
+    });
+    return toOrder(row);
+  }
+
+  async listNotifyFailures(): Promise<Order[]> {
+    const rows = await this.db.order.findMany({
+      where: { notifyError: { not: null } },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toOrder);
   }
 
   async listOrders(filter?: { status?: OrderStatus }): Promise<Order[]> {
@@ -153,6 +189,13 @@ export class PrismaOrderStore implements OrderStore {
 
   async deleteSubject(id: string): Promise<void> {
     await this.db.subject.delete({ where: { id } });
+  }
+
+  async deleteExpiredSubjects(nowIso: string): Promise<number> {
+    const { count } = await this.db.subject.deleteMany({
+      where: { retainUntil: { lt: new Date(nowIso) } },
+    });
+    return count;
   }
 
   // ── 리포트 ──

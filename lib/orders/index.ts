@@ -36,7 +36,8 @@ export { canTransition, assertTransition, isTerminal } from "./status";
 export type { OrderStore } from "./store";
 export { getOrderStore, InMemoryOrderStore, newReportToken } from "./store";
 export { generateReportForOrder, isGeneratable } from "./generate";
-export { approveReport, rejectReport, listPendingReports } from "./review";
+export { approveReport, rejectReport, listPendingReports, retryNotify } from "./review";
+export { refundOrder } from "./refund";
 
 /** SubjectPlain → 암호화된 Subject 필드 (저장 직전 변환) */
 function encryptSubject(
@@ -75,6 +76,13 @@ export function decryptSubject(s: Subject): SubjectPlain {
   };
 }
 
+/** 한국 휴대폰·유선·안심번호 등 숫자/하이픈 위주 전화번호 (느슨한 형식 검증) */
+const PHONE_RE = /^[0-9-+() ]{8,20}$/;
+/** 평범한 이메일 형식 검증 (RFC 완전 준수 대신 명백한 오타·인젝션만 거름) */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** 자유 입력 텍스트(주소·학교명)의 최대 길이 — 비정상적으로 긴 입력으로 인한 저장소 남용 방지 */
+const MAX_FREE_TEXT_LEN = 200;
+
 /** 입력 검증 — 신뢰 못 할 외부 입력을 도메인 경계에서 거른다 */
 function validateInput(input: CreateOrderInput): void {
   const { subject: s, tier } = input;
@@ -98,6 +106,18 @@ function validateInput(input: CreateOrderInput): void {
     throw new Error("성별이 올바르지 않습니다");
   }
   // 주소는 선택 입력 — 있으면 학교 사실 섹션이 추가되고, 없으면 사주 해석만 생성된다.
+  if (s.address != null && s.address.length > MAX_FREE_TEXT_LEN) {
+    throw new Error("주소가 너무 길습니다");
+  }
+  if (s.currentSchool != null && s.currentSchool.length > MAX_FREE_TEXT_LEN) {
+    throw new Error("재학 학교명이 너무 길습니다");
+  }
+  if (input.contactEmail != null && !EMAIL_RE.test(input.contactEmail)) {
+    throw new Error("이메일 형식이 올바르지 않습니다");
+  }
+  if (input.contactPhone != null && !PHONE_RE.test(input.contactPhone)) {
+    throw new Error("전화번호 형식이 올바르지 않습니다");
+  }
 }
 
 /**
@@ -127,6 +147,11 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     subjectId: subject.id,
     reportId: null,
     userId: input.userId ?? null,
+    paymentKey: input.paymentKey ?? null,
+    refundedAt: null,
+    refundReason: null,
+    notifyError: null,
+    notifyFailedAt: null,
     contactEmail: input.contactEmail ?? null,
     contactPhone: input.contactPhone ?? null,
   });

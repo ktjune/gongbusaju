@@ -25,32 +25,52 @@ export type ResultLinkPayload = {
   contactPhone?: string | null;
 };
 
+/** 채널별 발송 결과 — 운영자가 어드민에서 실패 사유를 보고 재발송할 수 있게 한다. */
+export type SendResultLinkOutcome = {
+  /** 시도한 채널 중 하나라도 실패하면 true */
+  hasFailure: boolean;
+  /** 실패 사유 (여러 채널 실패 시 " / "로 연결). 전부 성공·미시도면 null. */
+  error: string | null;
+};
+
 /**
  * 리포트 결과 링크를 보호자에게 발송한다.
  *
  * 이메일 또는 전화번호 중 하나 이상이 있으면 발송 시도.
  * 둘 다 없으면 아무것도 하지 않는다 (에러 없이 조용히 반환).
  *
- * @throws 절대 throw 안 함 — 발송 실패는 로그로만 처리 (메인 플로우 차단 금지).
+ * @throws 절대 throw 안 함 — 발송 실패는 결과 객체로 반환 (메인 플로우 차단 금지).
  */
-export async function sendResultLink(payload: ResultLinkPayload): Promise<void> {
+export async function sendResultLink(
+  payload: ResultLinkPayload
+): Promise<SendResultLinkOutcome> {
   const { orderId, resultUrl, contactEmail, contactPhone } = payload;
 
-  if (!contactEmail && !contactPhone) return;
+  if (!contactEmail && !contactPhone) return { hasFailure: false, error: null };
+
+  const errors: string[] = [];
 
   // 이메일 발송
   if (contactEmail) {
     await sendEmail(orderId, resultUrl, contactEmail).catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error(`[notify] 이메일 발송 실패 — 주문: ${orderId}`, err);
+      errors.push(`이메일: ${msg}`);
     });
   }
 
   // 카카오 알림톡 (Solapi)
   if (contactPhone) {
     await sendAlimtalk(orderId, resultUrl, contactPhone).catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error(`[notify] 알림톡 발송 실패 — 주문: ${orderId}`, err);
+      errors.push(`알림톡: ${msg}`);
     });
   }
+
+  return errors.length > 0
+    ? { hasFailure: true, error: errors.join(" / ") }
+    : { hasFailure: false, error: null };
 }
 
 async function sendEmail(

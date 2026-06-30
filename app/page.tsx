@@ -265,7 +265,7 @@ export default function Home() {
               <summary className={styles.faqQ}>아이 개인정보는 어떻게 관리되나요?</summary>
               <p className={styles.faqA}>
                 생년월일시·주소·학교는 암호화·분리 저장됩니다. 법정대리인 동의 하에 수집되며,
-                리포트 제작·보관기간(12개월) 이후 파기됩니다.
+                리포트 제작·보관기간(6개월) 이후 파기됩니다.
               </p>
             </details>
           </div>

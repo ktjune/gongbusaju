@@ -132,7 +132,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const store = getOrderStore();
 
   const consentAt = input.consentAt ?? new Date().toISOString();
-  const retainMonths = input.retainMonths ?? 12;
+  const retainMonths = input.retainMonths ?? 6;
   const retainUntil = new Date(
     Date.now() + retainMonths * 30 * 24 * 60 * 60 * 1000
   ).toISOString();

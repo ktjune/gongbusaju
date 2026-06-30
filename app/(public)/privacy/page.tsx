@@ -66,7 +66,7 @@ export default function PrivacyPage() {
         <h2 className={styles.h2}>3. 개인정보의 보유 및 이용 기간</h2>
         <ul className={styles.ul}>
           <li className={styles.li}>
-            자녀·보호자 개인정보: 동의일로부터 <b>12개월</b> 보관 후 지체 없이 파기. (다만 정보주체의
+            자녀·보호자 개인정보: 동의일로부터 <b>6개월</b> 보관 후 지체 없이 파기. (다만 정보주체의
             삭제 요청 시 즉시 파기)
           </li>
           <li className={styles.li}>
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
           <br />· 이전받는 자 / 국가: Vercel·Resend·Anthropic / 미국
           <br />· 이전 항목: 위 표의 수탁사별 항목 (보호자 이메일, 서비스 이용 데이터, 식별정보를 제외한 사주 계산값)
           <br />· 이전 일시 및 방법: 서비스 이용 시점에 암호화된 통신(HTTPS/TLS)으로 전송
-          <br />· 보유·이용 기간: 위탁 목적 달성 또는 회사의 개인정보 보유기간(12개월)까지
+          <br />· 보유·이용 기간: 위탁 목적 달성 또는 회사의 개인정보 보유기간(6개월)까지
           <br />· 정보주체는 국외 이전을 거부할 수 있으나, 거부 시 서비스 제공이 제한될 수 있습니다.
         </p>
 

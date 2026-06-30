@@ -170,14 +170,14 @@ describe("createOrder — PII 암호화 저장", () => {
   });
 
   it("주소가 없어도 주문이 생성된다 (주소는 선택 입력)", async () => {
-    const order = await createOrder({ tier: "premium", subject: basicInput.subject });
+    const order = await createOrder({ tier: "basic", subject: basicInput.subject });
     expect(order.id).toBeTruthy();
     expect(order.status).toBe("paid");
   });
 
   it("주소가 암호화 저장·복원된다", async () => {
     const order = await createOrder({
-      tier: "premium",
+      tier: "basic",
       subject: { ...basicInput.subject, address: "서울특별시 종로구 자하문로 105", currentSchool: "청운초등학교" },
     });
     const store = getOrderStore();
@@ -218,7 +218,7 @@ describe("createOrder — PII 암호화 저장", () => {
   it("주소가 너무 길면 거부", async () => {
     await expect(
       createOrder({
-        tier: "premium",
+        tier: "basic",
         subject: { ...basicInput.subject, address: "a".repeat(201) },
       })
     ).rejects.toThrow(/주소/);

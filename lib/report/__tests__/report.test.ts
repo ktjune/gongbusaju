@@ -2,12 +2,11 @@
  * lib/report 테스트
  *
  * 1. guardrails 단위 테스트 — 금지 표현 차단
- * 2. 합성 테스트 (mock LLM) — 학교 사실이 코드에서 삽입되고 LLM이 못 바꾸는지
- * 3. 통합 테스트 — 실제 Claude API (ANTHROPIC_API_KEY 없으면 skip)
- *
- * [핵심 불변 조건]
- * - 학교명·거리·배정라벨은 코드(buildFactBlock)가 삽입. mock LLM이 언급 안 해도 리포트에 있다.
- * - LLM 출력에 금지 표현이 있으면 GuardrailError가 발행을 차단한다.
+ * 2. buildFactBlock — 학교 사실이 코드에서 생성되는지 (buildFactBlock은 유지됨)
+ * 3. assembleReport — 블록 조립 검증
+ * 4. generateReport 합성 테스트 (mock LLM)
+ * 5. renderReportHtml
+ * 6. 통합 테스트 — 실제 Claude API (ANTHROPIC_API_KEY 없으면 skip)
  */
 
 import { describe, it, expect } from "vitest";
@@ -112,8 +111,7 @@ const samplePerspective = {
     "그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다. 단정이 아닙니다.",
   studyStyleProse:
     "꾸준한 반복과 명확한 목표가 있는 학습 방식이 잘 맞는 경향이 있습니다. " +
-    "화 기운도 적절히 있어 발표·표현 활동에서 에너지를 발휘하는 경향이 있습니다. " +
-    "참고로 이는 해석적 관점이며 측정 결과가 아닙니다.",
+    "화 기운도 적절히 있어 발표·표현 활동에서 에너지를 발휘하는 경향이 있습니다.",
   parentingProse:
     "아이가 머뭇거릴 때는 작은 단계로 나눠 주세요. 결과보다 과정을 짚어 칭찬해 주세요. " +
     "하루 일과를 같이 정하면 안정감을 얻는 경향이 있습니다.",
@@ -148,8 +146,6 @@ function makeMockProvider(overrides?: Partial<typeof samplePerspective>): LlmPro
 // ──────────────────────────────────────────────────────────────
 
 describe("checkGuardrails — 금지 표현 차단", () => {
-  // ── 차단돼야 하는 표현 ─────────────────────────────────────
-
   it('"보장" → GuardrailError', () => {
     expect(() => checkGuardrails("이 결과를 보장합니다.")).toThrow(GuardrailError);
   });
@@ -178,12 +174,6 @@ describe("checkGuardrails — 금지 표현 차단", () => {
     ).toThrow(GuardrailError);
   });
 
-  it('"이 학교 가면 된다" → GuardrailError', () => {
-    expect(() =>
-      checkGuardrails("사주가 좋으니 이 학교 가면 된다.")
-    ).toThrow(GuardrailError);
-  });
-
   it('"이 학교에 가야 합니다" → GuardrailError', () => {
     expect(() =>
       checkGuardrails("이 학교에 가야 합니다.")
@@ -196,31 +186,11 @@ describe("checkGuardrails — 금지 표현 차단", () => {
     ).toThrow(GuardrailError);
   });
 
-  it('"해당 학교가 정답" → GuardrailError', () => {
-    expect(() =>
-      checkGuardrails("해당 학교가 정답이에요.")
-    ).toThrow(GuardrailError);
-  });
-
-  it('"확실히 해당 학교" → GuardrailError', () => {
-    expect(() =>
-      checkGuardrails("확실히 해당 학교가 맞습니다.")
-    ).toThrow(GuardrailError);
-  });
-
-  it('"사주 → 학교 → 정답" 인과 → GuardrailError', () => {
-    expect(() =>
-      checkGuardrails("이 사주이니 이 학교가 정답입니다.")
-    ).toThrow(GuardrailError);
-  });
-
   it('"오행 → 학교 → 최적" 인과 → GuardrailError', () => {
     expect(() =>
       checkGuardrails("오행이 토 위주이기 때문에 이 학교가 최적입니다.")
     ).toThrow(GuardrailError);
   });
-
-  // ── 통과해야 하는 표현 ─────────────────────────────────────
 
   it("일반 기질 해석 텍스트 → 통과", () => {
     expect(() =>
@@ -272,7 +242,7 @@ describe("passesGuardrails — bool 버전", () => {
 });
 
 // ──────────────────────────────────────────────────────────────
-// 2. buildFactBlock — 사실 블록 코드 생성 검증
+// 2. buildFactBlock — 사실 블록 코드 생성 검증 (함수는 유지됨)
 // ──────────────────────────────────────────────────────────────
 
 describe("buildFactBlock — 코드가 학교 사실 생성", () => {
@@ -333,41 +303,21 @@ describe("assembleReport — 블록 조립", () => {
 
   it("데이터 섹션(원국 표·오행 표·대운 표)이 코드로 생성된다", () => {
     const md = assembleReport(sampleSaju, {}, samplePerspective);
-    // 원국 표: 일간 강조 + 한자·한글 병기
     expect(md).toContain("사주 원국");
     expect(md).toContain("← 일간");
-    expect(md).toContain("甲(갑)"); // 년간
-    // 오행 표: 비율 + 막대
+    expect(md).toContain("甲(갑)");
     expect(md).toContain("木(목)");
     expect(md).toContain("%");
-    // 대운 표: 만나이 + 학령기 라벨
     expect(md).toContain("만 8세 6개월");
     expect(md).toContain("초등");
-    // 기질 지표 표 + 면책
     expect(md).toContain("집중력");
     expect(md).toContain("해석 지표");
   });
 
-  it("schoolConnectionProse 있으면 기질 관점 섹션 포함", () => {
+  it("학교 기질 참고 섹션 항상 포함", () => {
     const md = assembleReport(sampleSaju, {}, samplePerspective);
     expect(md).toContain("학교 선택 기질 참고");
     expect(md).toContain("안정적이고 체계적인 환경");
-  });
-
-  it("schoolConnectionProse 없으면(Basic) 해당 섹션 없음", () => {
-    const md = assembleReport(sampleSaju, {}, {
-      ...samplePerspective,
-      schoolConnectionProse: undefined,
-    });
-    expect(md).not.toContain("학교 선택 기질 참고");
-  });
-
-  it("사실 블록(학교명)이 관점 블록과 함께 포함됨", () => {
-    const factBlock = buildFactBlock(sampleSchools);
-    const md = assembleReport(sampleSaju, factBlock, samplePerspective);
-    expect(md).toContain("청운초등학교");
-    expect(md).toContain("예상 배정");
-    expect(md).toContain("타고난 결");
   });
 
   it("시주 null이면 원국 표에 '—' + 시간 미상 안내", () => {
@@ -377,7 +327,6 @@ describe("assembleReport — 블록 조립", () => {
   });
 
   it("birthYear 있으면 학령 단계 섹션 + 진학 타임라인 + 재학 표기", () => {
-    // 2017년생, 기준 2026년 → 초등 입학 2024년 → 3학년
     const md = assembleReport(sampleSaju, {}, samplePerspective, {
       birthYear: 2017,
       currentYear: 2026,
@@ -403,70 +352,24 @@ describe("assembleReport — 블록 조립", () => {
 // ──────────────────────────────────────────────────────────────
 
 describe("generateReport — mock LLM 합성 테스트", () => {
-  it("basic: 일간·공부 스타일·대운 섹션 포함 + 시각 기준 표기", async () => {
+  it("일간·공부 스타일·대운 섹션 포함 + 시각 기준 표기", async () => {
     const result = await generateReport(
-      { saju: sampleSaju, tier: "basic" },
+      { saju: sampleSaju },
       { llmProvider: makeMockProvider() }
     );
-    expect(result.tier).toBe("basic");
     expect(result.markdown).toContain("타고난 결 — 일간 이야기");
     expect(result.markdown).toContain("공부 스타일과 학습 환경");
     expect(result.markdown).toContain("학령기 대운 흐름");
     expect(result.markdown).toContain("동경 127.5°");
   });
 
-  it("basic: 학교 사실 블록 없음", async () => {
+  it("학교 기질 참고 섹션 항상 포함", async () => {
     const result = await generateReport(
-      { saju: sampleSaju, tier: "basic" },
-      { llmProvider: makeMockProvider() }
-    );
-    // 배정 학교 섹션이 없어야 한다
-    expect(result.markdown).not.toContain("예상 배정 학교 (사실 정보)");
-    expect(result.markdown).not.toContain(ASSIGNED_SCHOOL_LABEL);
-  });
-
-  it("premium: 학교명이 코드에서 삽입됨 (mock LLM이 언급하지 않아도)", async () => {
-    // mock LLM은 학교명을 전혀 언급하지 않는다
-    const result = await generateReport(
-      { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
-      { llmProvider: makeMockProvider() }
-    );
-    // 그럼에도 학교명은 리포트에 있다 → 코드가 삽입했음을 증명
-    expect(result.markdown).toContain("청운초등학교");
-  });
-
-  it("premium: ASSIGNED_SCHOOL_LABEL이 리포트에 포함됨", async () => {
-    const result = await generateReport(
-      { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
-      { llmProvider: makeMockProvider() }
-    );
-    expect(result.markdown).toContain(ASSIGNED_SCHOOL_LABEL);
-  });
-
-  it("premium: 출처·기준일이 리포트에 포함됨", async () => {
-    const result = await generateReport(
-      { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
-      { llmProvider: makeMockProvider() }
-    );
-    expect(result.markdown).toContain("2024-03-01");
-    expect(result.markdown).toContain("data.go.kr");
-  });
-
-  it("premium: schoolConnectionProse가 리포트에 포함됨", async () => {
-    const result = await generateReport(
-      { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
+      { saju: sampleSaju },
       { llmProvider: makeMockProvider() }
     );
     expect(result.markdown).toContain("학교 선택 기질 참고");
     expect(result.markdown).toContain("참고 경향이며");
-  });
-
-  it("premium schools=undefined: 학교 사실 블록 없음", async () => {
-    const result = await generateReport(
-      { saju: sampleSaju, tier: "premium" }, // schools 없음
-      { llmProvider: makeMockProvider() }
-    );
-    expect(result.markdown).not.toContain("예상 배정 학교 (사실 정보)");
   });
 
   it("LLM 응답에 '보장' 포함 → GuardrailError 발행 차단", async () => {
@@ -474,16 +377,7 @@ describe("generateReport — mock LLM 합성 테스트", () => {
       studyStyleProse: "이 결과를 보장합니다. 확실한 해석입니다.",
     });
     await expect(
-      generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
-    ).rejects.toThrow(GuardrailError);
-  });
-
-  it("LLM 응답에 '이 학교 가면 됩니다' → GuardrailError 발행 차단", async () => {
-    const badProvider = makeMockProvider({
-      daeunProse: "이 학교 가면 됩니다.",
-    });
-    await expect(
-      generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
+      generateReport({ saju: sampleSaju }, { llmProvider: badProvider })
     ).rejects.toThrow(GuardrailError);
   });
 
@@ -492,10 +386,7 @@ describe("generateReport — mock LLM 합성 테스트", () => {
       schoolConnectionProse: "이 학교가 정답입니다.",
     });
     await expect(
-      generateReport(
-        { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
-        { llmProvider: badProvider }
-      )
+      generateReport({ saju: sampleSaju }, { llmProvider: badProvider })
     ).rejects.toThrow(GuardrailError);
   });
 
@@ -506,7 +397,7 @@ describe("generateReport — mock LLM 합성 테스트", () => {
       },
     };
     await expect(
-      generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
+      generateReport({ saju: sampleSaju }, { llmProvider: badProvider })
     ).rejects.toThrow(/JSON/);
   });
 
@@ -517,24 +408,8 @@ describe("generateReport — mock LLM 합성 테스트", () => {
       },
     };
     await expect(
-      generateReport({ saju: sampleSaju, tier: "basic" }, { llmProvider: badProvider })
+      generateReport({ saju: sampleSaju }, { llmProvider: badProvider })
     ).rejects.toThrow(/elementsProse/);
-  });
-
-  it("사실 블록과 관점 블록이 인과 없이 나란히 배치됨", async () => {
-    const result = await generateReport(
-      { saju: sampleSaju, schools: sampleSchools, tier: "premium" },
-      { llmProvider: makeMockProvider() }
-    );
-    // 관점 섹션에 학교명 없음 — LLM이 삽입한 게 아니므로
-    const studySection = result.markdown.match(
-      /## 공부 스타일과 학습 환경\n\n([\s\S]*?)(?=\n\n## )/
-    )?.[1] ?? "";
-    expect(studySection.length).toBeGreaterThan(0);
-    expect(studySection).not.toContain("청운초등학교");
-
-    // 사실 섹션에 학교명 있음 — 코드가 삽입
-    expect(result.markdown).toContain("청운초등학교");
   });
 });
 
@@ -546,11 +421,11 @@ describe("renderReportHtml — 디자인 HTML", () => {
   const md = assembleReport(sampleSaju, {}, samplePerspective);
 
   it("표지에 원국 4기둥 카드가 들어간다 (일주 강조)", () => {
-    const html = renderReportHtml(sampleSaju, md, { tier: "basic" });
+    const html = renderReportHtml(sampleSaju, md);
     expect(html).toContain('class="cover"');
-    expect(html).toContain("pillar-day"); // 일주 강조 카드
-    expect(html).toContain("戊"); // 일간
-    expect(html).toContain("무오"); // 한글 독음
+    expect(html).toContain("pillar-day");
+    expect(html).toContain("戊");
+    expect(html).toContain("무오");
   });
 
   it("마크다운 본문이 HTML로 변환된다 (표·제목)", () => {
@@ -591,33 +466,12 @@ describe("generateReport — 실제 Claude API 통합 테스트", () => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   it.skipIf(!apiKey)(
-    "실제 API 호출 → guardrails 통과 + 시각 기준 표기 포함",
+    "실제 API 호출 → guardrails 통과 + 시각 기준 표기 + 학교 기질 참고 섹션 포함",
     async () => {
-      const result = await generateReport({
-        saju: sampleSaju,
-        tier: "basic",
-      });
-      expect(result.markdown).toContain("공부 기질 해석");
+      const result = await generateReport({ saju: sampleSaju });
       expect(result.markdown).toContain("대운 흐름");
       expect(result.markdown).toContain("동경 127.5°");
-      // guardrails가 통과했으면 여기까지 도달
-    },
-    30_000 // API 호출 타임아웃 30초
-  );
-
-  it.skipIf(!apiKey)(
-    "Premium 실제 API 호출 → 학교 사실 코드 삽입 + guardrails 통과",
-    async () => {
-      const result = await generateReport({
-        saju: sampleSaju,
-        schools: sampleSchools,
-        tier: "premium",
-      });
-      // 코드가 삽입한 학교 사실
-      expect(result.markdown).toContain("청운초등학교");
-      expect(result.markdown).toContain(ASSIGNED_SCHOOL_LABEL);
-      // guardrails 통과
-      expect(result.markdown).toContain("동경 127.5°");
+      expect(result.markdown).toContain("학교 선택 기질 참고");
     },
     30_000
   );

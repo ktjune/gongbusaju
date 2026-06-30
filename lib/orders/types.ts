@@ -3,7 +3,7 @@
  * 주문·자녀정보·리포트 도메인 타입 (SPEC §6 데이터 모델)
  */
 
-export type Tier = "basic" | "premium";
+export type Tier = "basic";
 
 /**
  * 주문 상태 (SPEC §3 파이프라인)

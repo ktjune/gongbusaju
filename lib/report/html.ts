@@ -23,8 +23,6 @@ import { WUXING_COLOR } from "./charts";
 export type RenderHtmlOptions = {
   /** 표지에 표시할 대상 라벨 (예: "2020년 9월 16일 16:43 출생 · 남아") */
   subjectLabel?: string;
-  /** 요금제 표기 */
-  tier?: "basic" | "premium";
   /** 발행일 표기 (기본: 오늘) */
   generatedAt?: string;
   /** 샘플 워터마크 문구 (지정 시 표지에 표시) */

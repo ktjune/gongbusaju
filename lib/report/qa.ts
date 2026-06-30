@@ -2,7 +2,7 @@
  * lib/report/qa.ts
  * LLM 생성 리포트 자동 QA — 어드민 승인 전 1차 점검.
  *
- * 구조 검사(분량·금지표현·premium 학교 표기)를 먼저 돌리고, 통과한 경우에만
+ * 구조 검사(분량·금지표현)를 먼저 돌리고, 통과한 경우에만
  * LLM 재검토(오타·문맥 어색함·반복 면책문구)를 호출한다 (비용 절약).
  * 통과하면 자동 승인 후보, 실패하면 사람 검수(어드민 "검수 큐")로 넘어간다.
  */
@@ -10,22 +10,17 @@
 import { checkGuardrails } from "./guardrails";
 import { ClaudeLlmProvider } from "./generate";
 import type { LlmProvider } from "./generate";
-import { ASSIGNED_SCHOOL_LABEL } from "./template";
 
 export type QaResult = {
   passed: boolean;
   issues: string[];
 };
 
-/** 11~14개 산문 합산 최소 분량(자) — 비정상적으로 짧으면 누락 의심 */
+/** 15개 산문 합산 최소 분량(자) — 비정상적으로 짧으면 누락 의심 */
 const MIN_MARKDOWN_LENGTH = 3000;
 
-/** 구조 검사 — 분량·금지표현·premium 학교 배정 표기 (LLM 호출 없음) */
-export function runStructuralQa(
-  markdown: string,
-  tier: "basic" | "premium",
-  hasSchoolFacts: boolean
-): string[] {
+/** 구조 검사 — 분량·금지표현 (LLM 호출 없음) */
+export function runStructuralQa(markdown: string): string[] {
   const issues: string[] = [];
   const trimmed = markdown.trim();
 
@@ -37,10 +32,6 @@ export function runStructuralQa(
     checkGuardrails(markdown);
   } catch (e) {
     issues.push(e instanceof Error ? e.message : "금지 표현 감지");
-  }
-
-  if (tier === "premium" && hasSchoolFacts && !markdown.includes(ASSIGNED_SCHOOL_LABEL)) {
-    issues.push(`Premium 학교 배정에 "${ASSIGNED_SCHOOL_LABEL}" 표기가 없습니다`);
   }
 
   return issues;
@@ -90,11 +81,9 @@ export async function runLlmQaReview(
  */
 export async function runReportQa(
   markdown: string,
-  tier: "basic" | "premium",
-  hasSchoolFacts: boolean,
   provider: LlmProvider
 ): Promise<QaResult> {
-  const structuralIssues = runStructuralQa(markdown, tier, hasSchoolFacts);
+  const structuralIssues = runStructuralQa(markdown);
   if (structuralIssues.length > 0) {
     return { passed: false, issues: structuralIssues };
   }
@@ -111,18 +100,14 @@ export async function runReportQa(
  * - QA 자체가 예외로 죽으면(네트워크 등) throw하지 않고 실패로 간주해
  *   호출자가 안전하게 사람 검수로 폴백할 수 있게 한다.
  */
-export async function runAutoQa(
-  markdown: string,
-  tier: "basic" | "premium",
-  hasSchoolFacts: boolean
-): Promise<QaResult> {
+export async function runAutoQa(markdown: string): Promise<QaResult> {
   try {
     const hasKey = !!process.env.ANTHROPIC_API_KEY;
     if (!hasKey) {
-      const issues = runStructuralQa(markdown, tier, hasSchoolFacts);
+      const issues = runStructuralQa(markdown);
       return { passed: issues.length === 0, issues };
     }
-    return await runReportQa(markdown, tier, hasSchoolFacts, new ClaudeLlmProvider());
+    return await runReportQa(markdown, new ClaudeLlmProvider());
   } catch (e) {
     const msg = e instanceof Error ? e.message : "자동 QA 실행 오류";
     return { passed: false, issues: [msg] };

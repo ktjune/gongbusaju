@@ -16,7 +16,6 @@
  */
 
 import type { SajuResult } from "../saju";
-import type { SchoolFacts } from "../schools";
 import { buildFactBlock, assembleReport } from "./template";
 import { generatePerspective, ClaudeLlmProvider } from "./generate";
 export { ClaudeLlmProvider } from "./generate";
@@ -57,9 +56,6 @@ export type { QaResult } from "./qa";
 
 export type ReportInput = {
   saju: SajuResult;
-  /** Premium: 학교 사실 포함 */
-  schools?: SchoolFacts;
-  tier: "basic" | "premium";
   /** 학령 단계·세운 나이 산출용 출생 연도 */
   birthYear?: number;
   /** 기준 연도 (기본: 현재 연도 — 테스트·샘플 고정용) */
@@ -71,7 +67,6 @@ export type ReportInput = {
 export type ReportOutput = {
   /** 최종 마크다운 리포트 */
   markdown: string;
-  tier: "basic" | "premium";
 };
 
 export type GenerateReportOptions = {
@@ -89,9 +84,6 @@ export type GenerateReportOptions = {
 /**
  * 리포트를 생성한다.
  *
- * Basic tier: 사주 해석 산문만.
- * Premium tier: + 예상 배정 학교 + 학교군 사실 블록 + 기질-학교 연결 관점.
- *
  * @throws {GuardrailError} LLM 출력에 금지 표현이 발견되면
  * @throws {Error} LLM 응답이 올바른 JSON이 아니면
  */
@@ -99,26 +91,21 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, schools, tier, birthYear, currentYear, currentSchoolName } = input;
+  const { saju, birthYear, currentYear, currentSchoolName } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
   const meta = { birthYear, currentYear, currentSchoolName };
 
-  // 1. 사실 블록 생성 — 코드만, LLM 없음
-  //    Premium + 학교 데이터 있을 때만 사실 블록 포함
-  const factBlock =
-    tier === "premium" && schools ? buildFactBlock(schools, saju) : {};
-
-  // 2. LLM 관점 블록 생성
+  // 1. LLM 관점 블록 생성
   //    buildUserPrompt() 는 학교명·주소·진학률을 LLM에게 전달하지 않는다
-  const perspective = await generatePerspective(saju, tier, provider, meta);
+  const perspective = await generatePerspective(saju, provider, meta);
 
-  // 3. guardrails 검사 — 모든 산문 필드, 위반 시 GuardrailError throw → 발행 차단
+  // 2. guardrails 검사 — 모든 산문 필드, 위반 시 GuardrailError throw → 발행 차단
   for (const prose of Object.values(perspective)) {
     if (typeof prose === "string") checkGuardrails(prose);
   }
 
-  // 4. 조립 (사주 데이터 섹션·도식·정적 콘텐츠는 코드가 생성)
-  const markdown = assembleReport(saju, factBlock, perspective, meta);
+  // 3. 조립 (사주 데이터 섹션·도식·정적 콘텐츠는 코드가 생성)
+  const markdown = assembleReport(saju, {}, perspective, meta);
 
-  return { markdown, tier };
+  return { markdown };
 }

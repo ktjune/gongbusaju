@@ -27,7 +27,7 @@ import { deriveSchoolStage } from "./stage";
  */
 export type LlmPerspective = PerspectiveBlock;
 
-/** 모든 tier 공통 필수 산문 필드 */
+/** 필수 산문 필드 (schoolConnectionProse 포함 — 단일 요금제) */
 export const REQUIRED_PROSE_FIELDS = [
   "dayMasterProse",
   "elementsProse",
@@ -43,6 +43,7 @@ export const REQUIRED_PROSE_FIELDS = [
   "eduStagesProse",
   "daeunProse",
   "annualProse",
+  "schoolConnectionProse",
 ] as const;
 
 /**
@@ -63,9 +64,8 @@ export interface LlmProvider {
 }
 
 /** 산문 필드 JSON 스키마 — 단일 호출용 (그룹 병렬화에는 buildGroupSchema를 사용) */
-export function buildProseSchema(tier: "basic" | "premium"): Record<string, unknown> {
+export function buildProseSchema(): Record<string, unknown> {
   const fields: string[] = [...REQUIRED_PROSE_FIELDS];
-  if (tier === "premium") fields.push("schoolConnectionProse");
   const properties: Record<string, unknown> = {};
   for (const f of fields) properties[f] = { type: "string" };
   return { type: "object", properties, required: fields, additionalProperties: false };
@@ -271,7 +271,7 @@ type FieldGroupDef = {
   readonly fields: readonly string[];
 };
 
-const FIELD_GROUPS_BASIC: readonly FieldGroupDef[] = [
+const FIELD_GROUPS: readonly FieldGroupDef[] = [
   {
     name: "core",
     fields: ["dayMasterProse", "elementsProse", "tenGodsProse", "studyStyleProse"],
@@ -288,14 +288,6 @@ const FIELD_GROUPS_BASIC: readonly FieldGroupDef[] = [
     name: "roadmap",
     fields: ["stageProse", "eduStagesProse", "daeunProse", "annualProse"],
   },
-];
-
-const FIELD_GROUPS_PREMIUM: readonly FieldGroupDef[] = [
-  ...FIELD_GROUPS_BASIC.slice(0, 3),
-  {
-    name: "roadmap",
-    fields: ["stageProse", "eduStagesProse", "daeunProse", "annualProse"],
-  },
   {
     name: "school",
     fields: ["schoolConnectionProse"],
@@ -303,16 +295,12 @@ const FIELD_GROUPS_PREMIUM: readonly FieldGroupDef[] = [
 ];
 
 /** 그룹 전용 시스템 프롬프트 빌더 */
-function buildGroupSystemPrompt(group: FieldGroupDef, isPremium: boolean): string {
+function buildGroupSystemPrompt(group: FieldGroupDef): string {
   const fieldSpecLines = group.fields.map((f) => FIELD_SPECS[f] ?? "").join("\n");
   const jsonShape = `{\n${group.fields.map((f) => `  "${f}": "..."`).join(",\n")}\n}`;
-  const premiumNote =
-    isPremium && group.name === "school"
-      ? "\n이 리포트는 Premium 요금제입니다. 학교 환경 선택 기질 관점 산문을 작성합니다."
-      : "";
 
   return `당신은 아동·청소년 공부 기질을 사주 명리 관점에서 해석하는 전문가입니다.
-주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.${premiumNote}
+주어진 사주팔자(원국·오행·십성·대운) 데이터를 바탕으로 보호자에게 전달할 해석 산문을 작성합니다.
 
 ${FORBIDDEN_RULES}
 
@@ -351,11 +339,10 @@ async function withRetry<T>(
 /** 그룹 하나를 생성하고 Partial<LlmPerspective> 반환 */
 async function generateGroup(
   group: FieldGroupDef,
-  isPremium: boolean,
   userPrompt: string,
   provider: LlmProvider
 ): Promise<Partial<LlmPerspective>> {
-  const systemPrompt = buildGroupSystemPrompt(group, isPremium);
+  const systemPrompt = buildGroupSystemPrompt(group);
   const schema = buildGroupSchema(group.fields);
   // API 호출만 재시도한다. 일시적 오류(네트워크·5xx·타임아웃)는 복구하되,
   // 아래의 JSON 파싱·필수 필드 검증 실패는 결정적이므로 재시도하지 않는다.
@@ -397,11 +384,9 @@ async function generateGroup(
 /**
  * SajuResult → LLM 사용자 프롬프트.
  * 학교 사실(학교명·주소·거리)은 포함하지 않는다.
- * Premium tier에는 "학교 맥락 있음" 힌트만 전달해 schoolConnectionProse 유도.
  */
 export function buildUserPrompt(
   saju: SajuResult,
-  tier: "basic" | "premium",
   meta: ReportMeta = {}
 ): string {
   const daeunList = saju.daeun
@@ -466,21 +451,6 @@ export function buildUserPrompt(
     .join(", ");
   lines.push("", "[세운 — 향후 3년]", annualStr);
 
-  if (tier === "premium") {
-    lines.push(
-      "",
-      "[참고 — Premium 학교 섹션]",
-      "이 리포트는 Premium 요금제입니다.",
-      "schoolConnectionProse 필드에 다음을 포함해 작성해 주세요:",
-      "1. 이 아이 기질에 맞는 학교 환경 특성 (자기주도/체계/경쟁/실용 등)",
-      "2. 고교 유형(일반고·특수목적고·자율고·특성화고) 중 기질상 맞는 유형 + 이유",
-      "3. 앞서 제시한 전공·직업 방향과 고교 유형 연결",
-      "4. 중학교 시기 준비 방향",
-      "학교명·주소·진학률 등 사실 정보는 절대 포함하지 않습니다.",
-      "고교 유형 이름(일반고, 자율고, 특목고 등) 언급은 허용합니다."
-    );
-  }
-
   return lines.join("\n");
 }
 
@@ -499,17 +469,14 @@ export function buildUserPrompt(
  */
 export async function generatePerspective(
   saju: SajuResult,
-  tier: "basic" | "premium",
   provider: LlmProvider,
   meta: ReportMeta = {}
 ): Promise<LlmPerspective> {
-  const isPremium = tier === "premium";
-  const groups = isPremium ? FIELD_GROUPS_PREMIUM : FIELD_GROUPS_BASIC;
-  const userPrompt = buildUserPrompt(saju, tier, meta);
+  const userPrompt = buildUserPrompt(saju, meta);
 
   // 모든 그룹을 동시에 호출 — Promise.all은 하나라도 reject되면 전체 reject
   const partials = await Promise.all(
-    groups.map((group) => generateGroup(group, isPremium, userPrompt, provider))
+    FIELD_GROUPS.map((group) => generateGroup(group, userPrompt, provider))
   );
 
   // 그룹 결과 병합
@@ -520,9 +487,6 @@ export async function generatePerspective(
     if (!merged[field]?.trim()) {
       throw new Error(`LLM 병렬 생성 후 ${field} 누락`);
     }
-  }
-  if (isPremium && !merged.schoolConnectionProse?.trim()) {
-    throw new Error("LLM Premium 병렬 생성 후 schoolConnectionProse 누락");
   }
 
   return merged;

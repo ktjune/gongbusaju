@@ -77,15 +77,14 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       fixtureZones: zones,
       subjectLabel: buildSubjectLabel(subject),
     };
-    const hasSchoolFacts = order.tier === "premium" && !!subject.address;
 
-    let built = await buildReportForSubject(subject, order.tier, buildOpts);
-    let qa = await runAutoQa(built.markdown, order.tier, hasSchoolFacts);
+    let built = await buildReportForSubject(subject, buildOpts);
+    let qa = await runAutoQa(built.markdown);
 
     if (!qa.passed) {
       console.warn(`[order] QA 실패 — 재생성 시도: 주문 ${orderId}`, qa.issues);
-      built = await buildReportForSubject(subject, order.tier, buildOpts);
-      qa = await runAutoQa(built.markdown, order.tier, hasSchoolFacts);
+      built = await buildReportForSubject(subject, buildOpts);
+      qa = await runAutoQa(built.markdown);
       if (!qa.passed) {
         console.warn(`[order] QA 재시도 후에도 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);
       }
@@ -95,7 +94,7 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       orderId,
       markdown: built.markdown,
       html: built.html,
-      tier: built.tier,
+      tier: order.tier,
       reviewStatus: "pending",
       reviewNote: qa.passed ? null : `[자동 QA] ${qa.issues.join(" / ")}`,
       pdfUrl: null,

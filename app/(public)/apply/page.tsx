@@ -148,7 +148,7 @@ export default function ApplyPage() {
       minute = mm;
     }
     return {
-      tier: "premium",
+      tier: "basic",
       birthYear: y,
       birthMonth: m,
       birthDay: d,
@@ -323,8 +323,8 @@ export default function ApplyPage() {
               </button>
             )}
             <p className={styles.hint}>
-              주소를 선택하시면 예상 배정 학교·반경 학교군 안내가 함께 제공됩니다.
-              비워 두면 사주 해석만 제공됩니다. (사주 계산에는 출생지·주소가 쓰이지 않습니다.)
+              재학 학교·주소는 리포트의 학령 단계 해석에 참고됩니다. 비워 두셔도 무방합니다.
+              (사주 계산에는 출생지·주소가 쓰이지 않습니다.)
             </p>
           </div>
           <div className={styles.field}>

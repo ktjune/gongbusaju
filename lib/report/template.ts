@@ -77,7 +77,7 @@ export const INTERPRETATION_NOTICE =
   "**리포트를 마치며.** 본 리포트의 모든 해석 — 기질·오행·십성·공부 스타일·과목/직업/전공 경향·대운·세운·고교 유형 — 은 " +
   "사주 명리의 관점에서 본 참고 자료이며, 단정하거나 보장하는 것이 아닙니다. " +
   "기질 지표 수치는 사주 분포를 규칙표로 환산한 값으로 심리·적성 검사 결과가 아닙니다. " +
-  "과목·진로·전공 적성은 결국 아이의 경험과 흥미 속에서 발견되며, 학교 정보는 공공데이터 기반 예상으로 실제 배정은 교육청 확인이 필요합니다. " +
+  "과목·진로·전공 적성은 결국 아이의 경험과 흥미 속에서 발견됩니다. " +
   "아이의 실제 모습과 보호자의 판단이 항상 우선합니다.";
 
 /** 학교 배정 결과에 항상 붙이는 라벨 */
@@ -131,11 +131,8 @@ export type PerspectiveBlock = {
   daeunProse: string;
   /** 다가오는 세운(향후 3년) 해석 산문 */
   annualProse: string;
-  /**
-   * [Premium] 학교 선택 시 기질 관점에서 참고할 경향 산문.
-   * 학교명·사실 절대 포함 금지.
-   */
-  schoolConnectionProse?: string;
+  /** 학교 선택 시 기질 관점에서 참고할 경향 산문. 학교명·사실 절대 포함 금지. */
+  schoolConnectionProse: string;
 };
 
 /** 리포트 메타 — 학령 단계·세운 나이 계산 등에 사용 */
@@ -949,53 +946,32 @@ export function assembleReport(
       perspective.annualProse,
   });
 
-  // ── [Premium] 학교 기질 참고 (관점 + 기질 유형 표) ──────────
-  if (perspective.schoolConnectionProse) {
-    // 기질 유형 점수 표 — 학교 데이터 유무와 무관하게 항상 표시
-    const typeScores = deriveSchoolTypeScores(saju);
-    const starsStr = (n: number) => "★".repeat(n) + "☆".repeat(3 - n);
-    const scoreRows = typeScores.map(
-      (s) => `| ${s.label} | ${starsStr(s.stars)} | ${s.reason} |`
-    );
-    // clusterSection에 이미 점수 표가 있는 경우 중복 방지
-    const typeTableBlock = facts.clusterSection
-      ? ""
-      : [
-          "",
-          "### 기질로 본 고교 유형 참고",
-          "",
-          "| 고교 유형 | 기질 적합도 | 참고 |",
-          "|---|---|---|",
-          ...scoreRows,
-          "",
-          "> 위 적합도는 사주 기질 관점의 **참고 경향**입니다. 실제 학교 선택은 성적·거리·아이 의향·입시 전형 등 현실 요소를 종합하시기 바랍니다.",
-        ].join("\n");
+  // ── 학교 기질 참고 (관점 + 기질 유형 표) ──────────────────
+  const typeScores = deriveSchoolTypeScores(saju);
+  const starsStr = (n: number) => "★".repeat(n) + "☆".repeat(3 - n);
+  const scoreRows = typeScores.map(
+    (s) => `| ${s.label} | ${starsStr(s.stars)} | ${s.reason} |`
+  );
+  const typeTableBlock = [
+    "",
+    "### 기질로 본 고교 유형 참고",
+    "",
+    "| 고교 유형 | 기질 적합도 | 참고 |",
+    "|---|---|---|",
+    ...scoreRows,
+    "",
+    "> 위 적합도는 사주 기질 관점의 **참고 경향**입니다. 실제 학교 선택은 성적·거리·아이 의향·입시 전형 등 현실 요소를 종합하시기 바랍니다.",
+  ].join("\n");
 
-    sections.push({
-      title: "학교 선택 기질 참고",
-      body:
-        "## 학교 선택 기질 참고\n\n" +
-        "> 아래는 사주 기질 관점에서 학교 환경 선택 시 참고할 만한 경향입니다.\n" +
-        "> 특정 학교를 추천하거나 정답으로 지목하지 않습니다.\n\n" +
-        perspective.schoolConnectionProse +
-        typeTableBlock,
-    });
-  }
-
-  // ── [Premium] 사실 블록 (코드 삽입) ──────────────────────
-  if (facts.assignedSchoolSection || facts.clusterSection) {
-    const factParts: string[] = [
-      "## 예상 배정 학교 (사실 정보)\n\n" +
-      "> 아래 정보는 공공데이터 기반 예상 배정 결과입니다. " +
-      "실제 배정은 교육청에 반드시 확인하시기 바랍니다.",
-    ];
-    if (facts.assignedSchoolSection) factParts.push(facts.assignedSchoolSection);
-    if (facts.clusterSection) factParts.push(facts.clusterSection);
-    sections.push({
-      title: "예상 배정 학교 (사실 정보)",
-      body: factParts.join("\n\n"),
-    });
-  }
+  sections.push({
+    title: "학교 선택 기질 참고",
+    body:
+      "## 학교 선택 기질 참고\n\n" +
+      "> 아래는 사주 기질 관점에서 학교 환경 선택 시 참고할 만한 경향입니다.\n" +
+      "> 특정 학교를 추천하거나 정답으로 지목하지 않습니다.\n\n" +
+      perspective.schoolConnectionProse +
+      typeTableBlock,
+  });
 
   // ── 부록 (정적) ──────────────────────────────────────────
   sections.push({ title: "자주 묻는 질문", body: FAQ });

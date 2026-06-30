@@ -75,7 +75,7 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const tier: Tier = body.tier === "premium" ? "premium" : "basic";
+  const tier: Tier = "basic";
 
   const input: CreateOrderInput = {
     tier,

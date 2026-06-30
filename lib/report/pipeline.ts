@@ -10,7 +10,6 @@
  */
 
 import { computeSaju } from "../saju";
-import { getSchoolFacts } from "../schools";
 import type { SchoolFixture, ZoneCollection } from "../schools";
 import { generateReport } from "./index";
 import type { LlmProvider } from "./generate";
@@ -44,7 +43,6 @@ export type BuildReportOptions = {
 export type BuiltReport = {
   markdown: string;
   html: string;
-  tier: "basic" | "premium";
   /** LLM 미연동(데모 목업)으로 생성됐는지 */
   isDemo: boolean;
 };
@@ -56,7 +54,6 @@ export type BuiltReport = {
  */
 export async function buildReportForSubject(
   subject: BuildReportSubject,
-  tier: "basic" | "premium",
   opts: BuildReportOptions = {}
 ): Promise<BuiltReport> {
   // 1. 사주 계산 (해석 레이어)
@@ -69,28 +66,17 @@ export async function buildReportForSubject(
     gender: subject.gender,
   });
 
-  // 2. 학교 사실 (Premium + 주소) — 사실 레이어. 사주를 입력으로 받지 않는다.
-  let schools;
-  if (tier === "premium" && subject.address) {
-    schools = await getSchoolFacts(subject.address, {
-      fixtureSchools: opts.fixtureSchools,
-      fixtureZones: opts.fixtureZones,
-    });
-  }
-
-  // 3. LLM provider 결정 — 키 있으면 Claude, 없으면 데모 목업
+  // 2. LLM provider 결정 — 키 있으면 Claude, 없으면 데모 목업
   const hasKey = !!process.env.ANTHROPIC_API_KEY;
   const provider =
     opts.llmProvider ?? (hasKey ? new ClaudeLlmProvider() : new DemoLlmProvider(saju));
   const isDemo = !opts.llmProvider && !hasKey;
 
-  // 4. 리포트 생성 (관점 산문 + 사실 블록 합성 + guardrails)
+  // 3. 리포트 생성 (관점 산문 + guardrails)
   const currentYear = opts.currentYear ?? new Date().getFullYear();
   const { markdown } = await generateReport(
     {
       saju,
-      schools,
-      tier,
       birthYear: subject.birthYear,
       currentYear,
       currentSchoolName: subject.currentSchool,
@@ -98,9 +84,8 @@ export async function buildReportForSubject(
     { llmProvider: provider }
   );
 
-  // 5. 디자인 HTML 렌더
+  // 4. 디자인 HTML 렌더
   const html = renderReportHtml(saju, markdown, {
-    tier,
     subjectLabel: opts.subjectLabel,
     generatedAt: new Date().toISOString().slice(0, 10),
     sampleNotice: isDemo
@@ -108,5 +93,5 @@ export async function buildReportForSubject(
       : undefined,
   });
 
-  return { markdown, html, tier, isDemo };
+  return { markdown, html, isDemo };
 }

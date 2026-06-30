@@ -11,17 +11,44 @@
 
 import { getOrderStore } from "@/lib/orders";
 
-/**
- * 저장된 HTML에 PDF 다운로드 링크를 주입한다.
- * print-btn 옆에 별도 앵커 버튼으로 추가. CSS는 인라인 처리.
- */
-function injectPdfButton(html: string, token: string): string {
+/** 저장된 HTML에 액션 버튼(PDF 저장 + 카카오톡 공유)을 주입한다. */
+function injectActionButtons(html: string, token: string): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const resultUrl = `${siteUrl}/result/${token}`;
   const pdfHref = `/result/${token}/pdf`;
-  const btn = `<a href="${pdfHref}" download class="pdf-dl-btn" style="position:fixed;bottom:24px;right:190px;background:#2a5a9a;color:#fff;border-radius:50px;padding:12px 20px;font-size:0.88rem;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(31,59,99,0.25);z-index:100;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">⬇ PDF 저장</a>`;
-  // </body> 직전에 삽입
+  const kakaoJsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
+
+  const pdfBtn = `<a href="${pdfHref}" download class="pdf-dl-btn" style="position:fixed;bottom:24px;right:190px;background:#2a5a9a;color:#fff;border-radius:50px;padding:12px 20px;font-size:0.88rem;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(31,59,99,0.25);z-index:100;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">⬇ PDF 저장</a>`;
+
+  const kakaoBtn = kakaoJsKey ? `
+<button id="kakao-share-btn" onclick="shareKakao()" style="position:fixed;bottom:24px;right:340px;background:#FEE500;color:#191919;border:none;border-radius:50px;padding:12px 20px;font-size:0.88rem;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:100;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <svg width="18" height="18" viewBox="0 0 18 18" style="vertical-align:middle;margin-right:4px"><path fill="#191919" d="M9 1.5C4.86 1.5 1.5 4.19 1.5 7.5c0 2.1 1.27 3.95 3.2 5.06L4 15l3.17-1.67c.59.1 1.2.17 1.83.17 4.14 0 7.5-2.69 7.5-6s-3.36-6-7.5-6z"/></svg>
+  카카오톡 공유
+</button>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
+<script>
+  Kakao.init('${kakaoJsKey}');
+  function shareKakao() {
+    Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: '우리 아이 공부 기질 사주 리포트',
+        description: '사주 명리 관점에서 분석한 공부 기질·학습 스타일·진로 경향 리포트입니다.',
+        imageUrl: '${siteUrl}/og-image.png',
+        link: { mobileWebUrl: '${resultUrl}', webUrl: '${resultUrl}' },
+      },
+      buttons: [{
+        title: '리포트 확인하기',
+        link: { mobileWebUrl: '${resultUrl}', webUrl: '${resultUrl}' },
+      }],
+    });
+  }
+</script>` : "";
+
+  const injection = pdfBtn + kakaoBtn;
   return html.includes("</body>")
-    ? html.replace("</body>", `${btn}\n</body>`)
-    : html + btn;
+    ? html.replace("</body>", `${injection}\n</body>`)
+    : html + injection;
 }
 
 export const runtime = "nodejs";
@@ -82,7 +109,7 @@ export async function GET(
     );
   }
 
-  // 발행분(또는 미리보기) — 저장된 디자인 HTML + PDF 다운로드 버튼 주입
-  const html = injectPdfButton(report.html, token);
+  // 발행분(또는 미리보기) — 저장된 디자인 HTML + 액션 버튼 주입
+  const html = injectActionButtons(report.html, token);
   return htmlResponse(html);
 }

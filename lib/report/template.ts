@@ -78,6 +78,7 @@ export const INTERPRETATION_NOTICE =
   "사주 명리의 관점에서 본 참고 자료이며, 단정하거나 보장하는 것이 아닙니다. " +
   "기질 지표 수치는 사주 분포를 규칙표로 환산한 값으로 심리·적성 검사 결과가 아닙니다. " +
   "과목·진로·전공 적성은 결국 아이의 경험과 흥미 속에서 발견됩니다. " +
+  "학교 정보는 공공데이터 기반 예상으로 실제 배정은 교육청 확인이 필요합니다. " +
   "아이의 실제 모습과 보호자의 판단이 항상 우선합니다.";
 
 /** 학교 배정 결과에 항상 붙이는 라벨 */
@@ -972,6 +973,24 @@ export function assembleReport(
       perspective.schoolConnectionProse +
       typeTableBlock,
   });
+
+  // ── 예상 배정 학교 + 주변 학교군 (사실 블록 — 코드 삽입) ───
+  if (facts.assignedSchoolSection) {
+    sections.push({
+      title: "예상 배정 학교 (사실 정보)",
+      body:
+        "## 예상 배정 학교 (사실 정보)\n\n" +
+        "> 아래는 사주 해석과 무관한 공공데이터 기반 사실 정보입니다.\n\n" +
+        facts.assignedSchoolSection,
+    });
+  }
+
+  if (facts.clusterSection) {
+    sections.push({
+      title: "주변 학교 현황",
+      body: "## 주변 학교 현황\n\n" + facts.clusterSection,
+    });
+  }
 
   // ── 부록 (정적) ──────────────────────────────────────────
   sections.push({ title: "자주 묻는 질문", body: FAQ });

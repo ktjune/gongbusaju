@@ -11,6 +11,7 @@
 
 import { computeSaju } from "../saju";
 import type { SchoolFixture, ZoneCollection } from "../schools";
+import { getSchoolFacts } from "../schools";
 import { generateReport } from "./index";
 import type { LlmProvider } from "./generate";
 import { ClaudeLlmProvider } from "./generate";
@@ -72,11 +73,20 @@ export async function buildReportForSubject(
     opts.llmProvider ?? (hasKey ? new ClaudeLlmProvider() : new DemoLlmProvider(saju));
   const isDemo = !opts.llmProvider && !hasKey;
 
-  // 3. 리포트 생성 (관점 산문 + guardrails)
+  // 3. 학교 사실 조회 (주소가 있을 때만)
+  const schools = subject.address
+    ? await getSchoolFacts(subject.address, {
+        fixtureSchools: opts.fixtureSchools,
+        fixtureZones: opts.fixtureZones,
+      }).catch(() => undefined)
+    : undefined;
+
+  // 4. 리포트 생성 (관점 산문 + guardrails)
   const currentYear = opts.currentYear ?? new Date().getFullYear();
   const { markdown } = await generateReport(
     {
       saju,
+      schools,
       birthYear: subject.birthYear,
       currentYear,
       currentSchoolName: subject.currentSchool,

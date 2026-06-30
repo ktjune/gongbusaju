@@ -16,6 +16,7 @@
  */
 
 import type { SajuResult } from "../saju";
+import type { SchoolFacts } from "../schools";
 import { buildFactBlock, assembleReport } from "./template";
 import { generatePerspective, ClaudeLlmProvider } from "./generate";
 export { ClaudeLlmProvider } from "./generate";
@@ -56,6 +57,8 @@ export type { QaResult } from "./qa";
 
 export type ReportInput = {
   saju: SajuResult;
+  /** 학교 사실 (주소→지오코딩→DB 조회 결과). LLM에는 전달하지 않고 코드가 삽입 */
+  schools?: SchoolFacts;
   /** 학령 단계·세운 나이 산출용 출생 연도 */
   birthYear?: number;
   /** 기준 연도 (기본: 현재 연도 — 테스트·샘플 고정용) */
@@ -91,21 +94,23 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, birthYear, currentYear, currentSchoolName } = input;
+  const { saju, schools, birthYear, currentYear, currentSchoolName } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
   const meta = { birthYear, currentYear, currentSchoolName };
 
-  // 1. LLM 관점 블록 생성
-  //    buildUserPrompt() 는 학교명·주소·진학률을 LLM에게 전달하지 않는다
+  // 1. 사실 블록 생성 (코드, LLM 없음) — 학교명·거리·출처는 여기서만 삽입
+  const factBlock = schools ? buildFactBlock(schools) : {};
+
+  // 2. LLM 관점 블록 생성 — 학교 사실은 전달하지 않는다
   const perspective = await generatePerspective(saju, provider, meta);
 
-  // 2. guardrails 검사 — 모든 산문 필드, 위반 시 GuardrailError throw → 발행 차단
+  // 3. guardrails 검사 — 위반 시 GuardrailError throw → 발행 차단
   for (const prose of Object.values(perspective)) {
     if (typeof prose === "string") checkGuardrails(prose);
   }
 
-  // 3. 조립 (사주 데이터 섹션·도식·정적 콘텐츠는 코드가 생성)
-  const markdown = assembleReport(saju, {}, perspective, meta);
+  // 4. 조립
+  const markdown = assembleReport(saju, factBlock, perspective, meta);
 
   return { markdown };
 }

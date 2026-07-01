@@ -50,7 +50,8 @@ export async function POST(req: Request) {
         { status: 422 }
       );
     }
-    const msg = e instanceof Error ? e.message : "생성 중 오류가 발생했습니다.";
-    return Response.json({ error: msg }, { status: 500 });
+    const msg = e instanceof Error ? e.message : String(e);
+    const stack = e instanceof Error ? (e.stack ?? "") : "";
+    return Response.json({ error: msg, stack: stack.slice(0, 500) }, { status: 500 });
   }
 }

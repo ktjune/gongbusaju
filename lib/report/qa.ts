@@ -8,7 +8,6 @@
  */
 
 import { checkGuardrails } from "./guardrails";
-import { ClaudeLlmProvider } from "./generate";
 import type { LlmProvider } from "./generate";
 
 export type QaResult = {

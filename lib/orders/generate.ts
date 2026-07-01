@@ -111,8 +111,13 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
   } catch (e) {
     await store.updateOrderStatus(orderId, "failed");
     // 에러 상세를 명시적으로 직렬화해 Vercel 로그가 잘리지 않게 함
-    const errMsg = e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e);
-    console.error(`[order] 생성 실패 상세 — 주문: ${orderId}\n${errMsg}`);
+    console.error(`[order] 생성 실패 — 주문: ${orderId}`);
+    if (e instanceof Error) {
+      console.error(`[order] 에러 메시지: ${e.message}`);
+      if (e.stack) console.error(`[order] 스택: ${e.stack}`);
+    } else {
+      console.error(`[order] 에러: ${String(e)}`);
+    }
     throw e;
   }
 }

@@ -53,7 +53,8 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
   const store = getOrderStore();
   const order = await store.getOrder(orderId);
   if (!order) throw new Error(`주문 없음: ${orderId}`);
-  if (order.status !== "paid" && order.status !== "rejected" && order.status !== "failed") {
+  // "generating" 포함: 타임아웃으로 상태가 고착된 경우 어드민 재생성으로 복구 가능
+  if (order.status !== "paid" && order.status !== "rejected" && order.status !== "failed" && order.status !== "generating") {
     throw new Error(`생성 가능 상태가 아닙니다: ${order.status}`);
   }
 
@@ -124,7 +125,7 @@ function buildSubjectLabel(s: ReturnType<typeof decryptSubject>): string {
   return `${s.birthYear}년 ${s.birthMonth}월 ${s.birthDay}일${time} · ${g}`;
 }
 
-/** 생성 가능한(paid/rejected/failed) 주문 여부 — 트리거 API에서 사용 */
+/** 생성 가능한 주문 여부 — 트리거 API에서 사용. generating은 타임아웃 고착 복구용 */
 export function isGeneratable(order: Order): boolean {
-  return order.status === "paid" || order.status === "rejected" || order.status === "failed";
+  return order.status === "paid" || order.status === "rejected" || order.status === "failed" || order.status === "generating";
 }

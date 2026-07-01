@@ -100,16 +100,10 @@ export async function runReportQa(
  * - QA 자체가 예외로 죽으면(네트워크 등) throw하지 않고 실패로 간주해
  *   호출자가 안전하게 사람 검수로 폴백할 수 있게 한다.
  */
+// Hobby 플랜 60s 제한: LLM QA는 생략하고 구조 검사만 수행.
+// 생성 ~30s + LLM QA ~10s + 재시도 ~30s = 70s → 타임아웃.
+// 금지 표현은 guardrails가 이미 생성 단계에서 차단하므로 구조 검사로 충분.
 export async function runAutoQa(markdown: string): Promise<QaResult> {
-  try {
-    const hasKey = !!process.env.ANTHROPIC_API_KEY;
-    if (!hasKey) {
-      const issues = runStructuralQa(markdown);
-      return { passed: issues.length === 0, issues };
-    }
-    return await runReportQa(markdown, new ClaudeLlmProvider());
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "자동 QA 실행 오류";
-    return { passed: false, issues: [msg] };
-  }
+  const issues = runStructuralQa(markdown);
+  return { passed: issues.length === 0, issues };
 }

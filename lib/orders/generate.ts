@@ -78,16 +78,11 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       subjectLabel: buildSubjectLabel(subject),
     };
 
-    let built = await buildReportForSubject(subject, buildOpts);
-    let qa = await runAutoQa(built.markdown);
+    const built = await buildReportForSubject(subject, buildOpts);
+    const qa = await runAutoQa(built.markdown);
 
     if (!qa.passed) {
-      console.warn(`[order] QA 실패 — 재생성 시도: 주문 ${orderId}`, qa.issues);
-      built = await buildReportForSubject(subject, buildOpts);
-      qa = await runAutoQa(built.markdown);
-      if (!qa.passed) {
-        console.warn(`[order] QA 재시도 후에도 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);
-      }
+      console.warn(`[order] QA 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);
     }
 
     const report = await store.createReport({

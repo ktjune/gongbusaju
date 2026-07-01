@@ -14,7 +14,7 @@ import type { OrderStatus } from "./types";
 /** 각 상태에서 전이 가능한 다음 상태 목록 */
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   paid: ["generating", "refunded"],
-  generating: ["review", "failed"],
+  generating: ["review", "failed", "generating"], // generating→generating: 타임아웃 고착 재시도
   review: ["published", "rejected"],
   published: [], // 종료 상태
   rejected: ["generating", "refunded"], // 재생성 또는 환불

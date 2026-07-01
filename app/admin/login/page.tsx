@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { createAdminSessionToken, safeCompare } from "@/lib/auth/admin-session";
 
 export default async function AdminLoginPage({
   searchParams,
@@ -13,14 +14,15 @@ export default async function AdminLoginPage({
     const password = formData.get("password") as string;
     const adminPassword = process.env.ADMIN_PASSWORD;
 
-    if (!adminPassword || password !== adminPassword) {
+    if (!adminPassword || !(await safeCompare(password, adminPassword))) {
       redirect(`/admin/login?from=${encodeURIComponent(from)}&error=1`);
     }
 
-    (await cookies()).set("admin_session", adminPassword, {
+    const token = await createAdminSessionToken(adminPassword);
+    (await cookies()).set("admin_session", token, {
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 60 * 60 * 24, // 24시간
+      maxAge: 60 * 60 * 24,
       path: "/",
     });
 

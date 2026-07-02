@@ -181,8 +181,12 @@ export default function Home() {
           <div className={styles.tiers}>
             <div className={`${styles.tier} ${styles.tierFeatured}`}>
               <div className={styles.tierName}>공부사주 리포트</div>
+              <div className={styles.tierOriginal}>
+                정가 <s>29,000원</s>
+              </div>
               <div className={styles.tierPrice}>
-                29,000<span>원</span>
+                <span className={styles.tierBadge}>66% 할인</span>
+                9,900<span>원</span>
               </div>
               <ul className={styles.tierList}>
                 <li>사주 원국·오행·십성 해석</li>
@@ -276,7 +280,7 @@ export default function Home() {
       <section className={styles.ctaBanner}>
         <div className={styles.ctaInner}>
           <h2 className={styles.ctaTitle}>우리 아이의 공부 결,<br />지금 읽어보세요</h2>
-          <p className={styles.ctaSub}>검수를 거친 한 부의 리포트 · 29,000원부터</p>
+          <p className={styles.ctaSub}>검수를 거친 한 부의 리포트 · 지금 9,900원</p>
           <Link href="/apply" className={styles.ctaBtn}>
             리포트 신청하기
           </Link>

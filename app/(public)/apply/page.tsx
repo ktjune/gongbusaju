@@ -16,8 +16,8 @@ import { useEffect, useRef, useState } from "react";
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import styles from "./apply.module.css";
 
-const PRICE = "29,000";
-const PRICE_VALUE = 29000;
+const PRICE = "9,900";
+const PRICE_VALUE = 9900;
 const MIN_DATE = "1980-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
 const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";

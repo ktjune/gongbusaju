@@ -11,8 +11,8 @@
  *   NEXT_PUBLIC_TOSS_CLIENT_KEY — 클라이언트 키 (위젯용, 공개)
  */
 
-/** 리포트 1부 가격 (원). 결제 금액 검증의 단일 기준. */
-export const REPORT_PRICE = 29000;
+/** 리포트 1부 가격 (원). 결제 금액 검증의 단일 기준. (정가 29,000 → 할인가 9,900) */
+export const REPORT_PRICE = 9900;
 
 const CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 const cancelUrl = (paymentKey: string) =>

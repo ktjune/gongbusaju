@@ -48,3 +48,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# 로컬 PDF 내보내기
+샘플.pdf
+*.local.pdf

@@ -32,11 +32,8 @@ import {
   TENGOD_DICT,
   TENGOD_KEY_ALIAS,
   SUBJECT_MAP,
-  SUBJECT_MAP_NOTICE,
   CAREER_MAP,
-  CAREER_MAP_NOTICE,
   MAJOR_MAP,
-  MAJOR_MAP_NOTICE,
   FAQ,
   GLOSSARY,
 } from "./content";
@@ -370,8 +367,6 @@ export function buildSubjectMapSection(saju: SajuResult): string {
     `| 오행 | 전통적으로 연결해 보는 학습 영역 | 왜 이렇게 연결되나요? | 이 아이 |`,
     `|---|---|---|---|`,
     ...rows,
-    ``,
-    `> ${SUBJECT_MAP_NOTICE}`,
   ].join("\n");
 }
 
@@ -392,8 +387,6 @@ export function buildCareerMapSection(saju: SajuResult): string {
     `| 오행 | 전통적으로 연결해 보는 직업 분야 | 연결 기운 | 이 아이 |`,
     `|---|---|---|---|`,
     ...rows,
-    ``,
-    `> ${CAREER_MAP_NOTICE}`,
   ].join("\n");
 }
 
@@ -415,7 +408,7 @@ export function buildMajorMapSection(saju: SajuResult): string {
     `|---|---|---|---|`,
     ...rows,
     ``,
-    `> ${MAJOR_MAP_NOTICE}`,
+    `> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.`,
   ].join("\n");
 }
 

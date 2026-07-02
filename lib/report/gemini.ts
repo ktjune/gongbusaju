@@ -61,7 +61,7 @@ export class GeminiLlmProvider implements LlmProvider {
 
   constructor(apiKey?: string, model?: string) {
     this.apiKey = apiKey ?? process.env.GEMINI_API_KEY ?? "";
-    this.model = model ?? process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+    this.model = model ?? process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
   }
 
   async complete(

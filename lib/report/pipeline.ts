@@ -48,6 +48,10 @@ export type BuildReportSubject = {
   gender: "male" | "female";
   address?: string;
   currentSchool?: string;
+  /** 아이 이름(한글, 선택) — 표지·요약 호명용. LLM 미전송. */
+  name?: string;
+  /** 아이 이름 한자(선택) — 표지 병기용. LLM 미전송. */
+  nameHanja?: string;
 };
 
 export type BuildReportOptions = {
@@ -114,6 +118,7 @@ export async function buildReportForSubject(
       birthYear: subject.birthYear,
       currentYear,
       currentSchoolName: subject.currentSchool,
+      childName: subject.name,
     },
     { llmProvider: provider }
   );
@@ -121,6 +126,8 @@ export async function buildReportForSubject(
   // 4. 디자인 HTML 렌더
   const html = renderReportHtml(saju, markdown, {
     subjectLabel: opts.subjectLabel,
+    childName: subject.name,
+    childNameHanja: subject.nameHanja,
     generatedAt: new Date().toISOString().slice(0, 10),
     sampleNotice: isDemo
       ? "데모 자동 생성 — 실제 서비스는 전문 해석가가 검수합니다"

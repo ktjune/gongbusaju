@@ -66,6 +66,8 @@ export type ReportInput = {
   currentYear?: number;
   /** 현재 재학 기관명 (보호자 입력 사실 — 코드 표기, LLM 미전달) */
   currentSchoolName?: string;
+  /** 아이 이름(한글, 선택) — 요약 호명용. 코드 표기, LLM 미전달. */
+  childName?: string;
 };
 
 export type ReportOutput = {
@@ -95,23 +97,27 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, schools, birthYear, currentYear, currentSchoolName } = input;
+  const { saju, schools, birthYear, currentYear, currentSchoolName, childName } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
-  const meta = { birthYear, currentYear, currentSchoolName };
+  // LLM에 넘기는 meta에는 이름을 포함하지 않는다 (식별정보 미전송 원칙).
+  const llmMeta = { birthYear, currentYear, currentSchoolName };
 
   // 1. 사실 블록 생성 (코드, LLM 없음) — 학교명·거리·출처는 여기서만 삽입
   const factBlock = schools ? buildFactBlock(schools) : {};
 
-  // 2. LLM 관점 블록 생성 — 학교 사실은 전달하지 않는다
-  const perspective = await generatePerspective(saju, provider, meta);
+  // 2. LLM 관점 블록 생성 — 학교 사실·이름은 전달하지 않는다
+  const perspective = await generatePerspective(saju, provider, llmMeta);
 
   // 3. guardrails 검사 — 위반 시 GuardrailError throw → 발행 차단
   for (const prose of Object.values(perspective)) {
     if (typeof prose === "string") checkGuardrails(prose);
   }
 
-  // 4. 조립
-  const markdown = assembleReport(saju, factBlock, perspective, meta);
+  // 4. 조립 — 이름은 코드가 넣는 조립 단계에서만 사용
+  const markdown = assembleReport(saju, factBlock, perspective, {
+    ...llmMeta,
+    childName,
+  });
 
   return { markdown };
 }

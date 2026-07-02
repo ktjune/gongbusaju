@@ -20,6 +20,8 @@ export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
 
 type Body = {
   tier?: string;
+  name?: string;
+  nameHanja?: string;
   birthYear?: number;
   birthMonth?: number;
   birthDay?: number;
@@ -88,6 +90,8 @@ export async function POST(req: Request) {
       gender: body.gender === "female" ? "female" : "male",
       address: body.address?.trim() || undefined,
       currentSchool: body.currentSchool?.trim() || undefined,
+      name: body.name?.trim() || undefined,
+      nameHanja: body.nameHanja?.trim() || undefined,
     },
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,

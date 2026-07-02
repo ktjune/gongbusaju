@@ -61,6 +61,10 @@ export type Subject = {
   encGender: string;
   encAddress: string | null;
   encCurrentSchool: string | null;
+  /** 아이 이름(한글) — 표지·요약 호명용. LLM에는 전송하지 않는다. */
+  encName: string | null;
+  /** 아이 이름 한자 — 표지 병기용(선택). LLM에는 전송하지 않는다. */
+  encNameHanja: string | null;
   consentAt: string;
   retainUntil: string;
   createdAt: string;
@@ -76,6 +80,10 @@ export type SubjectPlain = {
   gender: "male" | "female";
   address?: string;
   currentSchool?: string;
+  /** 아이 이름(한글, 선택) — 표지·요약 호명용 */
+  name?: string;
+  /** 아이 이름 한자(선택) — 표지 병기용 */
+  nameHanja?: string;
 };
 
 /** 리포트 — 생성물·토큰·검수 상태 */

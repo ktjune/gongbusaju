@@ -15,6 +15,16 @@ import { marked } from "marked";
 import type { SajuResult } from "../saju";
 import { ganjiToHangul, stemElement, branchElement } from "../saju";
 import { WUXING_COLOR } from "./charts";
+import { objectParticle } from "./josa";
+
+/** HTML 특수문자 이스케이프 — 이름 등 사용자 입력을 표지에 넣기 전 처리 */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 // ──────────────────────────────────────────────────────────────
 // 옵션
@@ -23,6 +33,10 @@ import { WUXING_COLOR } from "./charts";
 export type RenderHtmlOptions = {
   /** 표지에 표시할 대상 라벨 (예: "2020년 9월 16일 16:43 출생 · 남아") */
   subjectLabel?: string;
+  /** 아이 이름(한글, 선택) — 표지 제목·안내 호명용 */
+  childName?: string;
+  /** 아이 이름 한자(선택) — 표지 제목 병기용 */
+  childNameHanja?: string;
   /** 발행일 표기 (기본: 오늘) */
   generatedAt?: string;
   /** 샘플 워터마크 문구 (지정 시 표지에 표시) */
@@ -64,10 +78,21 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
   const date =
     opts.generatedAt ?? new Date().toISOString().slice(0, 10);
 
+  // 이름이 있으면 "OO(한자)의", 없으면 "우리 아이의"로 자연 폴백
+  const name = opts.childName?.trim();
+  const hanja = opts.childNameHanja?.trim();
+  const nameHtml = name
+    ? `${escapeHtml(name)}${hanja ? `<span class="cover-hanja">${escapeHtml(hanja)}</span>` : ""}`
+    : "";
+  const titleLead = name ? `${nameHtml}의` : "우리 아이의";
+  const hintWho = name
+    ? `<b>${escapeHtml(name)}</b>${objectParticle(name)} 뜻하는 <b>일간</b>`
+    : `아이 자신을 뜻하는 <b>일간</b>`;
+
   return `<header class="cover">
   ${opts.sampleNotice ? `<div class="sample-band">${opts.sampleNotice}</div>` : ""}
   <div class="cover-badge">공부·기질 사주 리포트</div>
-  <h1 class="cover-title">우리 아이의<br>타고난 공부 결</h1>
+  <h1 class="cover-title">${titleLead}<br>타고난 공부 결</h1>
   ${opts.subjectLabel ? `<p class="cover-subject">${opts.subjectLabel}</p>` : ""}
   <div class="pillars">
     ${pillarCard("時柱", pillars.hour, false)}
@@ -75,7 +100,7 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
     ${pillarCard("月柱", pillars.month, false)}
     ${pillarCard("年柱", pillars.year, false)}
   </div>
-  <p class="cover-hint">가운데 강조된 기둥(日柱)의 윗글자가 아이 자신을 뜻하는 <b>일간</b>입니다.</p>
+  <p class="cover-hint">가운데 강조된 기둥(日柱)의 윗글자가 ${hintWho}입니다.</p>
   <div class="cover-meta">
     <span class="meta-chip">발행 ${date}</span>
   </div>
@@ -130,6 +155,7 @@ body {
   font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
   font-size: 2.1em; line-height: 1.4; color: var(--navy); margin: 0 0 10px;
 }
+.cover-hanja { color: var(--gold); font-size: 0.62em; margin-left: 0.12em; vertical-align: 0.12em; }
 .cover-subject { color: var(--ink-soft); margin: 0 0 36px; font-size: 0.95em; }
 .pillars { display: flex; justify-content: center; gap: 10px; margin: 0 0 14px; }
 .pillar {

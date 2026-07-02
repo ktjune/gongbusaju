@@ -294,6 +294,7 @@ async function main() {
       birthYear: 2020,
       currentYear: 2026,
       currentSchoolName: "푸른숲유치원 (샘플)",
+      childName: "준서",
     },
     { llmProvider: perspectiveProvider }
   );
@@ -306,6 +307,8 @@ async function main() {
   // 표지(원국 카드)는 renderReportHtml이 SajuResult에서 직접 생성한다.
   const html = renderReportHtml(saju, result.markdown, {
     subjectLabel: "2020년 9월 16일 16:43 출생 · 남아 (만 5세)",
+    childName: "준서",
+    childNameHanja: "俊書",
     generatedAt: "2026-06-11",
     sampleNotice: "미리보기용 샘플 — 학교 정보는 샘플 데이터입니다",
   });

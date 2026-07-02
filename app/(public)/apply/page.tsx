@@ -70,6 +70,8 @@ type TossWidgets = {
 export default function ApplyPage() {
   const [step, setStep] = useState<"form" | "pay">("form");
 
+  const [childName, setChildName] = useState("");
+  const [childNameHanja, setChildNameHanja] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [birthDate, setBirthDate] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
@@ -149,6 +151,8 @@ export default function ApplyPage() {
     }
     return {
       tier: "basic",
+      name: childName.trim() || undefined,
+      nameHanja: childNameHanja.trim() || undefined,
       birthYear: y,
       birthMonth: m,
       birthDay: d,
@@ -246,6 +250,30 @@ export default function ApplyPage() {
         {/* 아이 정보 */}
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>아이 정보</h2>
+
+          <div className={styles.field}>
+            <label className={styles.label}>이름 (선택)</label>
+            <div className={styles.row}>
+              <input
+                className={styles.input}
+                value={childName}
+                maxLength={20}
+                onChange={(e) => setChildName(e.target.value)}
+                placeholder="예: 준서"
+              />
+              <input
+                className={styles.input}
+                value={childNameHanja}
+                maxLength={20}
+                onChange={(e) => setChildNameHanja(e.target.value)}
+                placeholder="한자 (예: 俊書)"
+              />
+            </div>
+            <p className={styles.hint}>
+              입력하시면 리포트 표지·요약에 아이 이름으로 인사드립니다. 비워 두시면 &lsquo;우리 아이&rsquo;로
+              표기됩니다. (이름은 사주 계산·AI 해석에 사용되지 않으며 표기용으로만 쓰입니다.)
+            </p>
+          </div>
 
           <div className={styles.field}>
             <label className={styles.label}>생년월일 (양력)</label>

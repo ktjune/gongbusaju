@@ -44,6 +44,7 @@ import {
   daeunTimelineChart,
 } from "./charts";
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
+import { topicParticle, objectParticle } from "./josa";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
@@ -145,6 +146,8 @@ export type ReportMeta = {
    * 예: "청운초등학교", "푸른숲유치원"
    */
   currentSchoolName?: string;
+  /** 아이 이름(한글, 선택) — 요약 호명용. 코드가 표기, LLM 미전달. */
+  childName?: string;
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -744,7 +747,8 @@ const TENGOD_GROUP_STUDY_AXIS: Record<string, string> = {
  * ① 형상론 상징 문구 → ② 풀어 쓰는 개관 → ③ 빠른 참고 순으로 보여 준다.
  * 부모가 긴 본문을 다 읽기 전에 먼저 그림을 잡을 수 있도록 한다. LLM 미관여(코드 생성).
  */
-export function buildSummarySection(saju: SajuResult): string {
+export function buildSummarySection(saju: SajuResult, childName?: string): string {
+  const name = childName?.trim() || undefined;
   const order: Array<[string, keyof SajuResult["elements"]]> = [
     ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
   ];
@@ -781,9 +785,12 @@ export function buildSummarySection(saju: SajuResult): string {
   const stars = "★".repeat(topType.stars) + "☆".repeat(3 - topType.stars);
 
   // ── ① 형상(物象) 블록 ──────────────────────────────────
+  const imageryHeading = name
+    ? `### 한마디로, ${name}${topicParticle(name)} 이런 결의 아이입니다`
+    : "### 한마디로, 이런 결의 아이입니다";
   const imageryBlock = imagery
     ? [
-        "### 한마디로, 이런 결의 아이입니다",
+        imageryHeading,
         "",
         `> **${imagery.form}.**`,
         ">",
@@ -793,8 +800,11 @@ export function buildSummarySection(saju: SajuResult): string {
 
   // ── ② 풀어 쓰는 개관 (서술형) ─────────────────────────
   const narrative: string[] = [];
+  const whoseCenter = name
+    ? `${name}의 중심 글자, 곧 사주에서 ${name}${objectParticle(name)} 나타내는`
+    : `이 아이의 중심 글자, 곧 사주에서 아이 자신을 나타내는`;
   narrative.push(
-    `이 아이의 중심 글자, 곧 사주에서 아이 자신을 나타내는 **일간(日干)은 ${dayStem}(${dayKr})**입니다. ` +
+    `${whoseCenter} **일간(日干)은 ${dayStem}(${dayKr})**입니다. ` +
       `${sd ? sd.desc : ""}`
   );
   narrative.push(
@@ -866,7 +876,7 @@ export function assembleReport(
   const sections: Section[] = [];
 
   // ── 한 장 요약 (데이터 기반, 맨 앞) ──────────────────────
-  sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju) });
+  sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju, meta.childName) });
 
   // ── 안내·기초 (정적) ─────────────────────────────────────
   sections.push({ title: "이 리포트를 읽는 법", body: HOW_TO_READ });

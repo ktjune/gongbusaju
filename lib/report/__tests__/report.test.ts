@@ -311,7 +311,7 @@ describe("assembleReport — 블록 조립", () => {
     expect(md).toContain("만 8세 6개월");
     expect(md).toContain("초등");
     expect(md).toContain("집중력");
-    expect(md).toContain("해석 지표");
+    expect(md).toContain("기질 지표");
   });
 
   it("학교 기질 참고 섹션 항상 포함", () => {

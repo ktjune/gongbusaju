@@ -90,8 +90,9 @@ export async function POST(req: Request) {
       gender: body.gender === "female" ? "female" : "male",
       address: body.address?.trim() || undefined,
       currentSchool: body.currentSchool?.trim() || undefined,
-      name: body.name?.trim() || undefined,
-      nameHanja: body.nameHanja?.trim() || undefined,
+      // 이름은 표지·요약에 HTML로 삽입되므로 각괄호를 제거해 마크업 주입을 차단
+      name: body.name?.trim().replace(/[<>]/g, "") || undefined,
+      nameHanja: body.nameHanja?.trim().replace(/[<>]/g, "") || undefined,
     },
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,

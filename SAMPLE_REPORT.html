@@ -48,6 +48,7 @@ body {
   font-size: 2.1em; line-height: 1.4; color: var(--navy); margin: 0 0 10px;
 }
 .cover-hanja { color: var(--gold); font-size: 0.62em; margin-left: 0.12em; vertical-align: 0.12em; }
+.cover-accent { width: 46px; height: 4px; border-radius: 2px; margin: 4px auto 16px; }
 .cover-subject { color: var(--ink-soft); margin: 0 0 36px; font-size: 0.95em; }
 .pillars { display: flex; justify-content: center; gap: 10px; margin: 0 0 14px; }
 .pillar {
@@ -112,6 +113,28 @@ body {
   border-radius: 0 10px 10px 0; color: #44505f; font-size: 0.93em;
 }
 .report blockquote p { margin: 0.3em 0; }
+
+/* ── 한 장 요약 형상 히어로 카드 ─────────────────── */
+.imagery-card {
+  background: var(--card);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin: 22px 0;
+  text-align: center;
+  box-shadow: 0 4px 22px rgba(31,59,99,0.08);
+}
+.imagery-label {
+  font-size: 0.8em; color: var(--gold);
+  letter-spacing: 0.04em; margin-bottom: 12px;
+}
+.imagery-form {
+  font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
+  font-size: 1.42em; font-weight: 700; color: var(--navy);
+  line-height: 1.5; margin-bottom: 12px;
+}
+.imagery-reading { color: var(--ink-soft); font-size: 0.96em; line-height: 1.8; }
+
 .report ul { padding-left: 22px; }
 .report li { margin: 0.45em 0; }
 .report svg { max-width: 100%; height: auto; display: block; margin: 22px auto; }
@@ -123,7 +146,11 @@ body {
   .pillar { width: 76px; border-radius: 11px; }
   .pillar-char { font-size: 1.6em; }
   .cover-title { font-size: 1.7em; }
-  .report table { display: block; overflow-x: auto; white-space: nowrap; }
+  .imagery-form { font-size: 1.24em; }
+  /* 표는 셀 줄바꿈을 허용해 화면 폭에 맞춘다 (가로 스크롤 대신 세로로 늘어남).
+     넘칠 때만 스크롤(폴백). 이전엔 nowrap이라 대부분의 표가 옆으로 잘렸다. */
+  .report table { font-size: 0.86em; }
+  .report th, .report td { padding: 7px 9px; white-space: normal; word-break: keep-all; }
 }
 
 /* ── 인쇄/PDF (A4) ─────────────────────────────────── */
@@ -166,6 +193,7 @@ body {
   <div class="sample-band">미리보기용 샘플 — 학교 정보는 샘플 데이터입니다</div>
   <div class="cover-badge">공부·기질 사주 리포트</div>
   <h1 class="cover-title">준서<span class="cover-hanja">俊書</span>의<br>타고난 공부 결</h1>
+  <div class="cover-accent" style="background:#8e9aa8"></div>
   <p class="cover-subject">2020년 9월 16일 16:43 출생 · 남아 (만 5세)</p>
   <div class="pillars">
     <div class="pillar">
@@ -234,12 +262,11 @@ body {
 <blockquote>
 <p>리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.</p>
 </blockquote>
-<h3>한마디로, 준서는 이런 결의 아이입니다</h3>
-<blockquote>
-<p><strong>온갖 물길이 큰 바다로 모여드는 형상(백천귀해百川歸海).</strong></p>
-<p>무엇이든 담아 깊고 넓게 흐르는 강물의 기상으로, 크게 아우르는 포용력과 깊은 사고력을 품고 있습니다. 여기에 잘 벼린 쇠의 기운이 더해져, 옳고 그름을 가르는 의(義)와 명민한 분별이 도드라집니다.</p>
-</blockquote>
-<p>준서의 중심 글자, 곧 사주에서 준서를 나타내는 **일간(日干)은 壬(임)**입니다. 깊고 넓게 흐르는 큰 물. 무엇이든 받아들이는 포용력과 깊은 사고력으로 풀이됩니다. 겉은 잔잔해도 속에 큰 흐름을 품은 지혜의 상징입니다.</p>
+<div class="imagery-card">
+<div class="imagery-label">한마디로, 준서는 이런 결의 아이예요</div>
+<div class="imagery-form">온갖 물길이 큰 바다로 모여드는 형상(백천귀해百川歸海)</div>
+<div class="imagery-reading">무엇이든 담아 깊고 넓게 흐르는 강물의 기상으로, 크게 아우르는 포용력과 깊은 사고력을 품고 있습니다. 여기에 잘 벼린 쇠의 기운이 더해져, 옳고 그름을 가르는 의(義)와 명민한 분별이 도드라집니다.</div>
+</div><p>준서의 중심 글자, 곧 사주에서 준서를 나타내는 **일간(日干)은 壬(임)**입니다. 깊고 넓게 흐르는 큰 물. 무엇이든 받아들이는 포용력과 깊은 사고력으로 풀이됩니다. 겉은 잔잔해도 속에 큰 흐름을 품은 지혜의 상징입니다.</p>
 <p>타고난 다섯 기운 가운데 <strong>金(금) 기운이 38%로 가장 도드라집니다.</strong> 정리·분별의 결로, 개념을 가르고 구조를 잡는 논리, 원칙을 세우고 지키는 자기 관리와 연결해 해석합니다. 이 기운이 이 아이 공부의 바탕색이 되어, 무엇을 어떻게 배울 때 편안하고 오래 몰입하는지를 결정짓습니다.</p>
 <p>반대로 <strong>火(화) 기운은 0%로 옅은 편</strong>입니다. 표현·발산의 힘은 아직 자라는 중인 여백으로, 부족함이 아니라 앞으로 채워 갈 여지로 보아 주시면 됩니다. 본문의 오행 풀이에서 이 기운을 자연스럽게 북돋우는 구체적인 놀이·활동을 함께 담았습니다.</p>
 <p>십성(十神), 곧 여덟 글자가 서로 맺는 관계를 보면 **인성(나를 키우는 기운)**이 두드러집니다. 듣고 읽어 깊이 받아들이는 <strong>수용과 배움의 힘</strong>이 공부의 축을 이룹니다. 같은 내용을 배우더라도 이 축을 살려 주는 방식일 때 아이가 훨씬 힘을 냅니다.</p>

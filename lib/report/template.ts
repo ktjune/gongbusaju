@@ -785,16 +785,18 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
   const stars = "★".repeat(topType.stars) + "☆".repeat(3 - topType.stars);
 
   // ── ① 형상(物象) 블록 ──────────────────────────────────
-  const imageryHeading = name
-    ? `### 한마디로, ${name}${topicParticle(name)} 이런 결의 아이입니다`
-    : "### 한마디로, 이런 결의 아이입니다";
+  const escName = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const imageryLabel = name
+    ? `한마디로, ${escName(name)}${topicParticle(name)} 이런 결의 아이예요`
+    : "한마디로, 이런 결의 아이예요";
   const imageryBlock = imagery
     ? [
-        imageryHeading,
-        "",
-        `> **${imagery.form}.**`,
-        ">",
-        `> ${imagery.reading}. ${STRONG_ELEMENT_FLOURISH[strong.hanja] ?? ""}`,
+        `<div class="imagery-card">`,
+        `<div class="imagery-label">${imageryLabel}</div>`,
+        `<div class="imagery-form">${imagery.form}</div>`,
+        `<div class="imagery-reading">${imagery.reading}. ${STRONG_ELEMENT_FLOURISH[strong.hanja] ?? ""}</div>`,
+        `</div>`,
       ].join("\n")
     : "";
 

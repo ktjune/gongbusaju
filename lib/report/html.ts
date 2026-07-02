@@ -73,10 +73,20 @@ function pillarCard(
   </div>`;
 }
 
+/** 오행(한글 키) → 대표 색 — 표지 강조선용 */
+const ELEMENT_COLOR: Record<string, string> = {
+  목: "#3d9a50", 화: "#d64545", 토: "#c9a227", 금: "#8e9aa8", 수: "#3b6fb5",
+};
+
 function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
   const { pillars } = saju;
   const date =
     opts.generatedAt ?? new Date().toISOString().slice(0, 10);
+
+  // 가장 강한 오행 색으로 표지 강조선 — 아이마다 표지 포인트 색이 달라진다
+  const strongestEl = (Object.entries(saju.elements) as Array<[string, number]>)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const accentColor = ELEMENT_COLOR[strongestEl ?? ""] ?? "var(--gold)";
 
   // 이름이 있으면 "OO(한자)의", 없으면 "우리 아이의"로 자연 폴백
   const name = opts.childName?.trim();
@@ -93,6 +103,7 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
   ${opts.sampleNotice ? `<div class="sample-band">${opts.sampleNotice}</div>` : ""}
   <div class="cover-badge">공부·기질 사주 리포트</div>
   <h1 class="cover-title">${titleLead}<br>타고난 공부 결</h1>
+  <div class="cover-accent" style="background:${accentColor}"></div>
   ${opts.subjectLabel ? `<p class="cover-subject">${opts.subjectLabel}</p>` : ""}
   <div class="pillars">
     ${pillarCard("時柱", pillars.hour, false)}
@@ -156,6 +167,7 @@ body {
   font-size: 2.1em; line-height: 1.4; color: var(--navy); margin: 0 0 10px;
 }
 .cover-hanja { color: var(--gold); font-size: 0.62em; margin-left: 0.12em; vertical-align: 0.12em; }
+.cover-accent { width: 46px; height: 4px; border-radius: 2px; margin: 4px auto 16px; }
 .cover-subject { color: var(--ink-soft); margin: 0 0 36px; font-size: 0.95em; }
 .pillars { display: flex; justify-content: center; gap: 10px; margin: 0 0 14px; }
 .pillar {
@@ -220,6 +232,28 @@ body {
   border-radius: 0 10px 10px 0; color: #44505f; font-size: 0.93em;
 }
 .report blockquote p { margin: 0.3em 0; }
+
+/* ── 한 장 요약 형상 히어로 카드 ─────────────────── */
+.imagery-card {
+  background: var(--card);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin: 22px 0;
+  text-align: center;
+  box-shadow: 0 4px 22px rgba(31,59,99,0.08);
+}
+.imagery-label {
+  font-size: 0.8em; color: var(--gold);
+  letter-spacing: 0.04em; margin-bottom: 12px;
+}
+.imagery-form {
+  font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
+  font-size: 1.42em; font-weight: 700; color: var(--navy);
+  line-height: 1.5; margin-bottom: 12px;
+}
+.imagery-reading { color: var(--ink-soft); font-size: 0.96em; line-height: 1.8; }
+
 .report ul { padding-left: 22px; }
 .report li { margin: 0.45em 0; }
 .report svg { max-width: 100%; height: auto; display: block; margin: 22px auto; }
@@ -231,7 +265,11 @@ body {
   .pillar { width: 76px; border-radius: 11px; }
   .pillar-char { font-size: 1.6em; }
   .cover-title { font-size: 1.7em; }
-  .report table { display: block; overflow-x: auto; white-space: nowrap; }
+  .imagery-form { font-size: 1.24em; }
+  /* 표는 셀 줄바꿈을 허용해 화면 폭에 맞춘다 (가로 스크롤 대신 세로로 늘어남).
+     넘칠 때만 스크롤(폴백). 이전엔 nowrap이라 대부분의 표가 옆으로 잘렸다. */
+  .report table { font-size: 0.86em; }
+  .report th, .report td { padding: 7px 9px; white-space: normal; word-break: keep-all; }
 }
 
 /* ── 인쇄/PDF (A4) ─────────────────────────────────── */

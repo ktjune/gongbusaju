@@ -369,11 +369,14 @@
 
 /* ── 요금제 ── */
 .tiers {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  justify-content: center;
   gap: 20px;
-  max-width: 720px;
+  max-width: 440px;
   margin: 0 auto;
+}
+.tier {
+  flex: 1;
 }
 .tier {
   background: var(--card);
@@ -663,7 +666,6 @@
   .stepArrow { transform: rotate(90deg); }
   .features { grid-template-columns: 1fr 1fr; }
   .reviews { grid-template-columns: 1fr; }
-  .tiers { grid-template-columns: 1fr; }
   .ctaTitle { font-size: 1.75rem; }
   .sectionTitle { font-size: 1.45rem; }
 }

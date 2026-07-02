@@ -144,12 +144,19 @@ export class FallbackLlmProvider implements LlmProvider {
     userPrompt: string,
     jsonSchema?: Record<string, unknown>
   ): Promise<string> {
+    let primaryErr: string;
     try {
       return await this.primary.complete(systemPrompt, userPrompt, jsonSchema);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[llm] primary 공급자 실패 — fallback 시도: ${msg}`);
+      primaryErr = e instanceof Error ? e.message : String(e);
+      console.warn(`[llm] primary 공급자 실패 — fallback 시도: ${primaryErr}`);
+    }
+    try {
       return await this.fallback.complete(systemPrompt, userPrompt, jsonSchema);
+    } catch (e) {
+      const fbErr = e instanceof Error ? e.message : String(e);
+      // 둘 다 실패 — 양쪽 원인을 모두 담아 던진다 (진단 가능하도록)
+      throw new Error(`[primary] ${primaryErr}\n[fallback] ${fbErr}`);
     }
   }
 }

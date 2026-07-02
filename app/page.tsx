@@ -205,29 +205,31 @@ export default function Home() {
 
       {/* ── 후기 ── */}
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>리포트를 받아보신 분들의 이야기</h2>
-        <p className={styles.sectionLead}>단정이 아닌 참고로 건넨 이야기들</p>
+        <h2 className={styles.sectionTitle}>이런 이야기를 건네 드리고 싶습니다</h2>
+        <p className={styles.sectionLead}>
+          아래는 리포트가 지향하는 경험을 보여 드리는 <b>예시 문구</b>입니다 (실제 이용 후기가 아닙니다)
+        </p>
         <div className={styles.reviews}>
           <div className={styles.review}>
             <p className={styles.reviewText}>
               &ldquo;아이를 설명하는 단어들이 낯설지 않았어요. 이미 알고 있었지만 말로 정리가 안 됐던 것들이
               글로 적혀 있으니 오히려 더 잘 보이더라고요.&rdquo;
             </p>
-            <div className={styles.reviewer}>초2 딸 엄마 · 서울</div>
+            <div className={styles.reviewer}>예시 · 초등 저학년 보호자의 경우</div>
           </div>
           <div className={styles.review}>
             <p className={styles.reviewText}>
               &ldquo;학교 배정 정보는 교육청에 확인해야 한다는 안내가 있어서 오히려 신뢰가 갔어요.
               과하게 단정하지 않는 게 이 서비스의 차이인 것 같습니다.&rdquo;
             </p>
-            <div className={styles.reviewer}>초5 아들 아빠 · 경기</div>
+            <div className={styles.reviewer}>예시 · 초등 고학년 보호자의 경우</div>
           </div>
           <div className={styles.review}>
             <p className={styles.reviewText}>
               &ldquo;대운 흐름을 보면서 올해가 왜 이렇게 아이가 예민한지 이해가 됐어요.
               판단이 아닌 참고라는 전제가 있어서 편하게 읽을 수 있었습니다.&rdquo;
             </p>
-            <div className={styles.reviewer}>중1 자녀 엄마 · 부산</div>
+            <div className={styles.reviewer}>예시 · 중등 보호자의 경우</div>
           </div>
         </div>
       </section>

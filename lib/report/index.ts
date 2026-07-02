@@ -48,6 +48,7 @@ export type { RenderHtmlOptions } from "./html";
 export { buildReportForSubject } from "./pipeline";
 export type { BuildReportSubject, BuildReportOptions, BuiltReport } from "./pipeline";
 export { DemoLlmProvider, buildDemoProse } from "./demo";
+export { GeminiLlmProvider, FallbackLlmProvider } from "./gemini";
 export { runReportQa, runStructuralQa, runLlmQaReview, runAutoQa } from "./qa";
 export type { QaResult } from "./qa";
 

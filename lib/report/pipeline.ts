@@ -15,8 +15,29 @@ import { getSchoolFacts } from "../schools";
 import { generateReport } from "./index";
 import type { LlmProvider } from "./generate";
 import { ClaudeLlmProvider } from "./generate";
+import { GeminiLlmProvider, FallbackLlmProvider } from "./gemini";
 import { DemoLlmProvider } from "./demo";
 import { renderReportHtml } from "./html";
+import type { SajuResult } from "../saju";
+
+/**
+ * 사용 가능한 API 키에 따라 LLM 공급자를 결정한다.
+ *   - Gemini·Claude 둘 다 → Gemini(무료) 우선, 실패 시 Claude 폴백
+ *   - Gemini만 → Gemini
+ *   - Claude만 → Claude
+ *   - 둘 다 없음 → 데모 목업(로컬 개발)
+ */
+function resolveProvider(saju: SajuResult): LlmProvider {
+  const hasGemini = !!process.env.GEMINI_API_KEY;
+  const hasClaude = !!process.env.ANTHROPIC_API_KEY;
+
+  if (hasGemini && hasClaude) {
+    return new FallbackLlmProvider(new GeminiLlmProvider(), new ClaudeLlmProvider());
+  }
+  if (hasGemini) return new GeminiLlmProvider();
+  if (hasClaude) return new ClaudeLlmProvider();
+  return new DemoLlmProvider(saju);
+}
 
 export type BuildReportSubject = {
   birthYear: number;
@@ -67,11 +88,14 @@ export async function buildReportForSubject(
     gender: subject.gender,
   });
 
-  // 2. LLM provider 결정 — 키 있으면 Claude, 없으면 데모 목업
-  const hasKey = !!process.env.ANTHROPIC_API_KEY;
-  const provider =
-    opts.llmProvider ?? (hasKey ? new ClaudeLlmProvider() : new DemoLlmProvider(saju));
-  const isDemo = !opts.llmProvider && !hasKey;
+  // 2. LLM provider 결정 — 우선순위:
+  //    ① 주입된 provider(테스트) → ② Gemini+Claude 폴백 → ③ Gemini만
+  //    → ④ Claude만 → ⑤ 데모 목업(키 없음)
+  const provider = opts.llmProvider ?? resolveProvider(saju);
+  const isDemo =
+    !opts.llmProvider &&
+    !process.env.GEMINI_API_KEY &&
+    !process.env.ANTHROPIC_API_KEY;
 
   // 3. 학교 사실 조회 (주소가 있을 때만)
   const schools = subject.address

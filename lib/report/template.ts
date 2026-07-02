@@ -712,9 +712,45 @@ export function buildFactBlock(schools: SchoolFacts, saju?: SajuResult): FactBlo
 // ──────────────────────────────────────────────────────────────
 
 /**
+ * 일간별 물상(物象) 형상 — 전통 명리 형상론의 상징 이미지.
+ * "봉황이 보석을 물고…" 류의, 좋은 기운을 담은 비유 문구. 단정·보장이 아니라 상징적 풀이다.
+ */
+const DAY_MASTER_IMAGERY: Record<string, { form: string; reading: string }> = {
+  甲: { form: "청룡이 구름을 뚫고 하늘로 오르는 형상(청룡등천靑龍登天)", reading: "곧게 뻗어 크게 자라나는 큰 나무의 기상으로, 한번 뜻을 세우면 위로 뻗어 나가는 추진력을 품고 있습니다" },
+  乙: { form: "봄바람에 난초가 은은히 향을 퍼뜨리는 형상", reading: "부드럽게 굽이쳐 끝내 뜻을 이루는 화초의 결로, 환경에 맞춰 유연하게 길을 찾아내는 영리함을 품고 있습니다" },
+  丙: { form: "봉황이 아침 해를 향해 날개를 활짝 펴는 형상(단봉조양丹鳳朝陽)", reading: "온 세상을 밝히는 한낮 태양의 기상으로, 그 자리에 있으면 주위가 환해지는 밝고 따뜻한 기운을 품고 있습니다" },
+  丁: { form: "어둠 속 별빛이 밤길을 밝히는 형상", reading: "은은히 오래 타며 주위를 비추는 등불의 결로, 속 깊은 곳에서 조용히 빛나는 총명함을 품고 있습니다" },
+  戊: { form: "큰 산이 옥을 품고 우뚝 선 형상(중산장옥重山藏玉)", reading: "흔들림 없이 만물을 받치는 태산의 기상으로, 듬직하게 중심을 잡아 주위가 기대고 싶어 하는 신뢰를 품고 있습니다" },
+  己: { form: "기름진 옥토가 씨앗을 품어 길러 내는 형상", reading: "조용히 감싸 열매 맺게 하는 밭의 결로, 드러내지 않고 안에서 키워 내는 깊은 포용력을 품고 있습니다" },
+  庚: { form: "무쇠가 불을 만나 명검으로 벼려지는 형상", reading: "단련될수록 빛나는 강인한 쇠의 기상으로, 옳고 그름이 분명하고 결단이 곧은 기운을 품고 있습니다" },
+  辛: { form: "봉황이 보석을 물고 오동나무에 깃드는 형상(봉함주鳳含珠)", reading: "맑고 예리하게 빛나는 보석의 결로, 섬세하게 다듬어진 총명함과 은은한 품격을 품고 있습니다" },
+  壬: { form: "온갖 물길이 큰 바다로 모여드는 형상(백천귀해百川歸海)", reading: "무엇이든 담아 깊고 넓게 흐르는 강물의 기상으로, 크게 아우르는 포용력과 깊은 사고력을 품고 있습니다" },
+  癸: { form: "단비가 마른 대지를 적셔 새싹을 틔우는 형상", reading: "스며들어 생명을 기르는 이슬비의 결로, 조용히 만물을 적시는 세심함과 풍부한 상상력을 품고 있습니다" },
+};
+
+/** 가장 강한 오행별 성정 수식 — 형상 뒤에 붙는 보강 문구 (오상五常과 연결) */
+const STRONG_ELEMENT_FLOURISH: Record<string, string> = {
+  木: "여기에 뿌리 깊은 나무의 기운이 더해져, 배움이 곧게 자라며 어짊(仁)의 성정이 도탑습니다.",
+  火: "여기에 밝게 타오르는 불의 기운이 더해져, 총명함이 예(禮)로 드러나며 자리를 환하게 밝힙니다.",
+  土: "여기에 두터운 대지의 기운이 더해져, 믿음(信)이 굳고 한번 뿌리내리면 끝까지 지켜 냅니다.",
+  金: "여기에 잘 벼린 쇠의 기운이 더해져, 옳고 그름을 가르는 의(義)와 명민한 분별이 도드라집니다.",
+  水: "여기에 깊고 맑은 물의 기운이 더해져, 사려 깊은 지혜(智)가 흐르며 총명함이 안으로 그윽합니다.",
+};
+
+/** 우세 십성 그룹(접두어)별 '공부의 축' 문구 */
+const TENGOD_GROUP_STUDY_AXIS: Record<string, string> = {
+  비겁: "스스로 주인이 되어 또래와 겨루며 나아가는 **주체의 힘**이 공부의 축을 이룹니다.",
+  식상: "배운 것을 자기 방식으로 풀어내고 표현하는 **창출의 힘**이 공부의 축을 이룹니다.",
+  재성: "쓸모와 목표가 또렷할 때 힘을 내는 **실리의 힘**이 공부의 축을 이룹니다.",
+  관성: "규칙과 목표 안에서 자신을 단련하는 **절제의 힘**이 공부의 축을 이룹니다.",
+  인성: "듣고 읽어 깊이 받아들이는 **수용과 배움의 힘**이 공부의 축을 이룹니다.",
+};
+
+/**
  * 리포트 맨 앞에 들어가는 "한 장 요약" 섹션.
- * 사주 계산값(일간·오행·기질 지표·고교 유형 점수)에서 핵심만 추려 보여 준다.
- * 부모가 긴 본문을 다 읽기 전에 먼저 파악할 수 있도록 한다. LLM 미관여.
+ * 사주 계산값(일간·오행·십성·기질 지표·고교 유형 점수)에서 핵심을 추려,
+ * ① 형상론 상징 문구 → ② 풀어 쓰는 개관 → ③ 빠른 참고 순으로 보여 준다.
+ * 부모가 긴 본문을 다 읽기 전에 먼저 그림을 잡을 수 있도록 한다. LLM 미관여(코드 생성).
  */
 export function buildSummarySection(saju: SajuResult): string {
   const order: Array<[string, keyof SajuResult["elements"]]> = [
@@ -729,6 +765,19 @@ export function buildSummarySection(saju: SajuResult): string {
   const dayStem = saju.pillars.day.charAt(0);
   const dayKr = ganjiToHangul(saju.pillars.day).charAt(0);
   const sd = STEM_DICT[dayStem];
+  const imagery = DAY_MASTER_IMAGERY[dayStem];
+
+  // 우세 십성 그룹 — group 전체 문자열("인성(나를 키우는 기운)") 기준 합산
+  const groupCounts: Record<string, number> = {};
+  for (const [k, v] of Object.entries(saju.tenGods)) {
+    if (v <= 0) continue;
+    const key = TENGOD_KEY_ALIAS[k] ?? k;
+    const g = TENGOD_DICT[key]?.group;
+    if (!g) continue;
+    groupCounts[g] = (groupCounts[g] ?? 0) + v;
+  }
+  const domGroupFull = Object.entries(groupCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const domGroupPrefix = domGroupFull?.split("(")[0];
 
   const topTraits = Object.entries(saju.traitScores)
     .sort(([, a], [, b]) => b - a)
@@ -739,10 +788,50 @@ export function buildSummarySection(saju: SajuResult): string {
   const topType = deriveSchoolTypeScores(saju)[0];
   const stars = "★".repeat(topType.stars) + "☆".repeat(3 - topType.stars);
 
-  return [
-    "## 우리 아이 한 장 요약",
-    "",
-    "> 리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.",
+  // ── ① 형상(物象) 블록 ──────────────────────────────────
+  const imageryBlock = imagery
+    ? [
+        "### 한마디로, 이런 결의 아이입니다",
+        "",
+        `> **${imagery.form}.**`,
+        ">",
+        `> ${imagery.reading}. ${STRONG_ELEMENT_FLOURISH[strong.hanja] ?? ""}`,
+      ].join("\n")
+    : "";
+
+  // ── ② 풀어 쓰는 개관 (서술형) ─────────────────────────
+  const narrative: string[] = [];
+  narrative.push(
+    `이 아이의 중심 글자, 곧 사주에서 아이 자신을 나타내는 **일간(日干)은 ${dayStem}(${dayKr})**입니다. ` +
+      `${sd ? sd.desc : ""}`
+  );
+  narrative.push(
+    `타고난 다섯 기운 가운데 **${strong.hanja}(${strongD.hangul}) 기운이 ${Math.round(strong.pct)}%로 가장 도드라집니다.** ` +
+      `${strongD.keyword}의 결로, ${strongD.study} 이 기운이 이 아이 공부의 바탕색이 되어, ` +
+      `무엇을 어떻게 배울 때 편안하고 오래 몰입하는지를 결정짓습니다.`
+  );
+  narrative.push(
+    `반대로 **${weak.hanja}(${weakD.hangul}) 기운은 ${Math.round(weak.pct)}%로 옅은 편**입니다. ` +
+      `${weakD.keyword}의 힘은 아직 자라는 중인 여백으로, 부족함이 아니라 앞으로 채워 갈 여지로 보아 주시면 됩니다. ` +
+      `본문의 오행 풀이에서 이 기운을 자연스럽게 북돋우는 구체적인 놀이·활동을 함께 담았습니다.`
+  );
+  if (domGroupFull && domGroupPrefix && TENGOD_GROUP_STUDY_AXIS[domGroupPrefix]) {
+    narrative.push(
+      `십성(十神), 곧 여덟 글자가 서로 맺는 관계를 보면 **${domGroupFull}**이 두드러집니다. ` +
+        `${TENGOD_GROUP_STUDY_AXIS[domGroupPrefix]} ` +
+        `같은 내용을 배우더라도 이 축을 살려 주는 방식일 때 아이가 훨씬 힘을 냅니다.`
+  );
+  }
+  narrative.push(
+    `기질 지표에서는 **${topTraits}**가 특히 돋보입니다. ` +
+      `이 결들이 실제 공부와 생활 장면에서 어떻게 드러나는지, 그리고 부모님이 어떻게 북돋아 주면 좋은지를 ` +
+      `이어지는 본문에서 오행·십성·공부 스타일·진로·단계별 안내로 하나씩 풀어 갑니다. ` +
+      `**아래 표는 그 긴 이야기를 한눈에 보기 위한 이정표입니다.**`
+  );
+
+  // ── ③ 빠른 참고 표 ─────────────────────────────────────
+  const bullets = [
+    "### 빠르게 훑어보기",
     "",
     `- **타고난 결**: 일간 ${dayStem}(${dayKr})${sd ? ` · ${sd.nature}` : ""}`,
     `- **가장 강한 기운**: ${strong.hanja}(${strongD.hangul}) ${Math.round(strong.pct)}% · ${strongD.keyword}`,
@@ -750,6 +839,17 @@ export function buildSummarySection(saju: SajuResult): string {
     `- **돋보이는 기질 지표**: ${topTraits}`,
     `- **기질로 본 고교 유형 참고(1순위)**: ${topType.label} ${stars} — ${topType.reason}`,
   ].join("\n");
+
+  // 블록 단위로 조립 — 빈 블록(형상 미정의)만 제외하고 문단 간격(\n\n)을 유지한다.
+  return [
+    "## 우리 아이 한 장 요약",
+    "> 리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.",
+    imageryBlock,
+    narrative.join("\n\n"),
+    bullets,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 // ──────────────────────────────────────────────────────────────

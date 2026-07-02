@@ -23,22 +23,23 @@ export async function approveReport(reportId: string): Promise<Report> {
   });
   await transitionOrder(report.orderId, "published");
 
-  // 승인 후 보호자에게 결과 링크 발송 (실패해도 메인 플로우 무관 —
-  // 단, 실패 사유는 Order.notifyError에 기록해 어드민에서 보고 재발송할 수 있게 한다)
+  // 승인 후 보호자에게 결과 링크 발송.
+  // 반드시 await — Vercel 서버리스는 응답 반환 즉시 프로세스가 동결되므로
+  // fire-and-forget 프라미스는 실행되지 못하고 메일이 발송되지 않는다.
+  // (sendResultLink는 절대 throw하지 않음 — 실패는 outcome으로 반환)
   const order = await store.getOrder(report.orderId);
   if (order) {
-    sendResultLink({
-      orderId: order.id,
-      resultUrl: buildResultUrl(report.token),
-      contactEmail: order.contactEmail,
-      contactPhone: order.contactPhone,
-    })
-      .then((outcome) =>
-        store.recordNotifyResult(order.id, outcome.hasFailure ? outcome.error : null)
-      )
-      .catch((err) => {
-        console.error("[notify] 발송 처리 중 예외:", err);
+    try {
+      const outcome = await sendResultLink({
+        orderId: order.id,
+        resultUrl: buildResultUrl(report.token),
+        contactEmail: order.contactEmail,
+        contactPhone: order.contactPhone,
       });
+      await store.recordNotifyResult(order.id, outcome.hasFailure ? outcome.error : null);
+    } catch (err) {
+      console.error("[notify] 발송 처리 중 예외:", err);
+    }
   }
 
   return updated;

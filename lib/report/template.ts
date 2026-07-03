@@ -226,7 +226,7 @@ export function buildGlyphDictSection(saju: SajuResult): string {
     if (!s || !b) continue;
     parts.push(
       [
-        `<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>${pos} — ${withHangul(ganji)}</div>`,
+        `<div class="wx-item wx-pillar"><span class="wx-dot" style="background:var(--navy)"></span>${pos} — ${withHangul(ganji)}</div>`,
         ``,
         `- **${gan}(${s.hangul}) · ${s.nature}**: ${s.desc}`,
         `- **${zhi}(${b.hangul}) · ${b.animal}띠 글자 · ${b.nature}**: ${b.desc}`,

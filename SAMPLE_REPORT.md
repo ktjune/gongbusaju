@@ -77,22 +77,22 @@
 
 ### 내 여덟 글자 풀이
 
-<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>年柱(연주) — 庚子(경자)</div>
+<div class="wx-item wx-pillar"><span class="wx-dot" style="background:var(--navy)"></span>年柱(연주) — 庚子(경자)</div>
 
 - **庚(경) · 원석·무쇠 (金+)**: 단단한 바위 속 원석과 무쇠. 결단력과 의리, 옳고 그름을 가르는 분명함으로 풀이됩니다. 단련될수록 빛나는 강인함의 상징입니다.
 - **子(자) · 쥐띠 글자 · 한겨울 물 (水)**: 한밤·한겨울의 응축된 물. 머리 회전이 빠르고 핵심을 짚는 영민함으로 풀이됩니다.
 
-<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>月柱(월주) — 乙酉(을유)</div>
+<div class="wx-item wx-pillar"><span class="wx-dot" style="background:var(--navy)"></span>月柱(월주) — 乙酉(을유)</div>
 
 - **乙(을) · 풀·덩굴 (木−)**: 바위틈에서도 길을 찾아 자라는 풀과 덩굴. 부드럽지만 끈질긴 생명력, 유연한 적응력으로 풀이됩니다. 환경에 맞춰 방법을 바꾸는 영리함의 상징입니다.
 - **酉(유) · 닭띠 글자 · 한가을 쇠 (金)**: 여문 곡식을 가르는 가을의 결정. 정확함과 깔끔한 마무리로 풀이됩니다.
 
-<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>日柱(일주) — 壬戌(임술)</div>
+<div class="wx-item wx-pillar"><span class="wx-dot" style="background:var(--navy)"></span>日柱(일주) — 壬戌(임술)</div>
 
 - **壬(임) · 큰 강물·바다 (水+)**: 깊고 넓게 흐르는 큰 물. 무엇이든 받아들이는 포용력과 깊은 사고력으로 풀이됩니다. 겉은 잔잔해도 속에 큰 흐름을 품은 지혜의 상징입니다.
 - **戌(술) · 개띠 글자 · 가을의 마른 흙 (土)**: 수확을 마치고 갈무리하는 흙. 책임감과 지키려는 충직함으로 풀이됩니다.
 
-<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>時柱(시주) — 戊申(무신)</div>
+<div class="wx-item wx-pillar"><span class="wx-dot" style="background:var(--navy)"></span>時柱(시주) — 戊申(무신)</div>
 
 - **戊(무) · 큰 산 (土+)**: 움직이지 않는 너른 산. 듬직함과 한결같음, 쉽게 흔들리지 않는 중심으로 풀이됩니다. 주변이 기대고 싶어 하는 묵직한 신뢰의 상징입니다.
 - **申(신) · 원숭이띠 글자 · 초가을 쇠 (金)**: 거두기 시작하는 가을 기운. 재주가 많고 응용이 빠른 총명함으로 풀이됩니다.

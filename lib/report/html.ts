@@ -309,7 +309,7 @@ body {
   margin: 1.7em 0 0.5em; font-size: 1.06em; font-weight: 700; color: var(--navy);
 }
 .wx-dot { width: 13px; height: 13px; border-radius: 50%; flex: none; }
-.wx-item.pillar .wx-dot { border-radius: 3px; }
+.wx-item.wx-pillar .wx-dot { border-radius: 3px; }
 
 /* ── 한 장 요약 스펙 그리드 ─────────────────────── */
 .spec-grid {

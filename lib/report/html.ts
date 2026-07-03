@@ -199,13 +199,22 @@ body {
 .cover-note { font-size: 0.78em; color: #9a958c; }
 
 /* ── 본문 ─────────────────────────────────────────── */
+.report { counter-reset: h2c; }
 .report h2 {
   font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
   font-size: 1.4em; color: var(--navy);
-  margin: 2.4em 0 0.9em; padding: 14px 18px;
+  margin: 2.4em 0 0.9em; padding: 12px 18px 14px;
   background: var(--card); border-left: 6px solid var(--navy);
   border-radius: 0 12px 12px 0;
   box-shadow: 0 2px 8px rgba(31,59,99,0.07);
+}
+.report h2::before {
+  counter-increment: h2c;
+  content: counter(h2c, decimal-leading-zero);
+  display: block;
+  font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size: 0.5em; font-weight: 700; letter-spacing: 0.14em;
+  color: var(--gold); margin-bottom: 2px;
 }
 .report h3 {
   font-size: 1.12em; color: var(--navy-soft);
@@ -214,7 +223,15 @@ body {
 }
 .report h4 { color: var(--navy-soft); margin: 1.6em 0 0.6em; }
 .report p { margin: 0.9em 0; }
-.report strong { color: var(--navy); }
+.report strong {
+  color: var(--navy);
+  background: linear-gradient(180deg, transparent 62%, #f6e6bd 62%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+/* 표지·제목·오행 칩 안의 굵은 글씨엔 형광펜을 넣지 않는다 */
+.report h2 strong, .report h3 strong, .report h4 strong,
+.report th strong, .imagery-form strong, .wx-item strong,
+.report table.maptable strong { background: none; }
 .report hr { border: none; margin: 44px 0; text-align: center; }
 .report hr::after { content: "✦ ✦ ✦"; color: #cfc5b2; font-size: 0.8em; letter-spacing: 1.2em; text-indent: 1.2em; }
 .report table {
@@ -226,12 +243,19 @@ body {
 .report th, .report td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
 .report th { background: #efe9dd; color: var(--navy); font-weight: 600; }
 .report tr:nth-child(even) td { background: #fbf9f5; }
+/* 콜아웃 ① 팁·안내 (골드) */
 .report blockquote {
-  margin: 18px 0; padding: 12px 18px;
-  background: var(--callout-bg); border-left: 4px solid var(--callout-line);
-  border-radius: 0 10px 10px 0; color: #44505f; font-size: 0.93em;
+  margin: 18px 0; padding: 12px 16px 12px 18px;
+  background: #fbf5e8; border-left: 4px solid var(--gold);
+  border-radius: 0 10px 10px 0; color: #5c4f36; font-size: 0.93em;
 }
 .report blockquote p { margin: 0.3em 0; }
+/* 콜아웃 ② 데이터·출처·각주 (회색, 작게) */
+.report .datanote {
+  margin: 12px 0; padding: 8px 12px;
+  background: #f3f1ea; border-radius: 8px;
+  color: var(--ink-soft); font-size: 0.82em; line-height: 1.6;
+}
 
 /* ── 한 장 요약 형상 히어로 카드 ─────────────────── */
 .imagery-card {
@@ -278,6 +302,31 @@ body {
 }
 .toc-label { flex: 1; }
 .toc-list a:hover .toc-label { color: var(--navy); }
+
+/* ── 오행·사전 항목 색 칩 헤드 ─────────────────── */
+.wx-item {
+  display: flex; align-items: center; gap: 9px;
+  margin: 1.7em 0 0.5em; font-size: 1.06em; font-weight: 700; color: var(--navy);
+}
+.wx-dot { width: 13px; height: 13px; border-radius: 50%; flex: none; }
+.wx-item.pillar .wx-dot { border-radius: 3px; }
+
+/* ── 한 장 요약 스펙 그리드 ─────────────────────── */
+.spec-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0;
+}
+.spec-item {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 11px 14px;
+}
+.spec-label { font-size: 0.76em; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
+.spec-value { font-weight: 700; color: var(--navy); font-size: 0.94em; line-height: 1.4; }
+
+/* ── 매핑 표: '이 아이' 강한 행 하이라이트 ───────── */
+.report table.maptable tr.hl td {
+  background: #f8efd4; font-weight: 500;
+}
+.report table.maptable tr.hl td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
 
 .report ul { padding-left: 22px; }
 .report li { margin: 0.45em 0; }

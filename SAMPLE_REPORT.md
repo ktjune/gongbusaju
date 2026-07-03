@@ -49,11 +49,7 @@
 
 ### 빠르게 훑어보기
 
-- **타고난 결**: 일간 壬(임) · 큰 강물·바다 (水+)
-- **가장 강한 기운**: 金(금) 38% · 정리·분별
-- **보완하면 좋을 기운**: 火(화) 0%
-- **돋보이는 기질 지표**: 집중력(67), 직관력(61), 분석력(58)
-- **기질로 본 고교 유형 참고(1순위)**: 일반고등학교 ★★★ — 균형·체계 환경에 잘 맞는 기질
+<div class="spec-grid"><div class="spec-item"><div class="spec-label">타고난 결</div><div class="spec-value">일간 壬(임) · 큰 강물·바다 (水+)</div></div><div class="spec-item"><div class="spec-label">가장 강한 기운</div><div class="spec-value">金(금) 38% · 정리·분별</div></div><div class="spec-item"><div class="spec-label">보완하면 좋을 기운</div><div class="spec-value">火(화) 0%</div></div><div class="spec-item"><div class="spec-label">돋보이는 기질 지표</div><div class="spec-value">집중력(67), 직관력(61), 분석력(58)</div></div><div class="spec-item"><div class="spec-label">고교 유형 참고 (1순위)</div><div class="spec-value">일반고등학교 ★★★</div></div></div>
 
 ---
 
@@ -81,22 +77,22 @@
 
 ### 내 여덟 글자 풀이
 
-### 年柱(연주) — 庚子(경자)
+<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>年柱(연주) — 庚子(경자)</div>
 
 - **庚(경) · 원석·무쇠 (金+)**: 단단한 바위 속 원석과 무쇠. 결단력과 의리, 옳고 그름을 가르는 분명함으로 풀이됩니다. 단련될수록 빛나는 강인함의 상징입니다.
 - **子(자) · 쥐띠 글자 · 한겨울 물 (水)**: 한밤·한겨울의 응축된 물. 머리 회전이 빠르고 핵심을 짚는 영민함으로 풀이됩니다.
 
-### 月柱(월주) — 乙酉(을유)
+<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>月柱(월주) — 乙酉(을유)</div>
 
 - **乙(을) · 풀·덩굴 (木−)**: 바위틈에서도 길을 찾아 자라는 풀과 덩굴. 부드럽지만 끈질긴 생명력, 유연한 적응력으로 풀이됩니다. 환경에 맞춰 방법을 바꾸는 영리함의 상징입니다.
 - **酉(유) · 닭띠 글자 · 한가을 쇠 (金)**: 여문 곡식을 가르는 가을의 결정. 정확함과 깔끔한 마무리로 풀이됩니다.
 
-### 日柱(일주) — 壬戌(임술)
+<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>日柱(일주) — 壬戌(임술)</div>
 
 - **壬(임) · 큰 강물·바다 (水+)**: 깊고 넓게 흐르는 큰 물. 무엇이든 받아들이는 포용력과 깊은 사고력으로 풀이됩니다. 겉은 잔잔해도 속에 큰 흐름을 품은 지혜의 상징입니다.
 - **戌(술) · 개띠 글자 · 가을의 마른 흙 (土)**: 수확을 마치고 갈무리하는 흙. 책임감과 지키려는 충직함으로 풀이됩니다.
 
-### 時柱(시주) — 戊申(무신)
+<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>時柱(시주) — 戊申(무신)</div>
 
 - **戊(무) · 큰 산 (土+)**: 움직이지 않는 너른 산. 듬직함과 한결같음, 쉽게 흔들리지 않는 중심으로 풀이됩니다. 주변이 기대고 싶어 하는 묵직한 신뢰의 상징입니다.
 - **申(신) · 원숭이띠 글자 · 초가을 쇠 (金)**: 거두기 시작하는 가을 기운. 재주가 많고 응용이 빠른 총명함으로 풀이됩니다.
@@ -125,13 +121,13 @@
 
 ### 오행은 서로 돕고 누릅니다 — 상생·상극
 
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 480" width="520" height="480" role="img" aria-label="오행 상생 상극 순환도"><defs><marker id="sheng" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7a9e7e"/></marker><marker id="ke" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#d6a0a0"/></marker></defs><g transform="translate(14,14)"><line x1="0" y1="6" x2="30" y2="6" stroke="#7a9e7e" stroke-width="2.5"/><text x="36" y="10" font-size="12" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">상생(낳아 줌)</text><line x1="130" y1="6" x2="160" y2="6" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4"/><text x="166" y="10" font-size="12" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">상극(눌러 줌)</text></g><line x1="282.0457130967173" y1="90.0171481249699" x2="389.8006458085664" y2="168.30568934248433" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="406.6547477748161" y1="208.7646033023422" x2="366.50033116606625" y2="332.3471902439684" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="324.72121087138066" y1="367.0607530887415" x2="204.52878912861937" y2="367.0607530887415" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="154.3494655684649" y1="334.96259566378006" x2="117.2079646548707" y2="220.65280975603167" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="130.603862688621" y1="168.01179671633813" x2="233.100184937033" y2="93.54385963872474" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="268.4207130967173" y1="99.91629006904293" x2="343.9420905766951" y2="332.3471902439684" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="394.6547477748161" y1="200.04609296627788" x2="196.93721465502352" y2="343.6962893101157" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="330.54619254294477" y1="349.13330289382105" x2="135.4579646548707" y2="207.3934086199338" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="175.20811268877384" y1="334.96259566378006" x2="249.725184937033" y2="105.62262916681385" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="136.4288443601851" y1="185.93924691125855" x2="384.07115563981483" y2="185.93924691125852" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><g opacity="1"><circle cx="260" cy="74" r="25.25" fill="#3d9a50"/><text x="260" y="70.97" text-anchor="middle" dominant-baseline="middle" font-size="16.665" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">木</text><text x="260" y="84.605" text-anchor="middle" dominant-baseline="middle" font-size="8.585" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">목</text><rect x="228.5" y="106.25" width="63" height="23" rx="11.5" fill="#fff" stroke="#3d9a50" stroke-width="1.6"/><text x="260" y="122.25" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3d9a50" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">목 13%</text></g><g opacity="0.35"><circle cx="414.07115563981483" cy="185.93924691125852" r="22" fill="#d64545"/><text x="414.07115563981483" y="183.29924691125854" text-anchor="middle" dominant-baseline="middle" font-size="14.520000000000001" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">火</text><text x="414.07115563981483" y="195.17924691125853" text-anchor="middle" dominant-baseline="middle" font-size="7.48" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">화</text><rect x="387.07115563981483" y="214.93924691125852" width="54" height="23" rx="11.5" fill="#fff" stroke="#d64545" stroke-width="1.6"/><text x="414.07115563981483" y="230.93924691125852" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#d64545" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">화 0%</text></g><g opacity="1"><circle cx="355.22121087138066" cy="367.0607530887415" r="28.5" fill="#c9a227"/><text x="355.22121087138066" y="363.64075308874146" text-anchor="middle" dominant-baseline="middle" font-size="18.810000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">土</text><text x="355.22121087138066" y="379.03075308874145" text-anchor="middle" dominant-baseline="middle" font-size="9.690000000000001" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">토</text><rect x="323.72121087138066" y="402.5607530887415" width="63" height="23" rx="11.5" fill="#fff" stroke="#c9a227" stroke-width="1.6"/><text x="355.22121087138066" y="418.5607530887415" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#c9a227" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">토 25%</text></g><g opacity="1"><circle cx="164.77878912861937" cy="367.0607530887415" r="31.75" fill="#8e9aa8"/><text x="164.77878912861937" y="363.2507530887415" text-anchor="middle" dominant-baseline="middle" font-size="20.955000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">金</text><text x="164.77878912861937" y="380.39575308874146" text-anchor="middle" dominant-baseline="middle" font-size="10.795" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">금</text><rect x="133.27878912861937" y="405.8107530887415" width="63" height="23" rx="11.5" fill="#fff" stroke="#8e9aa8" stroke-width="1.6"/><text x="164.77878912861937" y="421.8107530887415" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#8e9aa8" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">금 38%</text></g><g opacity="1"><circle cx="105.92884436018511" cy="185.93924691125855" r="28.5" fill="#3b6fb5"/><text x="105.92884436018511" y="182.51924691125856" text-anchor="middle" dominant-baseline="middle" font-size="18.810000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">水</text><text x="105.92884436018511" y="197.90924691125855" text-anchor="middle" dominant-baseline="middle" font-size="9.690000000000001" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">수</text><rect x="74.42884436018511" y="221.43924691125855" width="63" height="23" rx="11.5" fill="#fff" stroke="#3b6fb5" stroke-width="1.6"/><text x="105.92884436018511" y="237.43924691125855" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3b6fb5" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">수 25%</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 430" width="460" height="430" role="img" aria-label="오행 상생 상극 순환도"><defs><marker id="sheng" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7a9e7e"/></marker><marker id="ke" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#d6a0a0"/></marker></defs><g transform="translate(14,14)"><line x1="0" y1="6" x2="28" y2="6" stroke="#7a9e7e" stroke-width="2.5"/><text x="34" y="10" font-size="13" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">상생(낳아 줌)</text><line x1="128" y1="6" x2="156" y2="6" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4"/><text x="162" y="10" font-size="13" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">상극(눌러 줌)</text></g><line x1="252.04571309671732" y1="84.01714812496989" x2="343.6326850315488" y2="150.55897824685843" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="360.4867869977985" y1="191.0178922067163" x2="326.5079818770942" y2="295.5939013395943" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="284.7288615824086" y1="330.3074641843674" x2="184.52113841759143" y2="330.3074641843674" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="134.34181485743693" y1="298.209306759406" x2="103.37592543188832" y2="202.90609866040575" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="116.77182346563862" y1="150.26508562071223" x2="203.100184937033" y2="87.54385963872474" stroke="#7a9e7e" stroke-width="2.5" marker-end="url(#sheng)"/><line x1="238.42071309671732" y1="93.91629006904293" x2="303.94974128772304" y2="295.5939013395943" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="348.4867869977985" y1="182.29938187065198" x2="176.9295639439956" y2="306.9430004057416" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="290.55384325397273" y1="312.380013989447" x2="121.6259254318883" y2="189.6466975243079" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="155.2004619777459" y1="298.209306759406" x2="219.725184937033" y2="99.62262916681385" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><line x1="122.59680513720272" y1="168.19253581563265" x2="337.90319486279725" y2="168.19253581563262" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ke)"/><g opacity="1"><circle cx="230" cy="68" r="25.25" fill="#3d9a50"/><text x="230" y="64.97" text-anchor="middle" dominant-baseline="middle" font-size="16.665" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">木</text><text x="230" y="78.605" text-anchor="middle" dominant-baseline="middle" font-size="8.585" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">목</text><rect x="195" y="100.25" width="70" height="25" rx="12.5" fill="#fff" stroke="#3d9a50" stroke-width="1.6"/><text x="230" y="117.75" text-anchor="middle" font-size="15" font-weight="bold" fill="#3d9a50" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">목 13%</text></g><g opacity="0.35"><circle cx="367.90319486279725" cy="168.19253581563262" r="22" fill="#d64545"/><text x="367.90319486279725" y="165.55253581563264" text-anchor="middle" dominant-baseline="middle" font-size="14.520000000000001" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">火</text><text x="367.90319486279725" y="177.43253581563263" text-anchor="middle" dominant-baseline="middle" font-size="7.48" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">화</text><rect x="337.90319486279725" y="197.19253581563262" width="60" height="25" rx="12.5" fill="#fff" stroke="#d64545" stroke-width="1.6"/><text x="367.90319486279725" y="214.69253581563262" text-anchor="middle" font-size="15" font-weight="bold" fill="#d64545" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">화 0%</text></g><g opacity="1"><circle cx="315.2288615824086" cy="330.3074641843674" r="28.5" fill="#c9a227"/><text x="315.2288615824086" y="326.8874641843674" text-anchor="middle" dominant-baseline="middle" font-size="18.810000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">土</text><text x="315.2288615824086" y="342.27746418436743" text-anchor="middle" dominant-baseline="middle" font-size="9.690000000000001" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">토</text><rect x="280.2288615824086" y="365.8074641843674" width="70" height="25" rx="12.5" fill="#fff" stroke="#c9a227" stroke-width="1.6"/><text x="315.2288615824086" y="383.3074641843674" text-anchor="middle" font-size="15" font-weight="bold" fill="#c9a227" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">토 25%</text></g><g opacity="1"><circle cx="144.77113841759143" cy="330.3074641843674" r="31.75" fill="#8e9aa8"/><text x="144.77113841759143" y="326.4974641843674" text-anchor="middle" dominant-baseline="middle" font-size="20.955000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">金</text><text x="144.77113841759143" y="343.6424641843674" text-anchor="middle" dominant-baseline="middle" font-size="10.795" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">금</text><rect x="109.77113841759143" y="369.0574641843674" width="70" height="25" rx="12.5" fill="#fff" stroke="#8e9aa8" stroke-width="1.6"/><text x="144.77113841759143" y="386.5574641843674" text-anchor="middle" font-size="15" font-weight="bold" fill="#8e9aa8" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">금 38%</text></g><g opacity="1"><circle cx="92.09680513720272" cy="168.19253581563265" r="28.5" fill="#3b6fb5"/><text x="92.09680513720272" y="164.77253581563266" text-anchor="middle" dominant-baseline="middle" font-size="18.810000000000002" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">水</text><text x="92.09680513720272" y="180.16253581563265" text-anchor="middle" dominant-baseline="middle" font-size="9.690000000000001" fill="#fff" opacity="0.9" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">수</text><rect x="57.09680513720272" y="203.69253581563265" width="70" height="25" rx="12.5" fill="#fff" stroke="#3b6fb5" stroke-width="1.6"/><text x="92.09680513720272" y="221.19253581563265" text-anchor="middle" font-size="15" font-weight="bold" fill="#3b6fb5" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">수 25%</text></g></svg>
 
 원 크기는 이 아이 사주에서 해당 기운의 비중입니다. 초록 실선은 낳아 주는 관계(상생), 붉은 점선은 눌러 주는 관계(상극)로, 다섯 기운은 이렇게 서로 균형을 이룹니다.
 
 ### 다섯 기운 하나씩 들여다보기
 
-### 木(목) — 성장·시작
+<div class="wx-item"><span class="wx-dot" style="background:#3d9a50"></span>木(목) — 성장·시작</div>
 
 새로운 것을 배우려는 호기심, 계획을 세우고 뻗어 나가는 힘과 연결해 해석합니다.
 
@@ -139,7 +135,7 @@
 
 시작하는 힘과 지속하는 힘이 어느 정도 균형을 이루는 구간입니다. 새로운 것에 관심을 갖되 큰 부담 없이 정리하고 마무리하는 리듬이 가능한 편입니다. 흥미로운 주제를 발견했을 때 그 흥미를 학습 계획과 연결해 주면 주도성이 자연스럽게 살아납니다.
 
-### 火(화) — 표현·발산
+<div class="wx-item"><span class="wx-dot" style="background:#d64545"></span>火(화) — 표현·발산</div>
 
 아는 것을 밖으로 꺼내는 발표력, 열정과 몰입의 온도와 연결해 해석합니다.
 
@@ -147,7 +143,7 @@
 
 알아도 말로 꺼내는 데 머뭇거릴 수 있습니다. 발표·노래·몸놀이 같은 발산 활동을 곁들이는 것이 보완 관점의 참고가 됩니다.
 
-### 土(토) — 꾸준함·중심
+<div class="wx-item"><span class="wx-dot" style="background:#c9a227"></span>土(토) — 꾸준함·중심</div>
 
 자리를 지키고 반복을 견디는 끈기, 약속과 규칙을 지키는 안정감과 연결해 해석합니다.
 
@@ -155,7 +151,7 @@
 
 루틴을 어느 정도 지키면서도 변화에 크게 거부감 없이 적응하는 구간입니다. 규칙적인 학습 방식과 새로운 접근을 상황에 따라 유연하게 선택할 수 있습니다. 정해진 시간에 앉아 공부하는 습관을 들이면 흔들림 없이 쌓아 가는 힘이 생깁니다.
 
-### 金(금) — 정리·분별
+<div class="wx-item"><span class="wx-dot" style="background:#8e9aa8"></span>金(금) — 정리·분별</div>
 
 개념을 가르고 구조를 잡는 논리, 원칙을 세우고 지키는 자기 관리와 연결해 해석합니다.
 
@@ -163,7 +159,7 @@
 
 정리정돈과 규칙 학습에 강한 경향이 있습니다. 논리 체계를 빠르게 잡고 틀 안에서 집중력이 높아지는 반면, 기준이 엄격해져 자신과 주변 친구에게 깐깐하게 구는 면이 나타날 수 있습니다. 실수를 허용하는 분위기를 만들어 주는 것이 과제가 됩니다.
 
-### 水(수) — 사고·흡수
+<div class="wx-item"><span class="wx-dot" style="background:#3b6fb5"></span>水(수) — 사고·흡수</div>
 
 곱씹어 이해하는 깊은 사고력, 받아들여 저장하는 기억과 상상력과 연결해 해석합니다.
 
@@ -197,7 +193,7 @@
 | 偏印(편인) | 인성(나를 키우는 기운) | 남다른 길의 배움 — 독창적 탐구심. | 2개 |
 | 正印(정인) | 인성(나를 키우는 기운) | 정통의 배움 — 수용력과 학자의 결. | 1개 |
 
-> 이 아이 사주에서 두드러지지 않는 십성: 比肩(비견), 食神(식신), 偏财(편재), 正财(정재), 正官(정관) — 없다고 부족한 것이 아니라, 위에 나타난 기운이 더 선명하다는 뜻입니다.
+<p class="datanote">이 아이 사주에서 두드러지지 않는 십성: 比肩(비견), 食神(식신), 偏财(편재), 正财(정재), 正官(정관) — 없다고 부족한 것이 아니라, 위에 나타난 기운이 더 선명하다는 뜻입니다.</p>
 
 #### 이 아이가 가진 십성, 공부에서는
 
@@ -245,13 +241,7 @@
 
 ## 과목 경향 참고
 
-| 오행 | 전통적으로 연결해 보는 학습 영역 | 왜 이렇게 연결되나요? | 이 아이 |
-|---|---|---|---|
-| 木(목) | 국어(읽기·쓰기), 외국어, 기획·발명 | 언어로 뻗어 나가고 새 것을 시작하는 목(木)의 성질이 읽기·쓰기·창안 활동과 닿아 있습니다. | 13% |
-| 火(화) | 발표·토론, 음악·미술, 연극 | 아는 것을 밖으로 드러내고 발산하는 화(火)의 성질이 표현·무대·예술 활동과 닿아 있습니다. | 0% (옅음) |
-| 土(토) | 사회·역사, 글씨·정리 습관, 반복 암기 | 한자리에서 쌓고 반복을 견디는 토(土)의 성질이 암기·정리·역사 학습과 닿아 있습니다. | 25% |
-| 金(금) | 수학(연산·도형), 과학(분류·실험), 코딩 | 정확하게 가르고 구조를 세우는 금(金)의 성질이 논리·연산·분류 학습과 닿아 있습니다. | **38% ◀ 강함** |
-| 水(수) | 수학(응용·사고력), 과학(탐구), 독서·철학 | 깊이 파고들어 생각을 흡수하는 수(水)의 성질이 탐구·응용·사유 학습과 닿아 있습니다. | 25% |
+<table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 학습 영역</th><th>왜 이렇게 연결되나요?</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>국어(읽기·쓰기), 외국어, 기획·발명</td><td>언어로 뻗어 나가고 새 것을 시작하는 목(木)의 성질이 읽기·쓰기·창안 활동과 닿아 있습니다.</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>발표·토론, 음악·미술, 연극</td><td>아는 것을 밖으로 드러내고 발산하는 화(火)의 성질이 표현·무대·예술 활동과 닿아 있습니다.</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>사회·역사, 글씨·정리 습관, 반복 암기</td><td>한자리에서 쌓고 반복을 견디는 토(土)의 성질이 암기·정리·역사 학습과 닿아 있습니다.</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>수학(연산·도형), 과학(분류·실험), 코딩</td><td>정확하게 가르고 구조를 세우는 금(金)의 성질이 논리·연산·분류 학습과 닿아 있습니다.</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>수학(응용·사고력), 과학(탐구), 독서·철학</td><td>깊이 파고들어 생각을 흡수하는 수(水)의 성질이 탐구·응용·사유 학습과 닿아 있습니다.</td><td>25%</td></tr></tbody></table>
 
 이 아이의 오행 분포를 위 표에 비추어 보면, 강한 금(38%)·수(25%) 기운이 전통적으로 수학의 연산·도형, 과학의 분류·실험, 그리고 깊이 읽는 독서와 연결되는 영역을 가리키고 있습니다. 숫자와 규칙처럼 '명확하게 떨어지는 것'을 다룰 때 안정감을 느끼고, 호기심이 붙으면 한 주제를 깊게 파고드는 탐구형 접근이 잘 맞는 경향으로 풀이됩니다.
 
@@ -273,13 +263,7 @@
 
 ## 직업군 경향 참고
 
-| 오행 | 전통적으로 연결해 보는 직업 분야 | 연결 기운 | 이 아이 |
-|---|---|---|---|
-| 木(목) | 교육·기획, 출판·콘텐츠, 디자인·건축, 환경·생명 | 새로 시작하고 길러 내며 위로 뻗는 기운 | 13% |
-| 火(화) | 방송·공연, 마케팅·홍보, 강연·교육, 예술·뷰티 | 밖으로 드러내고 사람을 끌어모으는 표현의 기운 | 0% (옅음) |
-| 土(토) | 행정·공공, 부동산·중개, 농업·요식, 상담·중재 | 신뢰로 사람·자원을 잇고 지키는 안정의 기운 | 25% |
-| 金(금) | 공학·기술, 의료·법률, 금융·회계, 군·경·스포츠 | 가르고 다듬어 결단하는 정밀·원칙의 기운 | **38% ◀ 강함** |
-| 水(수) | 연구·학문, IT·데이터, 기획·전략, 무역·유통 | 깊이 사유하고 정보를 흐르게 하는 지혜의 기운 | 25% |
+<table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 직업 분야</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>교육·기획, 출판·콘텐츠, 디자인·건축, 환경·생명</td><td>새로 시작하고 길러 내며 위로 뻗는 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>방송·공연, 마케팅·홍보, 강연·교육, 예술·뷰티</td><td>밖으로 드러내고 사람을 끌어모으는 표현의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>행정·공공, 부동산·중개, 농업·요식, 상담·중재</td><td>신뢰로 사람·자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>공학·기술, 의료·법률, 금융·회계, 군·경·스포츠</td><td>가르고 다듬어 결단하는 정밀·원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>연구·학문, IT·데이터, 기획·전략, 무역·유통</td><td>깊이 사유하고 정보를 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table>
 
 기질 관점에서 잘 맞을 수 있는 진로 분야를 참고로 짚어 봅니다. 단정이 아니라, 강점이 자연스럽게 발현될 만한 방향입니다.
 
@@ -297,13 +281,7 @@
 
 ## 전공·학문 계열과 진학 방향
 
-| 오행 | 전통적으로 연결해 보는 전공·학문 계열 | 연결 기운 | 이 아이 |
-|---|---|---|---|
-| 木(목) | 인문·어문, 교육학, 환경·생명과학, 건축·도시계획 | 기르고 뻗어 나가는 성장의 기운 | 13% |
-| 火(화) | 미디어·영상, 디자인·예술, 광고·홍보, 공연·문화예술 | 밖으로 표현하고 빛나는 발산의 기운 | 0% (옅음) |
-| 土(토) | 경영·행정, 사회복지·상담, 부동산·지리, 식품·농업 | 사람과 자원을 잇고 지키는 안정의 기운 | 25% |
-| 金(금) | 기계·전자공학, 의학·약학, 법학, 경제·금융 | 정밀하게 가르고 다듬는 원칙의 기운 | **38% ◀ 강함** |
-| 水(수) | 수학·물리, 컴퓨터·데이터과학, 철학, 무역·국제학 | 깊이 사유하고 흐르게 하는 지혜의 기운 | 25% |
+<table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 전공·학문 계열</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>인문·어문, 교육학, 환경·생명과학, 건축·도시계획</td><td>기르고 뻗어 나가는 성장의 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>미디어·영상, 디자인·예술, 광고·홍보, 공연·문화예술</td><td>밖으로 표현하고 빛나는 발산의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>경영·행정, 사회복지·상담, 부동산·지리, 식품·농업</td><td>사람과 자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>기계·전자공학, 의학·약학, 법학, 경제·금융</td><td>정밀하게 가르고 다듬는 원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>수학·물리, 컴퓨터·데이터과학, 철학, 무역·국제학</td><td>깊이 사유하고 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table>
 
 > 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.
 
@@ -360,7 +338,7 @@
 | 고등학교 입학 | 2036년 3월 | 만 15~16세 | 10년 후 |
 | 고등학교 졸업 | 2039년 3월 | 만 18~19세 | 13년 후 |
 
-> 취학 기준(초중등교육법): 만 6세가 된 해의 다음 해 3월 입학. 조기입학·유예 등 개별 사정은 반영되지 않은 표준 학제 기준입니다.
+<p class="datanote">취학 기준(초중등교육법): 만 6세가 된 해의 다음 해 3월 입학. 조기입학·유예 등 개별 사정은 반영되지 않은 표준 학제 기준입니다.</p>
 
 ### 이 단계에서 기질을 살리려면
 
@@ -416,7 +394,7 @@
 | 2027년 | 丁未(정미) | 만 7세 무렵 |
 | 2028년 | 戊申(무신) | 만 8세 무렵 |
 
-> 세운(歲運)은 해마다 바뀌는 그해의 기운입니다. 대운이 10년의 큰 계절이라면 세운은 그해의 날씨에 비유됩니다.
+<p class="datanote">세운(歲運)은 해마다 바뀌는 그해의 기운입니다. 대운이 10년의 큰 계절이라면 세운은 그해의 날씨에 비유됩니다.</p>
 
 2026년 병오(丙午)년은 원국에 없던 화 기운이 천간과 지지 양쪽으로 들어오는 해입니다. 안으로 모으던 아이가 평소보다 활달해지고 표현이 늘어나는 흐름으로 해석되는데, 마침 초등 입학을 준비하는 해(만 6세)와 겹칩니다. 이 기운을 살려 발표·무대 경험, 입학 전 기관 적응 활동을 시도해 보기 좋은 해로 풀이됩니다.
 

@@ -59,7 +59,7 @@ export function wuxingCycleChart(saju: SajuResult): string {
   const order: Array<[string, keyof SajuResult["elements"]]> = [
     ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
   ];
-  const W = 520, H = 480, CX = W / 2, CY = H / 2 - 4, R = 162;
+  const W = 460, H = 430, CX = W / 2, CY = H / 2 - 2, R = 145;
 
   // 五行을 정오각형 꼭짓점에 배치 (木이 위, 시계방향 = 상생 순서)
   const pos = order.map(([hanja, key], i) => {
@@ -106,25 +106,25 @@ export function wuxingCycleChart(saju: SajuResult): string {
     const opacity = pct === 0 ? 0.35 : 1;
     // 노드 안: 한자 + 한글. 노드 아래: 흰 칩에 "한글 NN%" (교차선 위에서도 또렷하게)
     const label = `${key} ${Math.round(pct)}%`;
-    const chipW = label.length * 9 + 18;
+    const chipW = label.length * 10 + 20;
     const chipY = y + r + 7;
     return [
       `<g opacity="${opacity}">`,
       `<circle cx="${x}" cy="${y}" r="${r}" fill="${color}"/>`,
       `<text x="${x}" y="${y - r * 0.12}" text-anchor="middle" dominant-baseline="middle" font-size="${r * 0.66}" font-weight="bold" fill="#fff" ${FONT}>${hanja}</text>`,
       `<text x="${x}" y="${y + r * 0.42}" text-anchor="middle" dominant-baseline="middle" font-size="${r * 0.34}" fill="#fff" opacity="0.9" ${FONT}>${key}</text>`,
-      `<rect x="${x - chipW / 2}" y="${chipY}" width="${chipW}" height="23" rx="11.5" fill="#fff" stroke="${color}" stroke-width="1.6"/>`,
-      `<text x="${x}" y="${chipY + 16}" text-anchor="middle" font-size="13.5" font-weight="bold" fill="${color}" ${FONT}>${label}</text>`,
+      `<rect x="${x - chipW / 2}" y="${chipY}" width="${chipW}" height="25" rx="12.5" fill="#fff" stroke="${color}" stroke-width="1.6"/>`,
+      `<text x="${x}" y="${chipY + 17.5}" text-anchor="middle" font-size="15" font-weight="bold" fill="${color}" ${FONT}>${label}</text>`,
       `</g>`,
     ].join("");
   });
 
   const legend = [
     `<g transform="translate(14,14)">`,
-    `<line x1="0" y1="6" x2="30" y2="6" stroke="#7a9e7e" stroke-width="2.5"/>`,
-    `<text x="36" y="10" font-size="12" fill="#444" ${FONT}>상생(낳아 줌)</text>`,
-    `<line x1="130" y1="6" x2="160" y2="6" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4"/>`,
-    `<text x="166" y="10" font-size="12" fill="#444" ${FONT}>상극(눌러 줌)</text>`,
+    `<line x1="0" y1="6" x2="28" y2="6" stroke="#7a9e7e" stroke-width="2.5"/>`,
+    `<text x="34" y="10" font-size="13" fill="#444" ${FONT}>상생(낳아 줌)</text>`,
+    `<line x1="128" y1="6" x2="156" y2="6" stroke="#d6a0a0" stroke-width="1.6" stroke-dasharray="5 4"/>`,
+    `<text x="162" y="10" font-size="13" fill="#444" ${FONT}>상극(눌러 줌)</text>`,
     `</g>`,
   ].join("");
 

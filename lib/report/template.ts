@@ -42,6 +42,7 @@ import {
   wuxingCycleChart,
   traitsRadarChart,
   daeunTimelineChart,
+  WUXING_COLOR,
 } from "./charts";
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
 import { topicParticle, objectParticle } from "./josa";
@@ -225,7 +226,7 @@ export function buildGlyphDictSection(saju: SajuResult): string {
     if (!s || !b) continue;
     parts.push(
       [
-        `### ${pos} — ${withHangul(ganji)}`,
+        `<div class="wx-item pillar"><span class="wx-dot" style="background:var(--navy)"></span>${pos} — ${withHangul(ganji)}</div>`,
         ``,
         `- **${gan}(${s.hangul}) · ${s.nature}**: ${s.desc}`,
         `- **${zhi}(${b.hangul}) · ${b.animal}띠 글자 · ${b.nature}**: ${b.desc}`,
@@ -269,8 +270,9 @@ export function buildWuxingDetailSection(saju: SajuResult): string {
     if (pct >= 30) { level = `강한 편 (${pct}%)`; levelDesc = d.strong; }
     else if (pct <= 10) { level = `옅은 편 (${pct}%)`; levelDesc = d.weak; }
     else { level = `보통 (${pct}%)`; levelDesc = d.normal; }
+    const color = WUXING_COLOR[hanja] ?? "#888";
     return [
-      `### ${hanja}(${d.hangul}) — ${d.keyword}`,
+      `<div class="wx-item"><span class="wx-dot" style="background:${color}"></span>${hanja}(${d.hangul}) — ${d.keyword}</div>`,
       ``,
       d.study,
       ``,
@@ -330,7 +332,7 @@ export function buildTenGodsDictSection(saju: SajuResult): string {
   if (absent.length > 0) {
     out.push(
       ``,
-      `> 이 아이 사주에서 두드러지지 않는 십성: ${absent.join(", ")} — 없다고 부족한 것이 아니라, 위에 나타난 기운이 더 선명하다는 뜻입니다.`
+      `<p class="datanote">이 아이 사주에서 두드러지지 않는 십성: ${absent.join(", ")} — 없다고 부족한 것이 아니라, 위에 나타난 기운이 더 선명하다는 뜻입니다.</p>`
     );
   }
   out.push(``, `#### 이 아이가 가진 십성, 공부에서는`, ``, ...ownedDetails);
@@ -353,66 +355,79 @@ export function buildTraitsSection(saju: SajuResult): string {
   ].join("\n");
 }
 
-/** 과목 경향 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
-export function buildSubjectMapSection(saju: SajuResult): string {
-  const pctOf: Record<string, number> = {
+/** 오행 매핑 표 공통 렌더러 — 색 칩 + '강한 행'(≥30%) 골드 하이라이트 HTML 표 */
+function mapTableHtml(
+  headers: [string, string, string, string],
+  rows: Array<{ element: string; mid: [string, string]; pct: number }>
+): string {
+  const th = headers.map((h) => `<th>${h}</th>`).join("");
+  const body = rows
+    .map((r) => {
+      const color = WUXING_COLOR[r.element] ?? "#888";
+      const dot = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};margin-right:6px;vertical-align:middle"></span>`;
+      const mark =
+        r.pct >= 30
+          ? `<strong>${r.pct}% ◀ 강함</strong>`
+          : r.pct <= 10
+            ? `${r.pct}% (옅음)`
+            : `${r.pct}%`;
+      const cells = [
+        `${dot}${r.element}(${wuxingToHangul(r.element)})`,
+        r.mid[0],
+        r.mid[1],
+        mark,
+      ];
+      return `<tr${r.pct >= 30 ? ' class="hl"' : ""}>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+    })
+    .join("");
+  return `<table class="maptable"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function pctByElement(saju: SajuResult): Record<string, number> {
+  return {
     木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
     金: saju.elements.금, 水: saju.elements.수,
   };
+}
 
-  const rows = SUBJECT_MAP.map((m) => {
-    const pct = Math.round(pctOf[m.element] ?? 0);
-    const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.subjects} | ${m.why} | ${mark} |`;
-  });
-
-  return [
-    `| 오행 | 전통적으로 연결해 보는 학습 영역 | 왜 이렇게 연결되나요? | 이 아이 |`,
-    `|---|---|---|---|`,
-    ...rows,
-  ].join("\n");
+/** 과목 경향 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
+export function buildSubjectMapSection(saju: SajuResult): string {
+  const pctOf = pctByElement(saju);
+  return mapTableHtml(
+    ["오행", "전통적으로 연결해 보는 학습 영역", "왜 이렇게 연결되나요?", "이 아이"],
+    SUBJECT_MAP.map((m) => ({
+      element: m.element,
+      mid: [m.subjects, m.why],
+      pct: Math.round(pctOf[m.element] ?? 0),
+    }))
+  );
 }
 
 /** 직업군 경향 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
 export function buildCareerMapSection(saju: SajuResult): string {
-  const pctOf: Record<string, number> = {
-    木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
-    金: saju.elements.금, 水: saju.elements.수,
-  };
-
-  const rows = CAREER_MAP.map((m) => {
-    const pct = Math.round(pctOf[m.element] ?? 0);
-    const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.fields} | ${m.trait} | ${mark} |`;
-  });
-
-  return [
-    `| 오행 | 전통적으로 연결해 보는 직업 분야 | 연결 기운 | 이 아이 |`,
-    `|---|---|---|---|`,
-    ...rows,
-  ].join("\n");
+  const pctOf = pctByElement(saju);
+  return mapTableHtml(
+    ["오행", "전통적으로 연결해 보는 직업 분야", "연결 기운", "이 아이"],
+    CAREER_MAP.map((m) => ({
+      element: m.element,
+      mid: [m.fields, m.trait],
+      pct: Math.round(pctOf[m.element] ?? 0),
+    }))
+  );
 }
 
 /** 전공·학문 계열 매핑 표 — 전통 오행 관점 + 연결 이유 + 이 아이의 강한 오행 표시 */
 export function buildMajorMapSection(saju: SajuResult): string {
-  const pctOf: Record<string, number> = {
-    木: saju.elements.목, 火: saju.elements.화, 土: saju.elements.토,
-    金: saju.elements.금, 水: saju.elements.수,
-  };
-
-  const rows = MAJOR_MAP.map((m) => {
-    const pct = Math.round(pctOf[m.element] ?? 0);
-    const mark = pct >= 30 ? `**${pct}% ◀ 강함**` : pct <= 10 ? `${pct}% (옅음)` : `${pct}%`;
-    return `| ${m.element}(${wuxingToHangul(m.element)}) | ${m.majors} | ${m.trait} | ${mark} |`;
-  });
-
-  return [
-    `| 오행 | 전통적으로 연결해 보는 전공·학문 계열 | 연결 기운 | 이 아이 |`,
-    `|---|---|---|---|`,
-    ...rows,
-    ``,
-    `> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.`,
-  ].join("\n");
+  const pctOf = pctByElement(saju);
+  const table = mapTableHtml(
+    ["오행", "전통적으로 연결해 보는 전공·학문 계열", "연결 기운", "이 아이"],
+    MAJOR_MAP.map((m) => ({
+      element: m.element,
+      mid: [m.majors, m.trait],
+      pct: Math.round(pctOf[m.element] ?? 0),
+    }))
+  );
+  return `${table}\n\n> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.`;
 }
 
 /** 대운 시작 나이 구간 → 학령기 라벨 */
@@ -467,7 +482,7 @@ export function buildAnnualSection(
     `|---|---|---|`,
     ...rows,
     ``,
-    `> 세운(歲運)은 해마다 바뀌는 그해의 기운입니다. 대운이 10년의 큰 계절이라면 세운은 그해의 날씨에 비유됩니다.`,
+    `<p class="datanote">세운(歲運)은 해마다 바뀌는 그해의 기운입니다. 대운이 10년의 큰 계절이라면 세운은 그해의 날씨에 비유됩니다.</p>`,
   ].join("\n");
 }
 
@@ -833,16 +848,24 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
       `**아래 표는 그 긴 이야기를 한눈에 보기 위한 이정표입니다.**`
   );
 
-  // ── ③ 빠른 참고 표 ─────────────────────────────────────
-  const bullets = [
-    "### 빠르게 훑어보기",
-    "",
-    `- **타고난 결**: 일간 ${dayStem}(${dayKr})${sd ? ` · ${sd.nature}` : ""}`,
-    `- **가장 강한 기운**: ${strong.hanja}(${strongD.hangul}) ${Math.round(strong.pct)}% · ${strongD.keyword}`,
-    `- **보완하면 좋을 기운**: ${weak.hanja}(${weakD.hangul}) ${Math.round(weak.pct)}%`,
-    `- **돋보이는 기질 지표**: ${topTraits}`,
-    `- **기질로 본 고교 유형 참고(1순위)**: ${topType.label} ${stars} — ${topType.reason}`,
-  ].join("\n");
+  // ── ③ 빠른 참고 — 2열 스펙 그리드 ──────────────────────
+  const specs: Array<[string, string]> = [
+    ["타고난 결", `일간 ${dayStem}(${dayKr})${sd ? ` · ${sd.nature}` : ""}`],
+    ["가장 강한 기운", `${strong.hanja}(${strongD.hangul}) ${Math.round(strong.pct)}% · ${strongD.keyword}`],
+    ["보완하면 좋을 기운", `${weak.hanja}(${weakD.hangul}) ${Math.round(weak.pct)}%`],
+    ["돋보이는 기질 지표", topTraits],
+    ["고교 유형 참고 (1순위)", `${topType.label} ${stars}`],
+  ];
+  const bullets =
+    "### 빠르게 훑어보기\n\n" +
+    `<div class="spec-grid">` +
+    specs
+      .map(
+        ([l, v]) =>
+          `<div class="spec-item"><div class="spec-label">${l}</div><div class="spec-value">${v}</div></div>`
+      )
+      .join("") +
+    `</div>`;
 
   // 블록 단위로 조립 — 빈 블록(형상 미정의)만 제외하고 문단 간격(\n\n)을 유지한다.
   return [

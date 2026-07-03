@@ -847,7 +847,6 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
   // 블록 단위로 조립 — 빈 블록(형상 미정의)만 제외하고 문단 간격(\n\n)을 유지한다.
   return [
     "## 우리 아이 한 장 요약",
-    "> 리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.",
     imageryBlock,
     narrative.join("\n\n"),
     bullets,

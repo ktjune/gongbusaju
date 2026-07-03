@@ -31,8 +31,6 @@
 
 ## 우리 아이 한 장 요약
 
-> 리포트 전체의 핵심만 추렸습니다. 근거와 자세한 풀이는 이어지는 본문에 있습니다.
-
 <div class="imagery-card">
 <div class="imagery-label">한마디로, 준서는 이런 결의 아이예요</div>
 <div class="imagery-form">온갖 물길이 큰 바다로 모여드는 형상(백천귀해百川歸海)</div>

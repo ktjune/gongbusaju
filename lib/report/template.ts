@@ -880,9 +880,8 @@ export function assembleReport(
   // ── 한 장 요약 (데이터 기반, 맨 앞) ──────────────────────
   sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju, meta.childName) });
 
-  // ── 안내·기초 (정적) ─────────────────────────────────────
-  sections.push({ title: "이 리포트를 읽는 법", body: HOW_TO_READ });
-  sections.push({ title: "사주팔자란 무엇인가요?", body: SAJU_BASICS });
+  // ── 짧은 활용 가이드 (정적) — 상세 사주 설명은 맨 뒤 부록으로 이동 ──
+  sections.push({ title: "이 리포트, 이렇게 보세요", body: HOW_TO_READ });
 
   // ── 원국 (데이터 + 사전) ─────────────────────────────────
   sections.push({
@@ -1093,14 +1092,27 @@ export function assembleReport(
     });
   }
 
-  // ── 부록 (정적) ──────────────────────────────────────────
+  // ── 부록 (정적) — 상세 설명·기초·용어는 맨 뒤로 ───────────
+  sections.push({ title: "부록 · 사주팔자 기초", body: SAJU_BASICS });
   sections.push({ title: "자주 묻는 질문", body: FAQ });
   sections.push({ title: "용어 풀이", body: GLOSSARY });
 
-  // ── 목차 생성 (클릭 가능한 앵커 링크) ────────────────────
+  // ── 목차 생성 (고급 스타일 HTML 내비게이션) ──────────────
+  //  마크다운 링크 리스트 대신 번호 칩 + 2단 그리드 카드로 렌더한다.
+  //  PDF로 뽑으면 링크는 비활성이지만 번호+제목의 깔끔한 목차 페이지로 남는다.
+  const escToc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const toc =
-    "## 목차\n\n" +
-    sections.map((s, i) => `${i + 1}. [${s.title}](#sec-${i + 1})`).join("\n");
+    `<nav class="toc" aria-label="목차">\n` +
+    `<div class="toc-title">목차</div>\n` +
+    `<ol class="toc-list">\n` +
+    sections
+      .map(
+        (s, i) =>
+          `<li><a href="#sec-${i + 1}"><span class="toc-num">${String(i + 1).padStart(2, "0")}</span><span class="toc-label">${escToc(s.title)}</span></a></li>`
+      )
+      .join("\n") +
+    `\n</ol>\n</nav>`;
 
   // ── 최종 조립 (각 섹션 앞에 앵커 삽입 → 목차에서 점프) ───
   const body = sections

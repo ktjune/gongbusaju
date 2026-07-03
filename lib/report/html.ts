@@ -254,6 +254,31 @@ body {
 }
 .imagery-reading { color: var(--ink-soft); font-size: 0.96em; line-height: 1.8; }
 
+/* ── 목차 (번호 칩 + 2단 그리드) ─────────────────── */
+.toc {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 20px 24px; margin: 8px 0 12px;
+  box-shadow: 0 1px 6px rgba(31,59,99,0.05);
+}
+.toc-title {
+  font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
+  color: var(--navy); font-size: 1.05em; letter-spacing: 0.06em;
+  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.toc-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 30px; }
+.toc-list li { break-inside: avoid; margin: 0; }
+.toc-list a {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 7px 2px; color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid #f2eee4; font-size: 0.9em; line-height: 1.4;
+}
+.toc-num {
+  color: var(--gold); font-weight: 700; font-size: 0.82em;
+  font-variant-numeric: tabular-nums; min-width: 20px;
+}
+.toc-label { flex: 1; }
+.toc-list a:hover .toc-label { color: var(--navy); }
+
 .report ul { padding-left: 22px; }
 .report li { margin: 0.45em 0; }
 .report svg { max-width: 100%; height: auto; display: block; margin: 22px auto; }
@@ -266,6 +291,7 @@ body {
   .pillar-char { font-size: 1.6em; }
   .cover-title { font-size: 1.7em; }
   .imagery-form { font-size: 1.24em; }
+  .toc-list { columns: 1; }
   /* 표는 셀 줄바꿈을 허용해 화면 폭에 맞춘다 (가로 스크롤 대신 세로로 늘어남).
      넘칠 때만 스크롤(폴백). 이전엔 nowrap이라 대부분의 표가 옆으로 잘렸다. */
   .report table { font-size: 0.86em; }
@@ -281,6 +307,7 @@ body {
   .report h2 { break-before: page; box-shadow: none; }
   .report h2:first-of-type { break-before: page; }
   .report table, .report blockquote, .report svg { break-inside: avoid; }
+  .toc, .imagery-card { break-inside: avoid; box-shadow: none; }
   .report tr:nth-child(even) td { background: #fff; }
   a { color: inherit; text-decoration: none; }
   .print-btn { display: none; }

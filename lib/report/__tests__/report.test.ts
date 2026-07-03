@@ -304,7 +304,7 @@ describe("assembleReport — 블록 조립", () => {
   it("데이터 섹션(원국 표·오행 표·대운 표)이 코드로 생성된다", () => {
     const md = assembleReport(sampleSaju, {}, samplePerspective);
     expect(md).toContain("사주 원국");
-    expect(md).toContain("← 일간");
+    expect(md).toContain("여덟 글자 도식");
     expect(md).toContain("甲(갑)");
     expect(md).toContain("木(목)");
     expect(md).toContain("%");
@@ -320,10 +320,10 @@ describe("assembleReport — 블록 조립", () => {
     expect(md).toContain("안정적이고 체계적인 환경");
   });
 
-  it("시주 null이면 원국 표에 '—' + 시간 미상 안내", () => {
+  it("시주 null이면 원국 도식에 '시간 모름' 안내", () => {
     const noHour = { ...sampleSaju, pillars: { ...sampleSaju.pillars, hour: null } };
     const md = assembleReport(noHour, {}, samplePerspective);
-    expect(md).toContain("출생 시각 미상");
+    expect(md).toContain("시간 모름");
   });
 
   it("birthYear 있으면 학령 단계 섹션 + 진학 타임라인 + 재학 표기", () => {

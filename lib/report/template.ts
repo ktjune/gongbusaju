@@ -42,6 +42,7 @@ import {
   wuxingCycleChart,
   traitsRadarChart,
   daeunTimelineChart,
+  buildSajuChart,
   WUXING_COLOR,
 } from "./charts";
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
@@ -905,13 +906,14 @@ export function assembleReport(
   // ── 짧은 활용 가이드 (정적) — 상세 사주 설명은 맨 뒤 부록으로 이동 ──
   sections.push({ title: "이 리포트, 이렇게 보세요", body: HOW_TO_READ });
 
-  // ── 원국 (데이터 + 사전) ─────────────────────────────────
+  // ── 원국 (도식 + 사전) ─────────────────────────────────
   sections.push({
     title: "사주 원국 (四柱原局)",
     body:
       "## 사주 원국 (四柱原局)\n\n" +
-      buildSajuTableSection(saju) +
-      "\n\n### 내 여덟 글자 풀이\n\n" +
+      buildSajuChart(saju) +
+      `\n\n<p class="datanote">원 안은 여덟 글자(위 = 천간, 아래 = 지지), 원 색은 오행입니다. 글자 곁 작은 글씨는 십성(일간과의 관계), 파란 테두리가 아이 자신을 뜻하는 <b>일간</b>입니다.</p>\n\n` +
+      "### 내 여덟 글자 풀이\n\n" +
       buildGlyphDictSection(saju),
   });
 

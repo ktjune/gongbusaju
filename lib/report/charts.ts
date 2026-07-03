@@ -7,6 +7,13 @@
  */
 
 import type { SajuResult } from "../saju";
+import {
+  stemElement,
+  branchElement,
+  branchMainStem,
+  tenGodOf,
+  tenGodWithHangul,
+} from "../saju";
 
 /** 오행 표준 색상 (한국 만세력 관행: 木청·火적·土황·金백·水흑) */
 export const WUXING_COLOR: Record<string, string> = {
@@ -18,6 +25,83 @@ export const WUXING_COLOR: Record<string, string> = {
 };
 
 const FONT = `font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif"`;
+const SERIF = `font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif"`;
+
+/**
+ * 사주 원국 여덟 글자 도식 — 4기둥(시·일·월·년)을 색상 원으로 한눈에.
+ * 위: 천간 원 + 십성 라벨 / 아래: 지지 원 + 십성 라벨. 일간은 강조 박스.
+ * 색은 오행 표준색(WUXING_COLOR)으로 본문·차트와 통일.
+ */
+export function buildSajuChart(saju: SajuResult): string {
+  const { pillars } = saju;
+  const dayStem = pillars.day.charAt(0);
+  const cols: Array<{ label: string; ganji: string | null; isDay: boolean }> = [
+    { label: "시주", ganji: pillars.hour, isDay: false },
+    { label: "일주", ganji: pillars.day, isDay: true },
+    { label: "월주", ganji: pillars.month, isDay: false },
+    { label: "년주", ganji: pillars.year, isDay: false },
+  ];
+
+  const W = 480, H = 252, R = 31;
+  const CX = [60, 180, 300, 420];
+  const GAN_CY = 96, ZHI_CY = 176;
+
+  /** "偏印(편인)" → "편인" */
+  const godKr = (key: string): string =>
+    tenGodWithHangul(key).match(/\(([^)]+)\)/)?.[1] ?? key;
+
+  const parts: string[] = [];
+  cols.forEach((c, i) => {
+    const x = CX[i];
+    parts.push(
+      `<text x="${x}" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f3b63" ${FONT}>${c.label}</text>`
+    );
+
+    if (!c.ganji) {
+      parts.push(
+        `<circle cx="${x}" cy="${GAN_CY}" r="${R}" fill="#f2f2f2" stroke="#dcdcdc"/>`,
+        `<text x="${x}" y="${GAN_CY + 9}" text-anchor="middle" font-size="26" fill="#bbb" ${SERIF}>—</text>`,
+        `<text x="${x}" y="${ZHI_CY + 4}" text-anchor="middle" font-size="13" fill="#9a9a9a" ${FONT}>시간 모름</text>`
+      );
+      return;
+    }
+
+    const gan = c.ganji.charAt(0);
+    const zhi = c.ganji.charAt(1);
+    const ganColor = WUXING_COLOR[stemElement(gan) ?? ""] ?? "#888";
+    const zhiColor = WUXING_COLOR[branchElement(zhi) ?? ""] ?? "#888";
+    const ganGod = c.isDay ? "일간" : godKr(tenGodOf(dayStem, gan));
+    const main = branchMainStem(zhi);
+    const zhiGod = main ? godKr(tenGodOf(dayStem, main)) : "";
+
+    // 천간 십성 라벨
+    parts.push(
+      `<text x="${x}" y="52" text-anchor="middle" font-size="13" font-weight="${c.isDay ? "bold" : "normal"}" fill="${c.isDay ? "#3454a0" : "#8a8f99"}" ${FONT}>${ganGod}</text>`
+    );
+    // 일간 강조 박스
+    if (c.isDay) {
+      const s = R + 9;
+      parts.push(
+        `<rect x="${x - s}" y="${GAN_CY - s}" width="${s * 2}" height="${s * 2}" rx="13" fill="none" stroke="#3454a0" stroke-width="2.5"/>`
+      );
+    }
+    // 천간·지지 원
+    parts.push(
+      `<circle cx="${x}" cy="${GAN_CY}" r="${R}" fill="${ganColor}"/>`,
+      `<text x="${x}" y="${GAN_CY + 10}" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" ${SERIF}>${gan}</text>`,
+      `<circle cx="${x}" cy="${ZHI_CY}" r="${R}" fill="${zhiColor}"/>`,
+      `<text x="${x}" y="${ZHI_CY + 10}" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" ${SERIF}>${zhi}</text>`
+    );
+    // 지지 십성 라벨
+    if (zhiGod) {
+      parts.push(
+        `<text x="${x}" y="${ZHI_CY + R + 21}" text-anchor="middle" font-size="13" fill="#8a8f99" ${FONT}>${zhiGod}</text>`
+      );
+    }
+  });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="사주 원국 여덟 글자 도식">${parts.join("")}</svg>`;
+}
 
 // ──────────────────────────────────────────────────────────────
 // 1. 오행 분포 가로 막대 차트

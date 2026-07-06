@@ -48,6 +48,7 @@ import {
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
 import { topicParticle, objectParticle, subjectParticle } from "./josa";
 import { analyzeName } from "./nameology";
+import { dayMasterIllust } from "./illustrations";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
@@ -807,14 +808,18 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
   const imageryLabel = name
     ? `한마디로, ${escName(name)}${topicParticle(name)} 이런 결의 아이예요`
     : "한마디로, 이런 결의 아이예요";
+  const illust = dayMasterIllust(dayStem);
   const imageryBlock = imagery
     ? [
         `<div class="imagery-card">`,
+        illust ? `<div class="imagery-illust">${illust}</div>` : "",
         `<div class="imagery-label">${imageryLabel}</div>`,
         `<div class="imagery-form">${imagery.form}</div>`,
         `<div class="imagery-reading">${imagery.reading}. ${STRONG_ELEMENT_FLOURISH[strong.hanja] ?? ""}</div>`,
         `</div>`,
-      ].join("\n")
+      ]
+        .filter(Boolean)
+        .join("\n")
     : "";
 
   // ── ② 풀어 쓰는 개관 (서술형) ─────────────────────────

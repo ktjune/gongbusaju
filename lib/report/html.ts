@@ -260,6 +260,12 @@ body {
   text-align: center;
   box-shadow: 0 4px 22px rgba(31,59,99,0.08);
 }
+.imagery-illust { margin: 2px 0 10px; }
+.imagery-img {
+  width: 160px; height: 160px; display: block; margin: 0 auto;
+  border-radius: 16px; border: 1px solid var(--line);
+  object-fit: cover;
+}
 .imagery-label {
   font-size: 0.8em; color: var(--gold);
   letter-spacing: 0.04em; margin-bottom: 12px;

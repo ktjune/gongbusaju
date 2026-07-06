@@ -33,6 +33,7 @@
 ## 우리 아이 한 장 요약
 
 <div class="imagery-card">
+<div class="imagery-illust"><img class="imagery-img" src="/illust/im.png" alt="물길이 모여드는 큰 바다 형상" width="160" height="160" loading="lazy" /></div>
 <div class="imagery-label">한마디로, 준서는 이런 결의 아이예요</div>
 <div class="imagery-form">온갖 물길이 큰 바다로 모여드는 형상(백천귀해百川歸海)</div>
 <div class="imagery-reading">무엇이든 담아 깊고 넓게 흐르는 강물의 기상으로, 크게 아우르는 포용력과 깊은 사고력을 품고 있습니다. 여기에 잘 벼린 쇠의 기운이 더해져, 옳고 그름을 가르는 의(義)와 명민한 분별이 도드라집니다.</div>

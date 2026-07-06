@@ -237,7 +237,9 @@ async function sendAlimtalk(
         pfId,
         templateId,
         variables: {
-          "#{result_url}": resultUrl,
+          // 템플릿의 본문·버튼 링크가 "https://#{result_url}" 형식이므로
+          // 변수 값에는 프로토콜(https://)을 넣지 않는다 (중복 방지).
+          "#{result_url}": resultUrl.replace(/^https?:\/\//, ""),
         },
       },
     },

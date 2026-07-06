@@ -6,22 +6,23 @@
 <li><a href="#sec-3"><span class="toc-num">03</span><span class="toc-label">사주 원국 (四柱原局)</span></a></li>
 <li><a href="#sec-4"><span class="toc-num">04</span><span class="toc-label">타고난 결 — 일간 이야기</span></a></li>
 <li><a href="#sec-5"><span class="toc-num">05</span><span class="toc-label">오행 에너지 분포</span></a></li>
-<li><a href="#sec-6"><span class="toc-num">06</span><span class="toc-label">십성 구조 — 마음의 도구들</span></a></li>
-<li><a href="#sec-7"><span class="toc-num">07</span><span class="toc-label">공부 스타일과 학습 환경</span></a></li>
-<li><a href="#sec-8"><span class="toc-num">08</span><span class="toc-label">학습 영역별 들여다보기</span></a></li>
-<li><a href="#sec-9"><span class="toc-num">09</span><span class="toc-label">과목 경향 참고</span></a></li>
-<li><a href="#sec-10"><span class="toc-num">10</span><span class="toc-label">강점 분야와 진로 방향</span></a></li>
-<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">직업군 경향 참고</span></a></li>
-<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">전공·학문 계열과 진학 방향</span></a></li>
-<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
-<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
-<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">초·중·고 단계별 로드맵</span></a></li>
-<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">학령기 대운 흐름</span></a></li>
-<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
-<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
-<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
-<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">자주 묻는 질문</span></a></li>
-<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">용어 풀이</span></a></li>
+<li><a href="#sec-6"><span class="toc-num">06</span><span class="toc-label">이름과 사주의 어울림</span></a></li>
+<li><a href="#sec-7"><span class="toc-num">07</span><span class="toc-label">십성 구조 — 마음의 도구들</span></a></li>
+<li><a href="#sec-8"><span class="toc-num">08</span><span class="toc-label">공부 스타일과 학습 환경</span></a></li>
+<li><a href="#sec-9"><span class="toc-num">09</span><span class="toc-label">학습 영역별 들여다보기</span></a></li>
+<li><a href="#sec-10"><span class="toc-num">10</span><span class="toc-label">과목 경향 참고</span></a></li>
+<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">강점 분야와 진로 방향</span></a></li>
+<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">직업군 경향 참고</span></a></li>
+<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">전공·학문 계열과 진학 방향</span></a></li>
+<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
+<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
+<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">초·중·고 단계별 로드맵</span></a></li>
+<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">학령기 대운 흐름</span></a></li>
+<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
+<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
+<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
+<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">자주 묻는 질문</span></a></li>
+<li><a href="#sec-22"><span class="toc-num">22</span><span class="toc-label">용어 풀이</span></a></li>
 </ol>
 </nav>
 
@@ -168,6 +169,24 @@
 
 <a id="sec-6"></a>
 
+## 이름과 사주의 어울림
+
+<p class="datanote">성명학의 발음오행(音靈五行, 이름 소리의 오행) 관점에서, 이름 '준서'가 사주와 어떻게 어울리는지 살펴봅니다. 사주 명리와는 별개의 전통 해석이며 참고용입니다.</p>
+
+### 이름에 담긴 오행
+
+<div class="name-chips"><span class="name-chip" style="border-color:#8e9aa8"><b>준</b><span style="color:#8e9aa8">金·금</span></span><span class="name-chip" style="border-color:#8e9aa8"><b>서</b><span style="color:#8e9aa8">金·금</span></span></div>
+
+**준서, 이 이름은 사주에서 이미 강한 金(금) 기운을 한 번 더 북돋습니다.** 타고난 강점을 밀어 주는 이름이에요. 사주에서 옅은 火(화) 기운은 이름보다 생활 속 활동(앞서 오행 풀이에서 제안한 것들)으로 채워 주시면 균형이 더 좋아집니다.
+
+이름 글자들이 같은 기운으로 모여, 결이 한결같고 뚜렷합니다.
+
+무엇보다 이름에는 부모님이 담은 뜻과 바람이 깃들어 있습니다. 위 오행 해석은 그 위에 더하는 하나의 참고일 뿐, 아이를 부르는 그 이름이 이미 가장 큰 선물입니다.
+
+---
+
+<a id="sec-7"></a>
+
 ## 십성 구조 — 마음의 도구들
 
 - 偏印(편인) × 2
@@ -202,7 +221,7 @@
 
 ---
 
-<a id="sec-7"></a>
+<a id="sec-8"></a>
 
 ## 공부 스타일과 학습 환경
 
@@ -216,7 +235,7 @@
 
 ---
 
-<a id="sec-8"></a>
+<a id="sec-9"></a>
 
 ## 학습 영역별 들여다보기
 
@@ -234,7 +253,7 @@
 
 ---
 
-<a id="sec-9"></a>
+<a id="sec-10"></a>
 
 ## 과목 경향 참고
 
@@ -246,7 +265,7 @@
 
 ---
 
-<a id="sec-10"></a>
+<a id="sec-11"></a>
 
 ## 강점 분야와 진로 방향
 
@@ -256,7 +275,7 @@
 
 ---
 
-<a id="sec-11"></a>
+<a id="sec-12"></a>
 
 ## 직업군 경향 참고
 
@@ -274,7 +293,7 @@
 
 ---
 
-<a id="sec-12"></a>
+<a id="sec-13"></a>
 
 ## 전공·학문 계열과 진학 방향
 
@@ -294,7 +313,7 @@
 
 ---
 
-<a id="sec-13"></a>
+<a id="sec-14"></a>
 
 ## 부모님을 위한 코칭 포인트
 
@@ -310,7 +329,7 @@
 
 ---
 
-<a id="sec-14"></a>
+<a id="sec-15"></a>
 
 ## 지금 우리 아이는 — 예비 초등 (내년 3월 입학)
 
@@ -345,7 +364,7 @@
 
 ---
 
-<a id="sec-15"></a>
+<a id="sec-16"></a>
 
 ## 초·중·고 단계별 로드맵
 
@@ -359,7 +378,7 @@
 
 ---
 
-<a id="sec-16"></a>
+<a id="sec-17"></a>
 
 ## 학령기 대운 흐름
 
@@ -381,7 +400,7 @@
 
 ---
 
-<a id="sec-17"></a>
+<a id="sec-18"></a>
 
 ## 다가오는 3년 — 세운
 
@@ -401,7 +420,7 @@
 
 ---
 
-<a id="sec-18"></a>
+<a id="sec-19"></a>
 
 ## 학교 선택 기질 참고
 
@@ -422,7 +441,7 @@
 
 ---
 
-<a id="sec-19"></a>
+<a id="sec-20"></a>
 
 ## 부록 · 사주팔자 기초
 
@@ -452,7 +471,7 @@
 
 ---
 
-<a id="sec-20"></a>
+<a id="sec-21"></a>
 
 ## 자주 묻는 질문
 
@@ -486,7 +505,7 @@
 
 ---
 
-<a id="sec-21"></a>
+<a id="sec-22"></a>
 
 ## 용어 풀이
 

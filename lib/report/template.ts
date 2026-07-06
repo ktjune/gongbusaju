@@ -46,7 +46,8 @@ import {
   WUXING_COLOR,
 } from "./charts";
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
-import { topicParticle, objectParticle } from "./josa";
+import { topicParticle, objectParticle, subjectParticle } from "./josa";
+import { analyzeName } from "./nameology";
 
 // ──────────────────────────────────────────────────────────────
 // 상수
@@ -880,6 +881,87 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
 }
 
 // ──────────────────────────────────────────────────────────────
+// 이름과 사주 (성명학 라이트 — 발음오행) — 코드만, LLM 없음
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * 이름(한글)의 발음오행과 사주의 어울림 섹션.
+ * 이름이 없거나 한글 음절이 없으면 빈 문자열(섹션 생략).
+ * 절대 "흉명/개명" 판정 없이 긍정·참고 프레임으로만 서술한다. LLM 미관여.
+ */
+export function buildNameSajuSection(saju: SajuResult, name?: string): string {
+  const nm = name?.trim();
+  if (!nm) return "";
+  const a = analyzeName(nm, saju);
+  if (!a) return "";
+
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const nmE = esc(nm);
+  const hangulOf = (el: string) => WUXING_DICT[el]?.hangul ?? el;
+  const weakH = hangulOf(a.weakEl);
+  const strongH = hangulOf(a.strongEl);
+
+  // 글자별 오행 칩
+  const chips = a.chars
+    .map((c) => {
+      if (!c.element) {
+        return `<span class="name-chip name-chip-x">${esc(c.syllable)}</span>`;
+      }
+      const color = WUXING_COLOR[c.element] ?? "#888";
+      return `<span class="name-chip" style="border-color:${color}"><b>${esc(c.syllable)}</b><span style="color:${color}">${c.element}·${hangulOf(c.element)}</span></span>`;
+    })
+    .join("");
+
+  // ── 사주 보완 관계 ──
+  let comp: string;
+  if (a.complementType === "보완") {
+    comp =
+      `**${nmE}, 이 이름은 사주에 옅은 ${a.weakEl}(${weakH}) 기운을 품고 있습니다.** ` +
+      `타고난 사주에서 부족한 부분을 이름이 은근히 채워 주는 결이에요. ` +
+      `성명학에서 가장 좋게 보는 '사주를 보완하는 이름'에 해당합니다.`;
+  } else if (a.complementType === "강화") {
+    comp =
+      `**${nmE}, 이 이름은 사주에서 이미 강한 ${a.strongEl}(${strongH}) 기운을 한 번 더 북돋습니다.** ` +
+      `타고난 강점을 밀어 주는 이름이에요. 사주에서 옅은 ${a.weakEl}(${weakH}) 기운은 ` +
+      `이름보다 생활 속 활동(앞서 오행 풀이에서 제안한 것들)으로 채워 주시면 균형이 더 좋아집니다.`;
+  } else {
+    comp =
+      `**${nmE}, 이 이름의 기운은 사주와 큰 충돌 없이 무난하게 어우러집니다.** ` +
+      `특정 기운을 크게 더하거나 빼지 않고 조화롭게 놓이는 결이에요.`;
+  }
+
+  // ── 이름 글자 간 흐름 ──
+  let flow = "";
+  if (a.flow === "상생") {
+    flow = `이름 글자들의 기운이 서로 살려 주는(상생) 흐름이라, 부르는 결이 부드럽게 이어집니다.`;
+  } else if (a.flow === "비화") {
+    flow = `이름 글자들이 같은 기운으로 모여, 결이 한결같고 뚜렷합니다.`;
+  } else if (a.flow === "상극") {
+    flow =
+      `이름 글자 사이에는 기운의 결이 서로 다른(상극) 구간이 있습니다. ` +
+      `성명학에선 상생 흐름을 더 좋게 보기도 하지만, 이는 여러 관점 중 하나일 뿐이며 ` +
+      `서로 다른 기운이 만나 오히려 다채로운 결을 담는다고도 볼 수 있습니다.`;
+  }
+
+  const closing =
+    `무엇보다 이름에는 부모님이 담은 뜻과 바람이 깃들어 있습니다. ` +
+    `위 오행 해석은 그 위에 더하는 하나의 참고일 뿐, 아이를 부르는 그 이름이 이미 가장 큰 선물입니다.`;
+
+  return [
+    "## 이름과 사주의 어울림",
+    `<p class="datanote">성명학의 발음오행(音靈五行, 이름 소리의 오행) 관점에서, 이름 '${nmE}'${subjectParticle(nm)} 사주와 어떻게 어울리는지 살펴봅니다. 사주 명리와는 별개의 전통 해석이며 참고용입니다.</p>`,
+    "### 이름에 담긴 오행",
+    `<div class="name-chips">${chips}</div>`,
+    comp,
+    flow,
+    closing,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+// ──────────────────────────────────────────────────────────────
 // 리포트 조립
 // ──────────────────────────────────────────────────────────────
 
@@ -939,6 +1021,12 @@ export function assembleReport(
       "### 다섯 기운 하나씩 들여다보기\n\n" +
       buildWuxingDetailSection(saju),
   });
+
+  // ── 이름과 사주 (성명학 라이트 — 이름 있을 때만) ──────────
+  const nameSection = buildNameSajuSection(saju, meta.childName);
+  if (nameSection) {
+    sections.push({ title: "이름과 사주의 어울림", body: nameSection });
+  }
 
   // ── 십성 (데이터 + 관점 + 사전) ──────────────────────────
   sections.push({

@@ -191,6 +191,16 @@ body {
 .wx-dot { width: 13px; height: 13px; border-radius: 50%; flex: none; }
 .wx-item.wx-pillar .wx-dot { border-radius: 3px; }
 
+/* ── 이름 오행 칩 ────────────────────────────────── */
+.name-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.name-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 7px 13px; font-size: 0.88em;
+}
+.name-chip b { color: var(--navy); font-size: 1.25em; font-weight: 700; }
+.name-chip-x { color: var(--ink-soft); }
+
 /* ── 한 장 요약 스펙 그리드 ─────────────────────── */
 .spec-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0;
@@ -315,22 +325,23 @@ body {
 <li><a href="#sec-3"><span class="toc-num">03</span><span class="toc-label">사주 원국 (四柱原局)</span></a></li>
 <li><a href="#sec-4"><span class="toc-num">04</span><span class="toc-label">타고난 결 — 일간 이야기</span></a></li>
 <li><a href="#sec-5"><span class="toc-num">05</span><span class="toc-label">오행 에너지 분포</span></a></li>
-<li><a href="#sec-6"><span class="toc-num">06</span><span class="toc-label">십성 구조 — 마음의 도구들</span></a></li>
-<li><a href="#sec-7"><span class="toc-num">07</span><span class="toc-label">공부 스타일과 학습 환경</span></a></li>
-<li><a href="#sec-8"><span class="toc-num">08</span><span class="toc-label">학습 영역별 들여다보기</span></a></li>
-<li><a href="#sec-9"><span class="toc-num">09</span><span class="toc-label">과목 경향 참고</span></a></li>
-<li><a href="#sec-10"><span class="toc-num">10</span><span class="toc-label">강점 분야와 진로 방향</span></a></li>
-<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">직업군 경향 참고</span></a></li>
-<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">전공·학문 계열과 진학 방향</span></a></li>
-<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
-<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
-<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">초·중·고 단계별 로드맵</span></a></li>
-<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">학령기 대운 흐름</span></a></li>
-<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
-<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
-<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
-<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">자주 묻는 질문</span></a></li>
-<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">용어 풀이</span></a></li>
+<li><a href="#sec-6"><span class="toc-num">06</span><span class="toc-label">이름과 사주의 어울림</span></a></li>
+<li><a href="#sec-7"><span class="toc-num">07</span><span class="toc-label">십성 구조 — 마음의 도구들</span></a></li>
+<li><a href="#sec-8"><span class="toc-num">08</span><span class="toc-label">공부 스타일과 학습 환경</span></a></li>
+<li><a href="#sec-9"><span class="toc-num">09</span><span class="toc-label">학습 영역별 들여다보기</span></a></li>
+<li><a href="#sec-10"><span class="toc-num">10</span><span class="toc-label">과목 경향 참고</span></a></li>
+<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">강점 분야와 진로 방향</span></a></li>
+<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">직업군 경향 참고</span></a></li>
+<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">전공·학문 계열과 진학 방향</span></a></li>
+<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
+<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
+<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">초·중·고 단계별 로드맵</span></a></li>
+<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">학령기 대운 흐름</span></a></li>
+<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
+<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
+<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
+<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">자주 묻는 질문</span></a></li>
+<li><a href="#sec-22"><span class="toc-num">22</span><span class="toc-label">용어 풀이</span></a></li>
 </ol>
 </nav><hr>
 <p><a id="sec-1"></a></p>
@@ -407,6 +418,13 @@ body {
 <p>충분히 생각하면서도 행동으로 이어가는 균형을 가진 구간입니다. 논리 이해와 암기 사이를 오가며 자기 페이스로 학습하는 타입으로 풀이됩니다. 배운 내용을 자기 말로 설명하거나 짧게 요약하는 습관이 기억력을 한층 끌어올리는 데 도움이 됩니다.</p>
 <hr>
 <p><a id="sec-6"></a></p>
+<h2>이름과 사주의 어울림</h2>
+<p class="datanote">성명학의 발음오행(音靈五行, 이름 소리의 오행) 관점에서, 이름 '준서'가 사주와 어떻게 어울리는지 살펴봅니다. 사주 명리와는 별개의 전통 해석이며 참고용입니다.</p><h3>이름에 담긴 오행</h3>
+<div class="name-chips"><span class="name-chip" style="border-color:#8e9aa8"><b>준</b><span style="color:#8e9aa8">金·금</span></span><span class="name-chip" style="border-color:#8e9aa8"><b>서</b><span style="color:#8e9aa8">金·금</span></span></div><p><strong>준서, 이 이름은 사주에서 이미 강한 金(금) 기운을 한 번 더 북돋습니다.</strong> 타고난 강점을 밀어 주는 이름이에요. 사주에서 옅은 火(화) 기운은 이름보다 생활 속 활동(앞서 오행 풀이에서 제안한 것들)으로 채워 주시면 균형이 더 좋아집니다.</p>
+<p>이름 글자들이 같은 기운으로 모여, 결이 한결같고 뚜렷합니다.</p>
+<p>무엇보다 이름에는 부모님이 담은 뜻과 바람이 깃들어 있습니다. 위 오행 해석은 그 위에 더하는 하나의 참고일 뿐, 아이를 부르는 그 이름이 이미 가장 큰 선물입니다.</p>
+<hr>
+<p><a id="sec-7"></a></p>
 <h2>십성 구조 — 마음의 도구들</h2>
 <ul>
 <li>偏印(편인) × 2</li>
@@ -467,14 +485,14 @@ body {
 <li><strong>正印(정인)</strong>: 어른의 가르침을 잘 받아들이고 책으로 배우는 데 강한 경향. 칭찬과 인정이 학습 동력이 되는 유형으로 풀이됩니다.</li>
 </ul>
 <hr>
-<p><a id="sec-7"></a></p>
+<p><a id="sec-8"></a></p>
 <h2>공부 스타일과 학습 환경</h2>
 <p>이 기질을 종합하면, 이 아이의 공부는 &#39;조용히 쌓아서 단단해지는&#39; 유형으로 해석됩니다. 여럿이 떠들썩하게 경쟁하는 분위기보다, 차분한 공간에서 어른이 차근차근 설명해 주고 아이가 그것을 소화할 시간을 주는 방식이 잘 맞는 경향이 있습니다. 같은 시간, 같은 자리에서 짧게 반복하는 루틴형 학습이 특히 효과적으로 풀이되는데, 금·토 기운이 강한 아이는 예측 가능한 일과 자체에서 안정감을 얻기 때문입니다.</p>
 <p>주의할 지점도 있습니다. 칠살의 긴장 때문에 &#39;틀릴 것 같은 일&#39;은 아예 시작하지 않으려 할 수 있습니다. 새로운 학습지를 받았을 때 머뭇거린다면 능력이 아니라 완벽하고 싶은 마음이 앞선 것일 가능성이 큽니다. 난이도를 잘게 쪼개 &#39;쉽게 성공하는 첫 계단&#39;을 만들어 주면 다음 계단은 스스로 오르는 경향이 있습니다. 또 화 기운이 옅어 입으로 꺼내는 연습이 부족해지기 쉬우니, 배운 것을 가족 앞에서 한 줄로 말해 보는 &#39;오늘의 한마디&#39; 같은 작은 장치가 표현 근육을 길러 주는 데 참고가 됩니다.</p>
 <h3>기질 지표</h3>
 <p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 420" width="460" height="420" role="img" aria-label="기질 지표 레이더 차트"><polygon points="230,183 260.3108891324554,200.5 260.3108891324554,235.5 230,253 199.68911086754466,235.5 199.68911086754466,200.5" fill="none" stroke="#ddd" stroke-width="1"/><polygon points="230,148 290.6217782649107,183 290.6217782649107,253 230,288 169.3782217350893,253.00000000000003 169.3782217350893,183" fill="none" stroke="#ddd" stroke-width="1"/><polygon points="230,113 320.93266739736606,165.5 320.93266739736606,270.5 230,323 139.06733260263394,270.50000000000006 139.06733260263394,165.5" fill="none" stroke="#ddd" stroke-width="1"/><polygon points="230,78 351.2435565298214,148 351.24355652982143,288 230,358 108.75644347017861,288.00000000000006 108.7564434701786,148" fill="none" stroke="#ddd" stroke-width="1"/><line x1="230" y1="218" x2="230" y2="78" stroke="#ddd" stroke-width="1"/><text x="230" y="56.80000000000001" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">집중력</text><line x1="230" y1="218" x2="351.2435565298214" y2="148" stroke="#ddd" stroke-width="1"/><text x="373.06739670518925" y="139.4" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">창의력</text><line x1="230" y1="218" x2="351.24355652982143" y2="288" stroke="#ddd" stroke-width="1"/><text x="373.06739670518925" y="304.59999999999997" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">리더십</text><line x1="230" y1="218" x2="230" y2="358" stroke="#ddd" stroke-width="1"/><text x="230" y="387.2" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">분석력</text><line x1="230" y1="218" x2="108.75644347017861" y2="288.00000000000006" stroke="#ddd" stroke-width="1"/><text x="86.93260329481078" y="304.6" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">사교성</text><line x1="230" y1="218" x2="108.7564434701786" y2="148" stroke="#ddd" stroke-width="1"/><text x="86.93260329481075" y="139.39999999999998" text-anchor="middle" font-size="14" fill="#333" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">직관력</text><polygon points="230,124.19999999999999 288.1969071343143,184.4 285.77203600371786,250.2 230,299.2 177.8652706921768,248.10000000000002 156.04143051680893,175.3" fill="rgba(59,111,181,0.25)" stroke="#3b6fb5" stroke-width="2"/><circle cx="230" cy="124.19999999999999" r="3.5" fill="#3b6fb5"/><circle cx="288.1969071343143" cy="184.4" r="3.5" fill="#3b6fb5"/><circle cx="285.77203600371786" cy="250.2" r="3.5" fill="#3b6fb5"/><circle cx="230" cy="299.2" r="3.5" fill="#3b6fb5"/><circle cx="177.8652706921768" cy="248.10000000000002" r="3.5" fill="#3b6fb5"/><circle cx="156.04143051680893" cy="175.3" r="3.5" fill="#3b6fb5"/><text x="230" y="114.2" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">67</text><text x="300.3212627872964" y="181.4" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">48</text><text x="297.8963916567" y="261.2" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">46</text><text x="230" y="317.2" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">58</text><text x="165.74091503919465" y="259.1" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">43</text><text x="143.91707486382683" y="172.29999999999998" text-anchor="middle" font-size="11" fill="#3b6fb5" font-weight="bold" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">61</text></svg></p>
 <hr>
-<p><a id="sec-8"></a></p>
+<p><a id="sec-9"></a></p>
 <h2>학습 영역별 들여다보기</h2>
 <p>집중·암기·이해·표현·협동 다섯 영역에서 이 아이의 기질이 어떻게 작동하는지 살펴봅니다.</p>
 <p><strong>집중</strong> — 금·수 기운이 중심인 이 사주에서 가장 믿을 만한 영역입니다. 조용한 공간이 확보되면 또래보다 오래 한 가지에 머무는 경향이 있습니다. 다만 주변이 소란하면 집중의 질이 크게 떨어지는 유형이므로, 공부 자리는 &#39;늘 같은 조용한 자리&#39;로 고정해 주는 것이 참고가 됩니다.</p>
@@ -483,17 +501,17 @@ body {
 <p><strong>표현</strong> — 다섯 영역 중 의식적인 연습이 가장 필요한 곳입니다. 원국에 화 기운이 드러나지 않아, 알고 있는 것의 절반도 말로 안 나오는 날이 많을 수 있습니다. 정답 발표보다 &#39;자기 생각 한 줄 말하기&#39;부터 시작하는 낮은 계단이 참고가 됩니다.</p>
 <p><strong>협동</strong> — 겁재의 승부욕이 있어 또래 자극을 받지만, 기본 결은 소수와 깊게 어울리는 유형입니다. 대그룹 활동보다 2~3명의 또래와 역할이 분명한 협동 과제에서 힘을 내는 경향이 있습니다.</p>
 <hr>
-<p><a id="sec-9"></a></p>
+<p><a id="sec-10"></a></p>
 <h2>과목 경향 참고</h2>
 <table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 학습 영역</th><th>왜 이렇게 연결되나요?</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>국어(읽기·쓰기), 외국어, 기획·발명</td><td>언어로 뻗어 나가고 새 것을 시작하는 목(木)의 성질이 읽기·쓰기·창안 활동과 닿아 있습니다.</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>발표·토론, 음악·미술, 연극</td><td>아는 것을 밖으로 드러내고 발산하는 화(火)의 성질이 표현·무대·예술 활동과 닿아 있습니다.</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>사회·역사, 글씨·정리 습관, 반복 암기</td><td>한자리에서 쌓고 반복을 견디는 토(土)의 성질이 암기·정리·역사 학습과 닿아 있습니다.</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>수학(연산·도형), 과학(분류·실험), 코딩</td><td>정확하게 가르고 구조를 세우는 금(金)의 성질이 논리·연산·분류 학습과 닿아 있습니다.</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>수학(응용·사고력), 과학(탐구), 독서·철학</td><td>깊이 파고들어 생각을 흡수하는 수(水)의 성질이 탐구·응용·사유 학습과 닿아 있습니다.</td><td>25%</td></tr></tbody></table><p>이 아이의 오행 분포를 위 표에 비추어 보면, 강한 금(38%)·수(25%) 기운이 전통적으로 수학의 연산·도형, 과학의 분류·실험, 그리고 깊이 읽는 독서와 연결되는 영역을 가리키고 있습니다. 숫자와 규칙처럼 &#39;명확하게 떨어지는 것&#39;을 다룰 때 안정감을 느끼고, 호기심이 붙으면 한 주제를 깊게 파고드는 탐구형 접근이 잘 맞는 경향으로 풀이됩니다.</p>
 <p>반대로 화 기운이 드러나지 않아 발표·음악·미술처럼 즉석에서 발산하는 영역은 처음에 낯설어할 수 있습니다. 이는 재능이 없다는 뜻이 아니라 &#39;준비 시간이 필요한 영역&#39;이라는 뜻에 가깝습니다. 잘 만든 것을 보여 주는 전시형 활동부터 시작해 무대형 활동으로 넓혀 가는 순서가 참고가 됩니다. 거듭 말씀드리지만 이 표와 해석은 적성의 단정이 아니라 접근 방식의 참고이며, 실제 적성은 아이의 경험 속에서 발견됩니다.</p>
 <hr>
-<p><a id="sec-10"></a></p>
+<p><a id="sec-11"></a></p>
 <h2>강점 분야와 진로 방향</h2>
 <p>이 아이의 가장 또렷한 강점은 <strong>깊게 파고들어 구조를 세우는 힘</strong>입니다. 강한 금·수 기운과 발달한 인성이 만나, 한 분야를 끝까지 분석하고 자기 언어로 정리하는 데서 빛이 납니다. 또래가 금세 흥미를 잃는 복잡한 규칙·체계 앞에서 오히려 집중력이 올라가는 유형으로 풀이됩니다.</p>
 <p>이 강점은 &#39;빨리 답하기&#39;를 재촉하기보다, 좋아하는 주제를 충분히 깊이 탐구하도록 시간을 허락할 때 가장 잘 자랍니다. 관찰·수집·분류처럼 차곡차곡 쌓는 활동, 그리고 그것을 글이나 발표로 정리해 보는 경험으로 북돋아 주세요. 옅은 화(火)의 표현력은 약점이 아니라, 강점이 무르익은 뒤 천천히 함께 키워 갈 결로 보아 주시면 됩니다.</p>
 <hr>
-<p><a id="sec-11"></a></p>
+<p><a id="sec-12"></a></p>
 <h2>직업군 경향 참고</h2>
 <table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 직업 분야</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>교육·기획, 출판·콘텐츠, 디자인·건축, 환경·생명</td><td>새로 시작하고 길러 내며 위로 뻗는 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>방송·공연, 마케팅·홍보, 강연·교육, 예술·뷰티</td><td>밖으로 드러내고 사람을 끌어모으는 표현의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>행정·공공, 부동산·중개, 농업·요식, 상담·중재</td><td>신뢰로 사람·자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>공학·기술, 의료·법률, 금융·회계, 군·경·스포츠</td><td>가르고 다듬어 결단하는 정밀·원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>연구·학문, IT·데이터, 기획·전략, 무역·유통</td><td>깊이 사유하고 정보를 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table><p>기질 관점에서 잘 맞을 수 있는 진로 분야를 참고로 짚어 봅니다. 단정이 아니라, 강점이 자연스럽게 발현될 만한 방향입니다.</p>
 <p><strong>연구·탐구형</strong> (연구자, 데이터·IT, 분석가) — 깊이 사유하고 정보를 다루는 수(水)의 결과 잘 맞습니다.</p>
@@ -501,7 +519,7 @@ body {
 <p><strong>기록·설계형</strong> (기획, 아카이브, 지식 콘텐츠) — 쌓아 구조를 세우는 강점을 살릴 수 있습니다.</p>
 <p>다시 강조하면, 진로는 아이의 흥미·노력·시대 변화 속에서 스스로 만들어 가는 것이며, 이 풀이는 그 대화를 돕는 하나의 참고자료일 뿐입니다.</p>
 <hr>
-<p><a id="sec-12"></a></p>
+<p><a id="sec-13"></a></p>
 <h2>전공·학문 계열과 진학 방향</h2>
 <table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 전공·학문 계열</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>인문·어문, 교육학, 환경·생명과학, 건축·도시계획</td><td>기르고 뻗어 나가는 성장의 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>미디어·영상, 디자인·예술, 광고·홍보, 공연·문화예술</td><td>밖으로 표현하고 빛나는 발산의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>경영·행정, 사회복지·상담, 부동산·지리, 식품·농업</td><td>사람과 자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>기계·전자공학, 의학·약학, 법학, 경제·금융</td><td>정밀하게 가르고 다듬는 원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>수학·물리, 컴퓨터·데이터과학, 철학, 무역·국제학</td><td>깊이 사유하고 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table><blockquote>
 <p>관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.</p>
@@ -512,7 +530,7 @@ body {
 <p><strong>인문·연구 계열</strong> (철학, 국제학, 언어) — 한 주제를 끝까지 사유하는 강점을 살릴 수 있습니다.</p>
 <p>진학 환경으로는, 차분히 깊게 몰입할 수 있는 곳에서 힘을 내는 기질이라 급격한 변화보다 충분한 탐구가 가능한 환경이 어울리는 경향입니다. 국내 진학이든 해외 유학이든, 관심 전공이 또렷해진 뒤 <strong>그 분야가 강한 국내외 대학을 직접 살펴보시기</strong>를 권합니다. 특정 대학을 사주로 정하는 것이 아니며, 진학·유학 방향은 아이의 흥미와 가정 여건을 함께 고려해 결정하실 참고자료입니다.</p>
 <hr>
-<p><a id="sec-13"></a></p>
+<p><a id="sec-14"></a></p>
 <h2>부모님을 위한 코칭 포인트</h2>
 <p>보호자께서 일상에서 참고하실 만한 포인트를 정리합니다.</p>
 <p>첫째, 새로운 활동을 시작할 때는 미리 보여 주세요. 처음 가는 곳, 처음 하는 일에 적응 시간이 필요한 기질이므로, &#39;내일 어디 가서 무엇을 할 거야&#39;라고 하루 전에 그림이나 사진으로 미리 안내해 주시면 훨씬 수월하게 받아들이는 경향이 있습니다.</p>
@@ -520,7 +538,7 @@ body {
 <p>셋째, 생각을 꺼내는 질문을 던져 주세요. &#39;오늘 뭐 했어?&#39;처럼 넓은 질문보다 &#39;오늘 만든 것 중에 제일 마음에 든 건 뭐야?&#39;처럼 좁고 구체적인 질문이 속에 쌓인 이야기를 꺼내기 쉽게 합니다.</p>
 <p>넷째, 몸으로 발산하는 시간을 일과에 넣어 주세요. 화 기운을 보완하는 의미에서 하루 한 번은 땀나게 뛰는 시간 — 놀이터, 자전거, 공놀이 — 이 정서 균형에 참고가 됩니다.</p>
 <hr>
-<p><a id="sec-14"></a></p>
+<p><a id="sec-15"></a></p>
 <h2>지금 우리 아이는 — 예비 초등 (내년 3월 입학)</h2>
 <blockquote>
 <p>현재 재학: <strong>푸른숲유치원 (샘플)</strong> (보호자 입력 정보)</p>
@@ -572,14 +590,14 @@ body {
 <p>이 아이는 내년 3월 초등학교 입학을 앞둔 예비 초등 단계입니다. 새 환경 적응에 시간이 필요한 금·수 기질에게 입학은 큰 전환이므로, **남은 1년의 핵심 과제는 한글·수 선행이 아니라 &#39;학교라는 공간을 익숙하게 만드는 것&#39;**으로 풀이됩니다. 입학 예정 학교 운동장을 주말 산책 코스로 삼아 미리 여러 번 가 보고, 교실·급식·알림장 같은 학교의 하루를 그림책이나 역할놀이로 미리 경험하게 해 주시면 적응 부담이 크게 줄어드는 경향이 있습니다.</p>
 <p>책상 습관은 &#39;40분 수업&#39;을 목표로 잡기보다, 지금 기질이 편안해하는 10~15분 몰입부터 시작해 입학 무렵 20분 안팎으로 늘리는 완만한 계단이 잘 맞습니다. 인성이 발달한 이 아이는 듣고 배우는 준비가 이미 되어 있으므로, 읽어 주는 책의 폭을 넓히는 것만으로도 입학 후 수업 적응의 좋은 밑돌이 되는 것으로 해석됩니다.</p>
 <hr>
-<p><a id="sec-15"></a></p>
+<p><a id="sec-16"></a></p>
 <h2>초·중·고 단계별 로드맵</h2>
 <p>학령 단계마다 부모의 역할과 학습 초점은 달라집니다. 이 아이 기질에 맞춘 단계별 안내입니다.</p>
 <p><strong>초등</strong> — 이 아이에게 초등기의 핵심은 성적이 아니라 &#39;학교는 안전하고 예측 가능한 곳&#39;이라는 감각과, 좋아하는 것을 깊게 파 보는 경험입니다. 강한 탐구 기질을 살려 한 분야(공룡·우주· 지하철 무엇이든)를 마음껏 파고들게 해 주면, 그 몰입의 경험이 평생 학습의 원형이 됩니다.</p>
 <p><strong>중등</strong> — 첫 시험과 내신이 시작됩니다. 점수 자체보다 &#39;계획을 세우고-실행하고-틀린 것을 복기하는&#39; 틀을 몸에 익히도록 돕는 것이 이 아이의 분석 강점과 잘 맞습니다. 자유학기 활동은 조용히 관찰·기록하는 역할부터 맡겨 자신감을 쌓게 해 주세요.</p>
 <p><strong>고등</strong> — 학습 전략의 비중이 가장 커지는 시기입니다. 이 아이는 자기에게 맞는 공부법(깊이 이해 후 구조화)을 이미 갖고 있으므로, 그 방식을 신뢰하고 충분한 시간을 확보해 주는 것이 중요합니다. 진로는 오래 흥미를 둔 분야를 단서로 좁혀 가시기를 참고로 권합니다.</p>
 <hr>
-<p><a id="sec-16"></a></p>
+<p><a id="sec-17"></a></p>
 <h2>학령기 대운 흐름</h2>
 <p><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 170" width="620" height="170" role="img" aria-label="대운 타임라인"><rect x="88.94736842105263" y="36" width="58.94736842105263" height="96" fill="#eaf3ea"/><text x="118.42105263157895" y="30" text-anchor="middle" font-size="12" fill="#666" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">초등</text><rect x="147.89473684210526" y="36" width="29.4736842105263" height="96" fill="#fdf3e2"/><text x="162.6315789473684" y="30" text-anchor="middle" font-size="12" fill="#666" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">중등</text><rect x="177.36842105263156" y="36" width="29.47368421052633" height="96" fill="#fbe9e7"/><text x="192.10526315789474" y="30" text-anchor="middle" font-size="12" fill="#666" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">고등</text><rect x="30" y="70" width="66.7719298245614" height="40" rx="6" fill="#c8cdd4"/><text x="64.3859649122807" y="95" text-anchor="middle" font-size="12" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">원국</text><text x="30" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">출생</text><rect x="98.7719298245614" y="70" width="96.24561403508773" height="40" rx="6" fill="#3b6fb5"/><text x="147.89473684210526" y="95" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">丙戌</text><text x="98.7719298245614" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">만 7세 2개월</text><rect x="197.01754385964912" y="70" width="96.2456140350877" height="40" rx="6" fill="#5c87c5"/><text x="246.140350877193" y="95" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">丁亥</text><text x="197.01754385964912" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">만 17세 2개월</text><rect x="295.2631578947368" y="70" width="96.24561403508773" height="40" rx="6" fill="#3b6fb5"/><text x="344.38596491228066" y="95" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">戊子</text><text x="295.2631578947368" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">만 27세 2개월</text><rect x="393.50877192982455" y="70" width="96.24561403508773" height="40" rx="6" fill="#5c87c5"/><text x="442.63157894736844" y="95" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">己丑</text><text x="393.50877192982455" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">만 37세 2개월</text><rect x="491.7543859649123" y="70" width="96.24561403508773" height="40" rx="6" fill="#3b6fb5"/><text x="540.8771929824561" y="95" text-anchor="middle" font-size="15" font-weight="bold" fill="#fff" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">庚寅</text><text x="491.7543859649123" y="130" font-size="11.5" fill="#444" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">만 47세 2개월</text></svg></p>
 <table>
@@ -620,7 +638,7 @@ body {
 <p>만 7세 2개월부터 시작되는 병술(丙戌) 대운은 흥미로운 전환점입니다. 원국에 없던 화(火) 기운 — 그것도 태양에 비유되는 병화 — 이 초등학교 시기 전체에 걸쳐 들어옵니다. 안으로 모으기만 하던 아이가 자기 생각을 밖으로 꺼내 보는 경험을 쌓기 좋은 흐름으로 해석되므로, 초등 시기에는 발표·토론·무대 경험처럼 표현 기회를 의식적으로 만들어 주시는 것이 기질 발현에 참고가 됩니다. 다만 입학 직후는 새 환경 적응에 시간이 필요한 기질임을 기억해 주세요.</p>
 <p>만 17세 2개월부터의 정해(丁亥) 대운은 고등학교 후반과 대학 진학기에 걸칩니다. 은은한 촛불에 비유되는 정화와 일간과 같은 수 기운이 함께 흐르는 구간으로, 쌓아온 것이 자기만의 방향으로 정리되는 시기로 풀이됩니다. 진로를 좁혀 가는 이 무렵에는 외부 기준보다 아이가 오래 파고들어 온 관심사를 단서로 삼는 것이 참고가 될 수 있습니다.</p>
 <hr>
-<p><a id="sec-17"></a></p>
+<p><a id="sec-18"></a></p>
 <h2>다가오는 3년 — 세운</h2>
 <table>
 <thead>
@@ -650,7 +668,7 @@ body {
 <p>2027년 정미(丁未)년은 초등학교에 입학하는 해(만 7세)입니다. 은은한 불과 안정된 흙의 기운이라, 들뜨기보다 차분히 새 환경에 뿌리내리는 흐름으로 해석됩니다. 입학 초기에는 성적이나 학습량보다 &#39;학교가 안전하고 예측 가능한 곳&#39;이라는 감각을 만들어 주는 것이 이 아이 기질에 맞는 우선순위로 참고됩니다.</p>
 <p>2028년 무신(戊申)년(만 8세)은 단단한 흙과 금 기운의 해로, 규칙과 일과가 몸에 붙는 흐름으로 풀이됩니다. 학교 생활이 익숙해지며 자기 루틴이 생기기 좋은 해이므로, 이때 숙제 시간·독서 시간 같은 평생 가져갈 학습 습관의 틀을 함께 만들어 보시기를 참고로 권합니다.</p>
 <hr>
-<p><a id="sec-18"></a></p>
+<p><a id="sec-19"></a></p>
 <h2>학교 선택 기질 참고</h2>
 <blockquote>
 <p>아래는 사주 기질 관점에서 학교 환경 선택 시 참고할 만한 경향입니다.
@@ -689,7 +707,7 @@ body {
 </tr>
 </tbody></table>
 <hr>
-<p><a id="sec-19"></a></p>
+<p><a id="sec-20"></a></p>
 <h2>부록 · 사주팔자 기초</h2>
 <blockquote>
 <p>사주가 처음이신 분을 위한 기초 설명입니다. 리포트를 읽는 데 꼭 필요하진 않으니, 궁금하실 때 펼쳐 보세요.</p>
@@ -735,7 +753,7 @@ body {
 <p>여덟 글자 중에서도 **일간(日干, 일주의 윗글자)**이 아이 자신을 나타내는 글자로, 모든 해석의
 기준점이 됩니다. 나머지 일곱 글자는 일간과의 관계(십성)로 읽습니다.</p>
 <hr>
-<p><a id="sec-20"></a></p>
+<p><a id="sec-21"></a></p>
 <h2>자주 묻는 질문</h2>
 <p><strong>Q. 사주가 같으면 인생도 같은가요?</strong>
 아닙니다. 같은 날 같은 시각에 태어난 아이들도 전혀 다르게 자랍니다. 사주는 타고난 기질의
@@ -760,7 +778,7 @@ body {
 넘치면 과제가 되며, 약한 기운은 보완하면 성장의 여백이 됩니다. 이 리포트는 그 쓰임의
 방향을 함께 찾는 데 목적이 있습니다.</p>
 <hr>
-<p><a id="sec-21"></a></p>
+<p><a id="sec-22"></a></p>
 <h2>용어 풀이</h2>
 <table>
 <thead>

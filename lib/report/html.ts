@@ -304,6 +304,16 @@ body {
 .wx-dot { width: 13px; height: 13px; border-radius: 50%; flex: none; }
 .wx-item.wx-pillar .wx-dot { border-radius: 3px; }
 
+/* ── 이름 오행 칩 ────────────────────────────────── */
+.name-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.name-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 7px 13px; font-size: 0.88em;
+}
+.name-chip b { color: var(--navy); font-size: 1.25em; font-weight: 700; }
+.name-chip-x { color: var(--ink-soft); }
+
 /* ── 한 장 요약 스펙 그리드 ─────────────────────── */
 .spec-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0;

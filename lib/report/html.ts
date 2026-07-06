@@ -35,8 +35,6 @@ export type RenderHtmlOptions = {
   subjectLabel?: string;
   /** 아이 이름(한글, 선택) — 표지 제목·안내 호명용 */
   childName?: string;
-  /** 아이 이름 한자(선택) — 표지 제목 병기용 */
-  childNameHanja?: string;
   /** 발행일 표기 (기본: 오늘) */
   generatedAt?: string;
   /** 샘플 워터마크 문구 (지정 시 표지에 표시) */
@@ -88,13 +86,9 @@ function buildCover(saju: SajuResult, opts: RenderHtmlOptions): string {
     .sort((a, b) => b[1] - a[1])[0]?.[0];
   const accentColor = ELEMENT_COLOR[strongestEl ?? ""] ?? "var(--gold)";
 
-  // 이름이 있으면 "OO(한자)의", 없으면 "우리 아이의"로 자연 폴백
+  // 이름이 있으면 "OO의", 없으면 "우리 아이의"로 자연 폴백
   const name = opts.childName?.trim();
-  const hanja = opts.childNameHanja?.trim();
-  const nameHtml = name
-    ? `${escapeHtml(name)}${hanja ? `<span class="cover-hanja">${escapeHtml(hanja)}</span>` : ""}`
-    : "";
-  const titleLead = name ? `${nameHtml}의` : "우리 아이의";
+  const titleLead = name ? `${escapeHtml(name)}의` : "우리 아이의";
   const hintWho = name
     ? `<b>${escapeHtml(name)}</b>${objectParticle(name)} 뜻하는 <b>일간</b>`
     : `아이 자신을 뜻하는 <b>일간</b>`;
@@ -166,7 +160,6 @@ body {
   font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
   font-size: 2.1em; line-height: 1.4; color: var(--navy); margin: 0 0 10px;
 }
-.cover-hanja { color: var(--gold); font-size: 0.62em; margin-left: 0.12em; vertical-align: 0.12em; }
 .cover-accent { width: 46px; height: 4px; border-radius: 2px; margin: 4px auto 16px; }
 .cover-subject { color: var(--ink-soft); margin: 0 0 36px; font-size: 0.95em; }
 .pillars { display: flex; justify-content: center; gap: 10px; margin: 0 0 14px; }

@@ -55,7 +55,6 @@ function encryptSubject(
     encAddress: encryptPiiNullable(s.address),
     encCurrentSchool: encryptPiiNullable(s.currentSchool),
     encName: encryptPiiNullable(s.name),
-    encNameHanja: encryptPiiNullable(s.nameHanja),
     consentAt,
     retainUntil,
   };
@@ -76,7 +75,6 @@ export function decryptSubject(s: Subject): SubjectPlain {
     address: decryptPiiNullable(s.encAddress) ?? undefined,
     currentSchool: decryptPiiNullable(s.encCurrentSchool) ?? undefined,
     name: decryptPiiNullable(s.encName) ?? undefined,
-    nameHanja: decryptPiiNullable(s.encNameHanja) ?? undefined,
   };
 }
 
@@ -116,12 +114,9 @@ function validateInput(input: CreateOrderInput): void {
   if (s.currentSchool != null && s.currentSchool.length > MAX_FREE_TEXT_LEN) {
     throw new Error("재학 학교명이 너무 길습니다");
   }
-  // 이름·한자는 선택 입력 — 있으면 표지·요약에 호명용으로 쓴다(짧게 제한).
+  // 이름은 선택 입력 — 있으면 표지·요약에 호명용으로 쓴다(짧게 제한).
   if (s.name != null && s.name.length > 20) {
     throw new Error("이름이 너무 깁니다");
-  }
-  if (s.nameHanja != null && s.nameHanja.length > 20) {
-    throw new Error("이름 한자가 너무 깁니다");
   }
   if (input.contactEmail != null && !EMAIL_RE.test(input.contactEmail)) {
     throw new Error("이메일 형식이 올바르지 않습니다");

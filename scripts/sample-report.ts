@@ -308,7 +308,6 @@ async function main() {
   const html = renderReportHtml(saju, result.markdown, {
     subjectLabel: "2020년 9월 16일 16:43 출생 · 남아 (만 5세)",
     childName: "준서",
-    childNameHanja: "俊書",
     generatedAt: "2026-06-11",
     sampleNotice: "미리보기용 샘플 — 학교 정보는 샘플 데이터입니다",
   });

@@ -21,7 +21,6 @@ export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
 type Body = {
   tier?: string;
   name?: string;
-  nameHanja?: string;
   birthYear?: number;
   birthMonth?: number;
   birthDay?: number;
@@ -92,7 +91,6 @@ export async function POST(req: Request) {
       currentSchool: body.currentSchool?.trim() || undefined,
       // 이름은 표지·요약에 HTML로 삽입되므로 각괄호를 제거해 마크업 주입을 차단
       name: body.name?.trim().replace(/[<>]/g, "") || undefined,
-      nameHanja: body.nameHanja?.trim().replace(/[<>]/g, "") || undefined,
     },
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,

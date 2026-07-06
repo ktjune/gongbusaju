@@ -46,7 +46,7 @@ type SubjectRow = {
   id: string; encBirthYear: string; encBirthMonth: string; encBirthDay: string;
   encBirthHour: string | null; encBirthMinute: string | null; encGender: string;
   encAddress: string | null; encCurrentSchool: string | null;
-  encName: string | null; encNameHanja: string | null;
+  encName: string | null;
   consentAt: Date; retainUntil: Date; createdAt: Date;
 };
 function toSubject(r: SubjectRow): Subject {
@@ -61,7 +61,6 @@ function toSubject(r: SubjectRow): Subject {
     encAddress: r.encAddress,
     encCurrentSchool: r.encCurrentSchool,
     encName: r.encName,
-    encNameHanja: r.encNameHanja,
     consentAt: iso(r.consentAt),
     retainUntil: iso(r.retainUntil),
     createdAt: iso(r.createdAt),
@@ -179,7 +178,6 @@ export class PrismaOrderStore implements OrderStore {
         encAddress: data.encAddress,
         encCurrentSchool: data.encCurrentSchool,
         encName: data.encName,
-        encNameHanja: data.encNameHanja,
         consentAt: new Date(data.consentAt),
         retainUntil: new Date(data.retainUntil),
       },

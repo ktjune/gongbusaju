@@ -345,6 +345,14 @@ body {
 }
 .name-chip b { color: var(--navy); font-size: 1.25em; font-weight: 700; }
 .name-chip-x { color: var(--ink-soft); }
+.name-supplement {
+  background: var(--card); border: 1px solid var(--line);
+  border-left: 5px solid var(--line); border-radius: 0 12px 12px 0;
+  padding: 14px 18px; margin: 16px 0;
+  box-shadow: 0 1px 6px rgba(31,59,99,0.05);
+}
+.ns-head { font-weight: 700; font-size: 1.02em; margin-bottom: 6px; }
+.ns-body { color: var(--ink); font-size: 0.95em; line-height: 1.8; }
 
 /* ── 한 장 요약 스펙 그리드 ─────────────────────── */
 .spec-grid {

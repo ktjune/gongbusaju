@@ -910,6 +910,30 @@ function chapterDivider(num: number, title: string, sub: string, img: string): s
 // 이름과 사주 (성명학 라이트 — 발음오행) — 코드만, LLM 없음
 // ──────────────────────────────────────────────────────────────
 
+/** 오행별 '기운을 북돋우는 법' — 아이 일상에서 실천 가능한 구체 활동·색 (성명학 보완용) */
+const WUXING_SUPPLEMENT: Record<string, { keyword: string; how: string }> = {
+  木: {
+    keyword: "성장·시작",
+    how: "자연 나들이·화분 기르기·나무 블록·그림 그리기처럼 새로 시작하고 자라나는 활동이 이 기운을 북돋웁니다. 초록·청색 소품이나 옷도 은근한 도움이 됩니다.",
+  },
+  火: {
+    keyword: "표현·발산",
+    how: "발표·노래·율동·역할놀이·바깥에서 뛰놀기처럼 아는 것을 밖으로 꺼내고 발산하는 활동이 이 기운을 채워 줍니다. 빨강·주황 포인트 색이 활기를 더해 줍니다.",
+  },
+  土: {
+    keyword: "안정·끈기",
+    how: "규칙적인 하루 루틴·정리 습관·흙/모래 놀이·요리 돕기처럼 차곡차곡 쌓는 활동이 이 기운을 길러 줍니다. 노랑·황토색 소품이 안정감을 더합니다.",
+  },
+  金: {
+    keyword: "정리·분별",
+    how: "정리정돈·퍼즐·블록 분류·악기 연주·규칙 있는 보드게임처럼 가르고 정돈하는 활동이 이 기운을 세워 줍니다. 흰색·은은한 금속색 소품이 잘 어울립니다.",
+  },
+  水: {
+    keyword: "사고·유연",
+    how: "책 읽어 주기·물놀이·조용한 사색 시간·자기 생각 말해 보기처럼 깊이 생각하고 흐르는 활동이 이 기운을 채워 줍니다. 파랑·남색 소품이 차분함을 더합니다.",
+  },
+};
+
 /**
  * 이름(한글)의 발음오행과 사주의 어울림 섹션.
  * 이름이 없거나 한글 음절이 없으면 빈 문자열(섹션 생략).
@@ -970,6 +994,28 @@ export function buildNameSajuSection(saju: SajuResult, name?: string): string {
       `서로 다른 기운이 만나 오히려 다채로운 결을 담는다고도 볼 수 있습니다.`;
   }
 
+  // ── 부족한 기운 → 보완법 (핵심) ──
+  const sup = WUXING_SUPPLEMENT[a.weakEl];
+  const supColor = WUXING_COLOR[a.weakEl] ?? "#888";
+  let supIntro: string;
+  if (a.complementType === "보완") {
+    supIntro =
+      `사주에서 가장 옅은 기운은 **${a.weakEl}(${weakH}) — ${sup?.keyword ?? ""}**입니다. ` +
+      `반가운 점은, 이름 '${nmE}'${subjectParticle(nm)} 바로 이 ${a.weakEl}(${weakH}) 기운을 품고 있어 **부족한 자리를 이름이 은근히 채워 준다**는 것이에요. ` +
+      `여기에 아래 활동을 곁들이면 그 기운이 한층 더 살아납니다.`;
+  } else {
+    supIntro =
+      `사주에서 가장 옅은 기운은 **${a.weakEl}(${weakH}) — ${sup?.keyword ?? ""}**입니다. ` +
+      `이름 '${nmE}'는 이 ${a.weakEl}(${weakH}) 기운을 직접 담고 있진 않아요. ` +
+      `그러니 이 기운은 **이름 밖, 생활 속에서 채워 주면** 균형이 좋아집니다. 이렇게요.`;
+  }
+  const supCard = sup
+    ? `<div class="name-supplement" style="border-left-color:${supColor}">` +
+      `<div class="ns-head" style="color:${supColor}">${a.weakEl}(${weakH}) 기운을 북돋우는 법</div>` +
+      `<div class="ns-body">${sup.how}</div>` +
+      `</div>`
+    : "";
+
   const closing =
     `무엇보다 이름에는 부모님이 담은 뜻과 바람이 깃들어 있습니다. ` +
     `위 오행 해석은 그 위에 더하는 하나의 참고일 뿐, 아이를 부르는 그 이름이 이미 가장 큰 선물입니다.`;
@@ -981,6 +1027,9 @@ export function buildNameSajuSection(saju: SajuResult, name?: string): string {
     `<div class="name-chips">${chips}</div>`,
     comp,
     flow,
+    "### 부족한 기운, 이렇게 채워 주세요",
+    supIntro,
+    supCard,
     closing,
   ]
     .filter(Boolean)

@@ -139,19 +139,20 @@ body {
 
 /* ── 한 장 요약 형상 히어로 카드 ─────────────────── */
 .imagery-card {
-  background: var(--card);
+  background: #f9f3e7;
   border: 1px solid var(--gold);
   border-radius: 16px;
-  padding: 24px 26px;
+  padding: 18px 26px 24px;
   margin: 22px 0;
   text-align: center;
   box-shadow: 0 4px 22px rgba(31,59,99,0.08);
 }
-.imagery-illust { margin: 2px 0 10px; }
+.imagery-illust { margin: 0 0 4px; }
 .imagery-img {
-  width: 160px; height: 160px; display: block; margin: 0 auto;
-  border-radius: 16px; border: 1px solid var(--line);
-  object-fit: cover;
+  width: 300px; max-width: 90%; height: auto; display: block; margin: 0 auto;
+  /* 배경(크림)과 같은 색이라 자연스럽게 녹아들고, 가장자리만 살짝 페더링 */
+  -webkit-mask-image: radial-gradient(ellipse 86% 84% at 50% 48%, #000 84%, transparent 100%);
+  mask-image: radial-gradient(ellipse 86% 84% at 50% 48%, #000 84%, transparent 100%);
 }
 .imagery-label {
   font-size: 0.8em; color: var(--gold);

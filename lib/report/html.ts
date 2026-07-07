@@ -260,7 +260,7 @@ body {
 .chapter-bg {
   position: absolute; left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  width: 340px; max-width: 104%; opacity: 0.42;
+  width: 340px; max-width: 104%; opacity: 0.2;
   -webkit-mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
   mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
   pointer-events: none; user-select: none;

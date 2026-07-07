@@ -1018,7 +1018,7 @@ export function assembleReport(
   sections.push({
     title: "사주 원국 (四柱原局)",
     body:
-      chapterDivider(1, "타고난 결", "우리 아이가 타고난 성정과 기운", "gap") +
+      chapterDivider(1, "타고난 결", "우리 아이가 타고난 성정과 기운", "ch1") +
       "\n\n## 사주 원국 (四柱原局)\n\n" +
       buildSajuChart(saju) +
       `\n\n<p class="datanote">원 안은 여덟 글자(위 = 천간, 아래 = 지지), 원 색은 오행입니다. 글자 곁 작은 글씨는 십성(일간과의 관계), 파란 테두리가 아이 자신을 뜻하는 <b>일간</b>입니다.</p>\n\n` +
@@ -1071,7 +1071,7 @@ export function assembleReport(
   sections.push({
     title: "공부 스타일과 학습 환경",
     body:
-      chapterDivider(2, "공부 이야기", "어떻게 배울 때 가장 빛나는가", "im") +
+      chapterDivider(2, "공부 이야기", "어떻게 배울 때 가장 빛나는가", "ch2") +
       "\n\n## 공부 스타일과 학습 환경\n\n" +
       perspective.studyStyleProse +
       "\n\n### 기질 지표\n\n" +
@@ -1101,7 +1101,7 @@ export function assembleReport(
   sections.push({
     title: "강점 분야와 진로 방향",
     body:
-      chapterDivider(3, "강점과 진로", "무엇을 잘하고 어디로 나아갈까", "byeong") +
+      chapterDivider(3, "강점과 진로", "무엇을 잘하고 어디로 나아갈까", "ch3") +
       "\n\n## 강점 분야와 진로 방향\n\n" +
       perspective.aptitudeProse,
   });
@@ -1142,7 +1142,7 @@ export function assembleReport(
     sections.push({
       title: `지금 우리 아이는 — ${stage.label}`,
       body:
-        chapterDivider(4, "성장의 흐름", "단계마다 무엇을 챙기면 좋을까", "eul") +
+        chapterDivider(4, "성장의 흐름", "단계마다 무엇을 챙기면 좋을까", "ch4") +
         `\n\n## 지금 우리 아이는 — ${stage.label}\n` +
         schoolLine +
         `\n### ${guide.title}\n\n` +

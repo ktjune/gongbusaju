@@ -68,7 +68,7 @@
 
 <a id="sec-3"></a>
 
-<div class="chapter-divider"><img class="chapter-bg" src="/illust/gap.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 01</div><div class="chapter-title">타고난 결</div><div class="chapter-sub">우리 아이가 타고난 성정과 기운</div></div></div>
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/ch1.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 01</div><div class="chapter-title">타고난 결</div><div class="chapter-sub">우리 아이가 타고난 성정과 기운</div></div></div>
 
 ## 사주 원국 (四柱原局)
 
@@ -226,7 +226,7 @@
 
 <a id="sec-8"></a>
 
-<div class="chapter-divider"><img class="chapter-bg" src="/illust/im.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 02</div><div class="chapter-title">공부 이야기</div><div class="chapter-sub">어떻게 배울 때 가장 빛나는가</div></div></div>
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/ch2.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 02</div><div class="chapter-title">공부 이야기</div><div class="chapter-sub">어떻게 배울 때 가장 빛나는가</div></div></div>
 
 ## 공부 스타일과 학습 환경
 
@@ -272,7 +272,7 @@
 
 <a id="sec-11"></a>
 
-<div class="chapter-divider"><img class="chapter-bg" src="/illust/byeong.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 03</div><div class="chapter-title">강점과 진로</div><div class="chapter-sub">무엇을 잘하고 어디로 나아갈까</div></div></div>
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/ch3.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 03</div><div class="chapter-title">강점과 진로</div><div class="chapter-sub">무엇을 잘하고 어디로 나아갈까</div></div></div>
 
 ## 강점 분야와 진로 방향
 
@@ -338,7 +338,7 @@
 
 <a id="sec-15"></a>
 
-<div class="chapter-divider"><img class="chapter-bg" src="/illust/eul.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 04</div><div class="chapter-title">성장의 흐름</div><div class="chapter-sub">단계마다 무엇을 챙기면 좋을까</div></div></div>
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/ch4.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 04</div><div class="chapter-title">성장의 흐름</div><div class="chapter-sub">단계마다 무엇을 챙기면 좋을까</div></div></div>
 
 ## 지금 우리 아이는 — 예비 초등 (내년 3월 입학)
 

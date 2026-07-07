@@ -68,6 +68,8 @@
 
 <a id="sec-3"></a>
 
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/gap.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 01</div><div class="chapter-title">타고난 결</div><div class="chapter-sub">우리 아이가 타고난 성정과 기운</div></div></div>
+
 ## 사주 원국 (四柱原局)
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 252" width="480" height="252" role="img" aria-label="사주 원국 여덟 글자 도식"><text x="60" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f3b63" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">시주</text><text x="60" y="52" text-anchor="middle" font-size="13" font-weight="normal" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">칠살</text><circle cx="60" cy="96" r="31" fill="#c9a227"/><text x="60" y="106" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">戊</text><circle cx="60" cy="176" r="31" fill="#8e9aa8"/><text x="60" y="186" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">申</text><text x="60" y="228" text-anchor="middle" font-size="13" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">편인</text><text x="180" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f3b63" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">일주</text><text x="180" y="52" text-anchor="middle" font-size="13" font-weight="bold" fill="#3454a0" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">일간</text><rect x="140" y="56" width="80" height="80" rx="13" fill="none" stroke="#3454a0" stroke-width="2.5"/><circle cx="180" cy="96" r="31" fill="#3b6fb5"/><text x="180" y="106" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">壬</text><circle cx="180" cy="176" r="31" fill="#c9a227"/><text x="180" y="186" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">戌</text><text x="180" y="228" text-anchor="middle" font-size="13" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">칠살</text><text x="300" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f3b63" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">월주</text><text x="300" y="52" text-anchor="middle" font-size="13" font-weight="normal" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">상관</text><circle cx="300" cy="96" r="31" fill="#3d9a50"/><text x="300" y="106" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">乙</text><circle cx="300" cy="176" r="31" fill="#8e9aa8"/><text x="300" y="186" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">酉</text><text x="300" y="228" text-anchor="middle" font-size="13" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">정인</text><text x="420" y="26" text-anchor="middle" font-size="15" font-weight="bold" fill="#1f3b63" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">년주</text><text x="420" y="52" text-anchor="middle" font-size="13" font-weight="normal" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">편인</text><circle cx="420" cy="96" r="31" fill="#8e9aa8"/><text x="420" y="106" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">庚</text><circle cx="420" cy="176" r="31" fill="#3b6fb5"/><text x="420" y="186" text-anchor="middle" font-size="28" font-weight="bold" fill="#fff" font-family="'Nanum Myeongjo','Noto Serif KR',Batang,serif">子</text><text x="420" y="228" text-anchor="middle" font-size="13" fill="#8a8f99" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">겁재</text></svg>
@@ -224,6 +226,8 @@
 
 <a id="sec-8"></a>
 
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/im.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 02</div><div class="chapter-title">공부 이야기</div><div class="chapter-sub">어떻게 배울 때 가장 빛나는가</div></div></div>
+
 ## 공부 스타일과 학습 환경
 
 이 기질을 종합하면, 이 아이의 공부는 '조용히 쌓아서 단단해지는' 유형으로 해석됩니다. 여럿이 떠들썩하게 경쟁하는 분위기보다, 차분한 공간에서 어른이 차근차근 설명해 주고 아이가 그것을 소화할 시간을 주는 방식이 잘 맞는 경향이 있습니다. 같은 시간, 같은 자리에서 짧게 반복하는 루틴형 학습이 특히 효과적으로 풀이되는데, 금·토 기운이 강한 아이는 예측 가능한 일과 자체에서 안정감을 얻기 때문입니다.
@@ -267,6 +271,8 @@
 ---
 
 <a id="sec-11"></a>
+
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/byeong.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 03</div><div class="chapter-title">강점과 진로</div><div class="chapter-sub">무엇을 잘하고 어디로 나아갈까</div></div></div>
 
 ## 강점 분야와 진로 방향
 
@@ -331,6 +337,8 @@
 ---
 
 <a id="sec-15"></a>
+
+<div class="chapter-divider"><img class="chapter-bg" src="/illust/eul.png" alt="" aria-hidden="true" /><div class="chapter-inner"><div class="chapter-num">CHAPTER 04</div><div class="chapter-title">성장의 흐름</div><div class="chapter-sub">단계마다 무엇을 챙기면 좋을까</div></div></div>
 
 ## 지금 우리 아이는 — 예비 초등 (내년 3월 입학)
 

@@ -885,6 +885,27 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
     .join("\n\n");
 }
 
+/**
+ * 챕터 구분자 밴드 — 배경 일러스트 + 챕터 번호·제목·부제.
+ * 잡지식 장(章) 구분으로 진도감을 준다. 배경 이미지는 흐리게 블렌딩되고
+ * 텍스트가 그 위에 올라간다. (img 비우면 텍스트만)
+ */
+function chapterDivider(num: number, title: string, sub: string, img: string): string {
+  const roman = String(num).padStart(2, "0");
+  return [
+    `<div class="chapter-divider">`,
+    img ? `<img class="chapter-bg" src="/illust/${img}.png" alt="" aria-hidden="true" />` : "",
+    `<div class="chapter-inner">`,
+    `<div class="chapter-num">CHAPTER ${roman}</div>`,
+    `<div class="chapter-title">${title}</div>`,
+    `<div class="chapter-sub">${sub}</div>`,
+    `</div>`,
+    `</div>`,
+  ]
+    .filter(Boolean)
+    .join("");
+}
+
 // ──────────────────────────────────────────────────────────────
 // 이름과 사주 (성명학 라이트 — 발음오행) — 코드만, LLM 없음
 // ──────────────────────────────────────────────────────────────
@@ -997,7 +1018,8 @@ export function assembleReport(
   sections.push({
     title: "사주 원국 (四柱原局)",
     body:
-      "## 사주 원국 (四柱原局)\n\n" +
+      chapterDivider(1, "타고난 결", "우리 아이가 타고난 성정과 기운", "gap") +
+      "\n\n## 사주 원국 (四柱原局)\n\n" +
       buildSajuChart(saju) +
       `\n\n<p class="datanote">원 안은 여덟 글자(위 = 천간, 아래 = 지지), 원 색은 오행입니다. 글자 곁 작은 글씨는 십성(일간과의 관계), 파란 테두리가 아이 자신을 뜻하는 <b>일간</b>입니다.</p>\n\n` +
       "### 내 여덟 글자 풀이\n\n" +
@@ -1049,7 +1071,8 @@ export function assembleReport(
   sections.push({
     title: "공부 스타일과 학습 환경",
     body:
-      "## 공부 스타일과 학습 환경\n\n" +
+      chapterDivider(2, "공부 이야기", "어떻게 배울 때 가장 빛나는가", "im") +
+      "\n\n## 공부 스타일과 학습 환경\n\n" +
       perspective.studyStyleProse +
       "\n\n### 기질 지표\n\n" +
       traitsRadarChart(saju),
@@ -1078,7 +1101,8 @@ export function assembleReport(
   sections.push({
     title: "강점 분야와 진로 방향",
     body:
-      "## 강점 분야와 진로 방향\n\n" +
+      chapterDivider(3, "강점과 진로", "무엇을 잘하고 어디로 나아갈까", "byeong") +
+      "\n\n## 강점 분야와 진로 방향\n\n" +
       perspective.aptitudeProse,
   });
 
@@ -1118,7 +1142,8 @@ export function assembleReport(
     sections.push({
       title: `지금 우리 아이는 — ${stage.label}`,
       body:
-        `## 지금 우리 아이는 — ${stage.label}\n` +
+        chapterDivider(4, "성장의 흐름", "단계마다 무엇을 챙기면 좋을까", "eul") +
+        `\n\n## 지금 우리 아이는 — ${stage.label}\n` +
         schoolLine +
         `\n### ${guide.title}\n\n` +
         guide.body +

@@ -250,6 +250,33 @@ body {
   color: var(--ink-soft); font-size: 0.82em; line-height: 1.6;
 }
 
+/* ── 챕터 구분자 (배경 일러스트 + 제목) ─────────── */
+.chapter-divider {
+  position: relative; overflow: hidden;
+  background: #f9f3e7; border-radius: 16px;
+  margin: 48px 0 24px; padding: 34px 24px;
+  text-align: center;
+}
+.chapter-bg {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px; max-width: 104%; opacity: 0.42;
+  -webkit-mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
+  mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
+  pointer-events: none; user-select: none;
+}
+.chapter-inner { position: relative; }
+.chapter-num {
+  font-size: 0.74em; letter-spacing: 0.3em; text-indent: 0.3em;
+  color: var(--gold); font-weight: 700;
+}
+.chapter-title {
+  font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
+  font-size: 1.9em; font-weight: 700; color: var(--navy);
+  margin: 8px 0 6px; line-height: 1.3;
+}
+.chapter-sub { color: var(--ink-soft); font-size: 0.9em; }
+
 /* ── 한 장 요약 형상 히어로 카드 ─────────────────── */
 .imagery-card {
   background: #f9f3e7;
@@ -366,7 +393,8 @@ body {
   .report h2 { break-before: page; box-shadow: none; }
   .report h2:first-of-type { break-before: page; }
   .report table, .report blockquote, .report svg { break-inside: avoid; }
-  .toc, .imagery-card { break-inside: avoid; box-shadow: none; }
+  .toc, .imagery-card, .chapter-divider { break-inside: avoid; box-shadow: none; }
+  .chapter-bg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .report tr:nth-child(even) td { background: #fff; }
   a { color: inherit; text-decoration: none; }
   .print-btn { display: none; }

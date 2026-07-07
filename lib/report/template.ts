@@ -894,12 +894,12 @@ function chapterDivider(num: number, title: string, sub: string, img: string): s
   const roman = String(num).padStart(2, "0");
   return [
     `<div class="chapter-divider">`,
-    img ? `<img class="chapter-bg" src="/illust/${img}.png" alt="" aria-hidden="true" />` : "",
-    `<div class="chapter-inner">`,
+    `<div class="chapter-text">`,
     `<div class="chapter-num">CHAPTER ${roman}</div>`,
     `<div class="chapter-title">${title}</div>`,
     `<div class="chapter-sub">${sub}</div>`,
     `</div>`,
+    img ? `<img class="chapter-img" src="/illust/${img}.png" alt="" aria-hidden="true" />` : "",
     `</div>`,
   ]
     .filter(Boolean)

@@ -252,28 +252,26 @@ body {
 
 /* ── 챕터 구분자 (배경 일러스트 + 제목) ─────────── */
 .chapter-divider {
-  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 14px;
   background: #f9f3e7; border-radius: 16px;
-  margin: 48px 0 24px; padding: 34px 24px;
-  text-align: center;
+  margin: 48px 0 24px; padding: 22px 24px;
+  text-align: left;
 }
-.chapter-bg {
-  position: absolute; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: 340px; max-width: 104%; opacity: 0.2;
-  -webkit-mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
-  mask-image: radial-gradient(ellipse 82% 80% at 50% 50%, #000 52%, transparent 90%);
-  pointer-events: none; user-select: none;
+.chapter-text { flex: 1; min-width: 0; }
+.chapter-img {
+  width: 128px; height: 128px; flex: none; display: block;
+  /* 카드 배경과 같은 크림색이라 자연스럽게 녹아들고 가장자리만 페더링 */
+  -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, #000 64%, transparent 97%);
+  mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, #000 64%, transparent 97%);
 }
-.chapter-inner { position: relative; }
 .chapter-num {
   font-size: 0.74em; letter-spacing: 0.3em; text-indent: 0.3em;
   color: var(--gold); font-weight: 700;
 }
 .chapter-title {
   font-family: 'Nanum Myeongjo', 'Noto Serif KR', Batang, serif;
-  font-size: 1.9em; font-weight: 700; color: var(--navy);
-  margin: 8px 0 6px; line-height: 1.3;
+  font-size: 1.85em; font-weight: 700; color: var(--navy);
+  margin: 7px 0 5px; line-height: 1.3;
 }
 .chapter-sub { color: var(--ink-soft); font-size: 0.9em; }
 
@@ -378,6 +376,8 @@ body {
   .cover-title { font-size: 1.7em; }
   .imagery-form { font-size: 1.24em; }
   .toc-list { columns: 1; }
+  .chapter-img { width: 104px; height: 104px; }
+  .chapter-title { font-size: 1.55em; }
   /* 표는 셀 줄바꿈을 허용해 화면 폭에 맞춘다 (가로 스크롤 대신 세로로 늘어남).
      넘칠 때만 스크롤(폴백). 이전엔 nowrap이라 대부분의 표가 옆으로 잘렸다. */
   .report table { font-size: 0.86em; }
@@ -394,7 +394,7 @@ body {
   .report h2:first-of-type { break-before: page; }
   .report table, .report blockquote, .report svg { break-inside: avoid; }
   .toc, .imagery-card, .chapter-divider { break-inside: avoid; box-shadow: none; }
-  .chapter-bg { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .chapter-img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .report tr:nth-child(even) td { background: #fff; }
   a { color: inherit; text-decoration: none; }
   .print-btn { display: none; }

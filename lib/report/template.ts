@@ -856,8 +856,25 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
   );
 
   // ── ③ 빠른 참고 — 2열 스펙 그리드 ──────────────────────
+  // 이름 어울림 요약 (이름 있을 때만) — 자세한 풀이는 뒤 '이름과 사주의 어울림' 섹션
+  let nameSpec: [string, string] | null = null;
+  if (name) {
+    const na = analyzeName(name, saju);
+    if (na) {
+      const wH = WUXING_DICT[na.weakEl]?.hangul ?? na.weakEl;
+      const sH = WUXING_DICT[na.strongEl]?.hangul ?? na.strongEl;
+      const v =
+        na.complementType === "보완"
+          ? `부족한 ${na.weakEl}(${wH}) 기운을 채워 줌`
+          : na.complementType === "강화"
+            ? `강한 ${na.strongEl}(${sH}) 기운을 북돋움`
+            : "사주와 무난히 조화";
+      nameSpec = [`${name} · 이름 어울림`, v];
+    }
+  }
   const specs: Array<[string, string]> = [
     ["타고난 결", `일간 ${dayStem}(${dayKr})${sd ? ` · ${sd.nature}` : ""}`],
+    ...(nameSpec ? [nameSpec] : []),
     ["가장 강한 기운", `${strong.hanja}(${strongD.hangul}) ${Math.round(strong.pct)}% · ${strongD.keyword}`],
     ["보완하면 좋을 기운", `${weak.hanja}(${weakD.hangul}) ${Math.round(weak.pct)}%`],
     ["돋보이는 기질 지표", topTraits],

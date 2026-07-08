@@ -51,7 +51,7 @@
 
 ### 빠르게 훑어보기
 
-<div class="spec-grid"><div class="spec-item"><div class="spec-label">타고난 결</div><div class="spec-value">일간 壬(임) · 큰 강물·바다 (水+)</div></div><div class="spec-item"><div class="spec-label">가장 강한 기운</div><div class="spec-value">金(금) 38% · 정리·분별</div></div><div class="spec-item"><div class="spec-label">보완하면 좋을 기운</div><div class="spec-value">火(화) 0%</div></div><div class="spec-item"><div class="spec-label">돋보이는 기질 지표</div><div class="spec-value">집중력(67), 직관력(61), 분석력(58)</div></div><div class="spec-item"><div class="spec-label">고교 유형 참고 (1순위)</div><div class="spec-value">일반고등학교 ★★★</div></div></div>
+<div class="spec-grid"><div class="spec-item"><div class="spec-label">타고난 결</div><div class="spec-value">일간 壬(임) · 큰 강물·바다 (水+)</div></div><div class="spec-item"><div class="spec-label">준서 · 이름 어울림</div><div class="spec-value">강한 金(금) 기운을 북돋움</div></div><div class="spec-item"><div class="spec-label">가장 강한 기운</div><div class="spec-value">金(금) 38% · 정리·분별</div></div><div class="spec-item"><div class="spec-label">보완하면 좋을 기운</div><div class="spec-value">火(화) 0%</div></div><div class="spec-item"><div class="spec-label">돋보이는 기질 지표</div><div class="spec-value">집중력(67), 직관력(61), 분석력(58)</div></div><div class="spec-item"><div class="spec-label">고교 유형 참고 (1순위)</div><div class="spec-value">일반고등학교 ★★★</div></div></div>
 
 ---
 

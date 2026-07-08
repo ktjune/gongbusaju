@@ -22,10 +22,11 @@ describe("runStructuralQa", () => {
     expect(issues.some((i) => i.includes("분량"))).toBe(true);
   });
 
-  it("금지 표현이 있으면 이슈를 낸다", () => {
-    const md = LONG_OK_MARKDOWN + " 이 학교에 가야 합니다.";
+  it("금지 표현은 여기서 잡지 않는다 (생성 단계 책임 — 면책 문구 오탐 방지)", () => {
+    // 코드가 넣는 면책 문구의 '보장' 등이 오탐되지 않아야 한다.
+    const md = LONG_OK_MARKDOWN + " 이 해석은 단정하거나 보장하는 것이 아닙니다.";
     const issues = runStructuralQa(md);
-    expect(issues.some((i) => i.includes("금지"))).toBe(true);
+    expect(issues).toHaveLength(0);
   });
 });
 

@@ -69,6 +69,8 @@ export type BuiltReport = {
   html: string;
   /** LLM 미연동(데모 목업)으로 생성됐는지 */
   isDemo: boolean;
+  /** LLM 생성 산문만 이어 붙인 것 — 자동 QA 검수 대상 */
+  prose: string;
 };
 
 /**
@@ -109,7 +111,7 @@ export async function buildReportForSubject(
 
   // 4. 리포트 생성 (관점 산문 + guardrails)
   const currentYear = opts.currentYear ?? new Date().getFullYear();
-  const { markdown } = await generateReport(
+  const { markdown, prose } = await generateReport(
     {
       saju,
       schools,
@@ -131,5 +133,5 @@ export async function buildReportForSubject(
       : undefined,
   });
 
-  return { markdown, html, isDemo };
+  return { markdown, html, isDemo, prose };
 }

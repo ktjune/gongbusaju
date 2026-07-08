@@ -73,6 +73,8 @@ export type ReportInput = {
 export type ReportOutput = {
   /** 최종 마크다운 리포트 */
   markdown: string;
+  /** LLM이 생성한 관점 산문만 이어 붙인 것 — 자동 QA 검수 대상(코드 생성물 제외) */
+  prose: string;
 };
 
 export type GenerateReportOptions = {
@@ -86,6 +88,18 @@ export type GenerateReportOptions = {
 // ──────────────────────────────────────────────────────────────
 // 핵심 함수
 // ──────────────────────────────────────────────────────────────
+
+/**
+ * LLM 산문의 흔한 기계적 오류를 가볍게 보정한다 (내용은 건드리지 않음).
+ * - 문장부호(. ! ?) 뒤에 공백 없이 한글/여는따옴표가 붙은 경우 공백 삽입
+ *   ("느낄 것입니다.다만" → "느낄 것입니다. 다만"). 소수점(3.5)은 뒤가 숫자라 영향 없음.
+ * - 중복 공백 정리.
+ */
+function tidyProse(s: string): string {
+  return s
+    .replace(/([.!?])([가-힣“"‘'(《「])/g, "$1 $2")
+    .replace(/[ \t]{2,}/g, " ");
+}
 
 /**
  * 리포트를 생성한다.
@@ -106,7 +120,15 @@ export async function generateReport(
   const factBlock = schools ? buildFactBlock(schools) : {};
 
   // 2. LLM 관점 블록 생성 — 학교 사실·이름은 전달하지 않는다
-  const perspective = await generatePerspective(saju, provider, llmMeta);
+  const perspectiveRaw = await generatePerspective(saju, provider, llmMeta);
+
+  // 2.5 흔한 기계적 오류 자동 보정 (문장부호 뒤 공백 누락 등) — 품질↑, QA 오탐↓
+  const perspective = Object.fromEntries(
+    Object.entries(perspectiveRaw).map(([k, v]) => [
+      k,
+      typeof v === "string" ? tidyProse(v) : v,
+    ])
+  ) as typeof perspectiveRaw;
 
   // 3. guardrails 검사 — 위반 시 GuardrailError throw → 발행 차단
   for (const prose of Object.values(perspective)) {
@@ -119,5 +141,10 @@ export async function generateReport(
     childName,
   });
 
-  return { markdown };
+  // LLM 산문만 이어 붙임 — 자동 QA는 이것만 검수(코드 생성 표·칩·도식 제외)
+  const prose = Object.values(perspective)
+    .filter((v): v is string => typeof v === "string")
+    .join("\n\n");
+
+  return { markdown, prose };
 }

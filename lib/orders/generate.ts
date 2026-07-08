@@ -80,7 +80,8 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
     };
 
     const built = await buildReportForSubject(subject, buildOpts);
-    const qa = await runAutoQa(built.markdown);
+    // 자동 QA는 LLM 산문만 검수한다 (코드가 만든 표·칩·도식·면책은 제외)
+    const qa = await runAutoQa(built.prose);
 
     if (!qa.passed) {
       console.warn(`[order] QA 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);

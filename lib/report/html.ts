@@ -444,7 +444,14 @@ export function renderReportHtml(
   opts: RenderHtmlOptions = {}
 ): string {
   const cover = buildCover(saju, opts);
-  const body = marked.parse(markdown, { async: false }) as string;
+  // 굵게(**…**)를 marked 전에 <strong>으로 변환한다.
+  // CommonMark는 굵게 내용이 문장부호로 끝나고 뒤에 한글 조사가 붙으면
+  // (예: "…壬(임)**입니다") 닫는 **를 인식하지 못해 그대로 노출된다 → 전처리로 회피.
+  const preprocessed = markdown.replace(
+    /\*\*(?!\s)([^\n*]+?)\*\*/g,
+    "<strong>$1</strong>"
+  );
+  const body = marked.parse(preprocessed, { async: false }) as string;
 
   return `<!DOCTYPE html>
 <html lang="ko">

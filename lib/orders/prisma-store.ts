@@ -7,6 +7,7 @@
  */
 
 import { getPrisma } from "../db";
+import { encryptPiiNullable, decryptPiiCompat } from "../crypto/pii";
 import { newReportToken } from "./store";
 import type { OrderStore } from "./store";
 import type { Order, OrderStatus, Report, Subject } from "./types";
@@ -35,8 +36,9 @@ function toOrder(r: OrderRow): Order {
     refundReason: r.refundReason,
     notifyError: r.notifyError,
     notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
-    contactEmail: r.contactEmail,
-    contactPhone: r.contactPhone,
+    // 연락처는 암호화 저장 — 읽을 때 복호화(레거시 평문도 호환)
+    contactEmail: decryptPiiCompat(r.contactEmail),
+    contactPhone: decryptPiiCompat(r.contactPhone),
     createdAt: iso(r.createdAt),
     updatedAt: iso(r.updatedAt),
   };
@@ -110,8 +112,8 @@ export class PrismaOrderStore implements OrderStore {
         refundReason: data.refundReason,
         notifyError: data.notifyError,
         notifyFailedAt: data.notifyFailedAt ? new Date(data.notifyFailedAt) : null,
-        contactEmail: data.contactEmail,
-        contactPhone: data.contactPhone,
+        contactEmail: encryptPiiNullable(data.contactEmail),
+        contactPhone: encryptPiiNullable(data.contactPhone),
       },
     });
     return toOrder(row);

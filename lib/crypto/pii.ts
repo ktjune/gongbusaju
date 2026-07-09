@@ -93,6 +93,16 @@ export function decryptPiiNullable(enc: string | null | undefined): string | nul
 }
 
 /**
+ * 하위호환 복호화 — 암호문("v1:…")이면 복호화, 아니면 평문으로 간주해 그대로 반환.
+ * 평문으로 저장돼 있던 레거시 값(암호화 도입 전 연락처)을 안전하게 읽기 위함.
+ */
+export function decryptPiiCompat(enc: string | null | undefined): string | null {
+  if (enc == null) return null;
+  if (!enc.startsWith(`${VERSION}:`)) return enc; // 레거시 평문
+  return decryptPii(enc);
+}
+
+/**
  * 사주 계산 캐시 키 — 생년월일시·성별 해시 (PII 미포함, 단방향).
  * saju_results.inputHash 용. 같은 입력은 같은 해시 → 계산 재사용.
  */

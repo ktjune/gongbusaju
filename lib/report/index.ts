@@ -68,6 +68,8 @@ export type ReportInput = {
   currentSchoolName?: string;
   /** 아이 이름(한글, 선택) — 요약 호명용. 코드 표기, LLM 미전달. */
   childName?: string;
+  /** 아이 이름 한자(선택) — 자원오행 분석용. 코드 표기, LLM 미전달. */
+  childNameHanja?: string;
 };
 
 export type ReportOutput = {
@@ -111,7 +113,7 @@ export async function generateReport(
   input: ReportInput,
   options: GenerateReportOptions = {}
 ): Promise<ReportOutput> {
-  const { saju, schools, birthYear, currentYear, currentSchoolName, childName } = input;
+  const { saju, schools, birthYear, currentYear, currentSchoolName, childName, childNameHanja } = input;
   const provider = options.llmProvider ?? new ClaudeLlmProvider();
   // LLM에 넘기는 meta에는 이름을 포함하지 않는다 (식별정보 미전송 원칙).
   const llmMeta = { birthYear, currentYear, currentSchoolName };
@@ -139,6 +141,7 @@ export async function generateReport(
   const markdown = assembleReport(saju, factBlock, perspective, {
     ...llmMeta,
     childName,
+    childNameHanja,
   });
 
   // LLM 산문만 이어 붙임 — 자동 QA는 이것만 검수(코드 생성 표·칩·도식 제외)

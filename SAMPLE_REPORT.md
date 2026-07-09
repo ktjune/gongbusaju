@@ -51,7 +51,7 @@
 
 ### 빠르게 훑어보기
 
-<div class="spec-grid"><div class="spec-item"><div class="spec-label">타고난 결</div><div class="spec-value">일간 壬(임) · 큰 강물·바다 (水+)</div></div><div class="spec-item"><div class="spec-label">준서 · 이름 어울림</div><div class="spec-value">강한 金(금) 기운을 북돋움</div></div><div class="spec-item"><div class="spec-label">가장 강한 기운</div><div class="spec-value">金(금) 38% · 정리·분별</div></div><div class="spec-item"><div class="spec-label">보완하면 좋을 기운</div><div class="spec-value">火(화) 0%</div></div><div class="spec-item"><div class="spec-label">돋보이는 기질 지표</div><div class="spec-value">집중력(67), 직관력(61), 분석력(58)</div></div><div class="spec-item"><div class="spec-label">고교 유형 참고 (1순위)</div><div class="spec-value">일반고등학교 ★★★</div></div></div>
+<div class="spec-grid"><div class="spec-item"><div class="spec-label">타고난 결</div><div class="spec-value">일간 壬(임) · 큰 강물·바다 (水+)</div></div><div class="spec-item"><div class="spec-label">준서 · 이름 어울림</div><div class="spec-value">부족한 火(화) 기운을 채워 줌</div></div><div class="spec-item"><div class="spec-label">가장 강한 기운</div><div class="spec-value">金(금) 38% · 정리·분별</div></div><div class="spec-item"><div class="spec-label">보완하면 좋을 기운</div><div class="spec-value">火(화) 0%</div></div><div class="spec-item"><div class="spec-label">돋보이는 기질 지표</div><div class="spec-value">집중력(67), 직관력(61), 분석력(58)</div></div><div class="spec-item"><div class="spec-label">고교 유형 참고 (1순위)</div><div class="spec-value">일반고등학교 ★★★</div></div></div>
 
 ---
 
@@ -176,13 +176,23 @@
 
 <p class="datanote">성명학의 발음오행(音靈五行, 이름 소리의 오행) 관점에서, 이름 '준서'가 사주와 어떻게 어울리는지 살펴봅니다. 사주 명리와는 별개의 전통 해석이며 참고용입니다.</p>
 
-### 이름에 담긴 오행
+### 이름 소리에 담긴 오행
 
 <div class="name-chips"><span class="name-chip" style="border-color:#8e9aa8"><b>준</b><span style="color:#8e9aa8">金·금</span></span><span class="name-chip" style="border-color:#8e9aa8"><b>서</b><span style="color:#8e9aa8">金·금</span></span></div>
 
 **준서, 이 이름은 사주에서 이미 강한 金(금) 기운을 한 번 더 북돋습니다.** 타고난 강점을 밀어 주는 이름이에요. 사주에서 옅은 火(화) 기운은 이름보다 생활 속 활동(앞서 오행 풀이에서 제안한 것들)으로 채워 주시면 균형이 더 좋아집니다.
 
 이름 글자들이 같은 기운으로 모여, 결이 한결같고 뚜렷합니다.
+
+### 이름 한자의 자원오행
+
+<p class="datanote">한자마다 지닌 오행(자원오행字源五行)과 원획으로 봅니다. 부수 계열 기반 참고이며, 유파에 따라 다를 수 있습니다.</p>
+
+<div class="name-chips"><span class="name-chip" style="border-color:#d64545"><b>俊</b><span style="color:#d64545">火·화</span><span class="chip-stroke">9획</span></span><span class="name-chip" style="border-color:#d64545"><b>書</b><span style="color:#d64545">火·화</span><span class="chip-stroke">10획</span></span></div>
+
+한자에 담긴 오행(자원오행)으로 보면, '준서'는 사주에 옅은 **火(화)** 기운을 품고 있어 부족한 자리를 채워 주는 이름입니다. 전통 작명에서 가장 좋게 보는 '사주를 보완하는 이름'에 해당해요.
+
+이름 한자의 원획 합은 **19획**입니다. (획수의 길흉은 학설이 갈려 본 리포트에서는 판정하지 않습니다.)
 
 ### 부족한 기운, 이렇게 채워 주세요
 

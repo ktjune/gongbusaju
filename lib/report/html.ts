@@ -345,6 +345,7 @@ body {
 }
 .name-chip b { color: var(--navy); font-size: 1.25em; font-weight: 700; }
 .name-chip-x { color: var(--ink-soft); }
+.chip-stroke { color: var(--ink-soft); font-size: 0.86em; border-left: 1px solid var(--line); padding-left: 6px; }
 .name-supplement {
   background: var(--card); border: 1px solid var(--line);
   border-left: 5px solid var(--line); border-radius: 0 12px 12px 0;

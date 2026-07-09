@@ -62,6 +62,7 @@ model Subject {
   encAddress       String?  // Premium용
   encCurrentSchool String?  // Premium용
   encName          String?  // 아이 이름(한글) — 표지·요약 호명용. LLM 미전송
+  encNameHanja     String?  // 아이 이름 한자(선택) — 자원오행 분석용. LLM 미전송
   consentAt        DateTime
   retainUntil      DateTime // 보관 기간 (동의 시 명시)
   createdAt        DateTime @default(now())

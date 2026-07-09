@@ -50,6 +50,8 @@ export type BuildReportSubject = {
   currentSchool?: string;
   /** 아이 이름(한글, 선택) — 표지·요약 호명용. LLM 미전송. */
   name?: string;
+  /** 아이 이름 한자(선택) — 자원오행 분석용. LLM 미전송. */
+  nameHanja?: string;
 };
 
 export type BuildReportOptions = {
@@ -119,6 +121,7 @@ export async function buildReportForSubject(
       currentYear,
       currentSchoolName: subject.currentSchool,
       childName: subject.name,
+      childNameHanja: subject.nameHanja,
     },
     { llmProvider: provider }
   );

@@ -52,3 +52,6 @@ next-env.d.ts
 # 로컬 PDF 내보내기
 샘플.pdf
 *.local.pdf
+
+# 로컬 프리뷰용 일러스트 사본 (public/illust가 원본)
+/illust/

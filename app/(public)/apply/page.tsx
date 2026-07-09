@@ -71,6 +71,7 @@ export default function ApplyPage() {
   const [step, setStep] = useState<"form" | "pay">("form");
 
   const [childName, setChildName] = useState("");
+  const [childNameHanja, setChildNameHanja] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [birthDate, setBirthDate] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
@@ -151,6 +152,7 @@ export default function ApplyPage() {
     return {
       tier: "basic",
       name: childName.trim() || undefined,
+      nameHanja: childNameHanja.trim() || undefined,
       birthYear: y,
       birthMonth: m,
       birthDay: d,
@@ -251,16 +253,26 @@ export default function ApplyPage() {
 
           <div className={styles.field}>
             <label className={styles.label}>이름 (선택)</label>
-            <input
-              className={styles.input}
-              value={childName}
-              maxLength={20}
-              onChange={(e) => setChildName(e.target.value)}
-              placeholder="예: 준서"
-            />
+            <div className={styles.row}>
+              <input
+                className={styles.input}
+                value={childName}
+                maxLength={20}
+                onChange={(e) => setChildName(e.target.value)}
+                placeholder="예: 준서"
+              />
+              <input
+                className={styles.input}
+                value={childNameHanja}
+                maxLength={20}
+                onChange={(e) => setChildNameHanja(e.target.value)}
+                placeholder="한자 (예: 俊書)"
+              />
+            </div>
             <p className={styles.hint}>
-              입력하시면 리포트 표지·요약에 아이 이름으로 인사드립니다. 비워 두시면 &lsquo;우리 아이&rsquo;로
-              표기됩니다. (이름은 사주 계산·AI 해석에 사용되지 않으며 표기용으로만 쓰입니다.)
+              이름을 입력하시면 리포트 표지·요약에 아이 이름으로 인사드립니다. 한자까지 넣으시면
+              <b> 이름의 자원오행이 사주를 어떻게 보완하는지</b>(성명학 참고)도 풀이해 드립니다.
+              비워 두셔도 됩니다. (이름·한자는 사주 계산·AI 해석에 사용되지 않습니다.)
             </p>
           </div>
 

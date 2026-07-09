@@ -295,6 +295,7 @@ async function main() {
       currentYear: 2026,
       currentSchoolName: "푸른숲유치원 (샘플)",
       childName: "준서",
+      childNameHanja: "俊書",
     },
     { llmProvider: perspectiveProvider }
   );

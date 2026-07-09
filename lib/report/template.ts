@@ -48,6 +48,7 @@ import {
 import { deriveSchoolStage, STAGE_GUIDE, buildStageTimeline } from "./stage";
 import { topicParticle, objectParticle, subjectParticle } from "./josa";
 import { analyzeName } from "./nameology";
+import { analyzeNameHanja } from "./nameology-hanja";
 import { dayMasterIllust } from "./illustrations";
 
 // ──────────────────────────────────────────────────────────────
@@ -152,6 +153,8 @@ export type ReportMeta = {
   currentSchoolName?: string;
   /** 아이 이름(한글, 선택) — 요약 호명용. 코드가 표기, LLM 미전달. */
   childName?: string;
+  /** 아이 이름 한자(선택) — 자원오행 분석용. 코드가 표기, LLM 미전달. */
+  childNameHanja?: string;
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -765,7 +768,11 @@ const TENGOD_GROUP_STUDY_AXIS: Record<string, string> = {
  * ① 형상론 상징 문구 → ② 풀어 쓰는 개관 → ③ 빠른 참고 순으로 보여 준다.
  * 부모가 긴 본문을 다 읽기 전에 먼저 그림을 잡을 수 있도록 한다. LLM 미관여(코드 생성).
  */
-export function buildSummarySection(saju: SajuResult, childName?: string): string {
+export function buildSummarySection(
+  saju: SajuResult,
+  childName?: string,
+  childNameHanja?: string
+): string {
   const name = childName?.trim() || undefined;
   const order: Array<[string, keyof SajuResult["elements"]]> = [
     ["木", "목"], ["火", "화"], ["土", "토"], ["金", "금"], ["水", "수"],
@@ -856,10 +863,12 @@ export function buildSummarySection(saju: SajuResult, childName?: string): strin
   );
 
   // ── ③ 빠른 참고 — 2열 스펙 그리드 ──────────────────────
-  // 이름 어울림 요약 (이름 있을 때만) — 자세한 풀이는 뒤 '이름과 사주의 어울림' 섹션
+  // 이름 어울림 요약 (이름 있을 때만) — 자세한 풀이는 뒤 '이름과 사주의 어울림' 섹션.
+  // 한자 있으면 자원오행(성명학 본류)을, 없으면 발음오행을 티저로 쓴다.
   let nameSpec: [string, string] | null = null;
+  const hjName = childNameHanja?.trim();
   if (name) {
-    const na = analyzeName(name, saju);
+    const na = (hjName && analyzeNameHanja(hjName, saju)) || analyzeName(name, saju);
     if (na) {
       const wH = WUXING_DICT[na.weakEl]?.hangul ?? na.weakEl;
       const sH = WUXING_DICT[na.strongEl]?.hangul ?? na.strongEl;
@@ -956,7 +965,11 @@ const WUXING_SUPPLEMENT: Record<string, { keyword: string; how: string }> = {
  * 이름이 없거나 한글 음절이 없으면 빈 문자열(섹션 생략).
  * 절대 "흉명/개명" 판정 없이 긍정·참고 프레임으로만 서술한다. LLM 미관여.
  */
-export function buildNameSajuSection(saju: SajuResult, name?: string): string {
+export function buildNameSajuSection(
+  saju: SajuResult,
+  name?: string,
+  nameHanja?: string
+): string {
   const nm = name?.trim();
   if (!nm) return "";
   const a = analyzeName(nm, saju);
@@ -1033,6 +1046,48 @@ export function buildNameSajuSection(saju: SajuResult, name?: string): string {
       `</div>`
     : "";
 
+  // ── 한자 자원오행 (한자가 있을 때만) ──
+  const hanjaBlock: string[] = [];
+  const hj = nameHanja?.trim();
+  if (hj) {
+    const ha = analyzeNameHanja(hj, saju);
+    if (ha && ha.elements.length > 0) {
+      const hchips = ha.chars
+        .map((c) => {
+          if (!c.element) {
+            return `<span class="name-chip name-chip-x">${esc(c.char)}</span>`;
+          }
+          const color = WUXING_COLOR[c.element] ?? "#888";
+          const stroke = c.strokes ? `<span class="chip-stroke">${c.strokes}획</span>` : "";
+          return `<span class="name-chip" style="border-color:${color}"><b>${esc(c.char)}</b><span style="color:${color}">${c.element}·${hangulOf(c.element)}</span>${stroke}</span>`;
+        })
+        .join("");
+      let hcomp: string;
+      if (ha.complementType === "보완") {
+        hcomp =
+          `한자에 담긴 오행(자원오행)으로 보면, '${nmE}'는 사주에 옅은 **${ha.weakEl}(${hangulOf(ha.weakEl)})** 기운을 품고 있어 ` +
+          `부족한 자리를 채워 주는 이름입니다. 전통 작명에서 가장 좋게 보는 '사주를 보완하는 이름'에 해당해요.`;
+      } else if (ha.complementType === "강화") {
+        hcomp =
+          `한자에 담긴 오행(자원오행)으로 보면, '${nmE}'는 사주에서 이미 강한 **${ha.strongEl}(${hangulOf(ha.strongEl)})** 기운을 ` +
+          `한 번 더 북돋습니다. 타고난 강점을 밀어 주는 이름이에요.`;
+      } else {
+        hcomp = `한자에 담긴 오행(자원오행)으로 보면, '${nmE}'의 기운은 사주와 큰 충돌 없이 무난하게 어우러집니다.`;
+      }
+      hanjaBlock.push(
+        "### 이름 한자의 자원오행",
+        `<p class="datanote">한자마다 지닌 오행(자원오행字源五行)과 원획으로 봅니다. 부수 계열 기반 참고이며, 유파에 따라 다를 수 있습니다.</p>`,
+        `<div class="name-chips">${hchips}</div>`,
+        hcomp
+      );
+      if (ha.totalStrokes) {
+        hanjaBlock.push(
+          `이름 한자의 원획 합은 **${ha.totalStrokes}획**입니다. (획수의 길흉은 학설이 갈려 본 리포트에서는 판정하지 않습니다.)`
+        );
+      }
+    }
+  }
+
   const closing =
     `무엇보다 이름에는 부모님이 담은 뜻과 바람이 깃들어 있습니다. ` +
     `위 오행 해석은 그 위에 더하는 하나의 참고일 뿐, 아이를 부르는 그 이름이 이미 가장 큰 선물입니다.`;
@@ -1040,10 +1095,11 @@ export function buildNameSajuSection(saju: SajuResult, name?: string): string {
   return [
     "## 이름과 사주의 어울림",
     `<p class="datanote">성명학의 발음오행(音靈五行, 이름 소리의 오행) 관점에서, 이름 '${nmE}'${subjectParticle(nm)} 사주와 어떻게 어울리는지 살펴봅니다. 사주 명리와는 별개의 전통 해석이며 참고용입니다.</p>`,
-    "### 이름에 담긴 오행",
+    "### 이름 소리에 담긴 오행",
     `<div class="name-chips">${chips}</div>`,
     comp,
     flow,
+    ...hanjaBlock,
     "### 부족한 기운, 이렇게 채워 주세요",
     supIntro,
     supCard,
@@ -1075,7 +1131,7 @@ export function assembleReport(
   const sections: Section[] = [];
 
   // ── 한 장 요약 (데이터 기반, 맨 앞) ──────────────────────
-  sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju, meta.childName) });
+  sections.push({ title: "우리 아이 한 장 요약", body: buildSummarySection(saju, meta.childName, meta.childNameHanja) });
 
   // ── 짧은 활용 가이드 (정적) — 상세 사주 설명은 맨 뒤 부록으로 이동 ──
   sections.push({ title: "이 리포트, 이렇게 보세요", body: HOW_TO_READ });
@@ -1116,7 +1172,7 @@ export function assembleReport(
   });
 
   // ── 이름과 사주 (성명학 라이트 — 이름 있을 때만) ──────────
-  const nameSection = buildNameSajuSection(saju, meta.childName);
+  const nameSection = buildNameSajuSection(saju, meta.childName, meta.childNameHanja);
   if (nameSection) {
     sections.push({ title: "이름과 사주의 어울림", body: nameSection });
   }

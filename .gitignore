@@ -55,3 +55,7 @@ next-env.d.ts
 
 # 로컬 프리뷰용 일러스트 사본 (public/illust가 원본)
 /illust/
+
+# 원본 참고 PDF (로컬만)
+hanja.pdf
+*.hwpx

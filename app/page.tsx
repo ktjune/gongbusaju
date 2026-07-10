@@ -117,6 +117,14 @@ export default function Home() {
             <div className={styles.featureName}>오행 · 십성</div>
             <div className={styles.featureDesc}>강한 기운과 보완할 기운, 마음의 습관</div>
           </div>
+          <div className={`${styles.feature} ${styles.featurePremium}`}>
+            <div className={styles.featurePremiumBadge}>이름 입력 시</div>
+            <div className={styles.featureIcon}>✍️</div>
+            <div className={styles.featureName}>이름 · 성명학</div>
+            <div className={styles.featureDesc}>
+              이름의 소리·한자 오행이 사주의 부족함을 어떻게 보완하는지 (자원오행 참고)
+            </div>
+          </div>
           <div className={styles.feature}>
             <div className={styles.featureIcon}>📚</div>
             <div className={styles.featureName}>공부 스타일</div>
@@ -192,6 +200,7 @@ export default function Home() {
                 <li>사주 원국·오행·십성 해석</li>
                 <li>공부 스타일·부모 코칭</li>
                 <li>대운·세운 흐름 · 학령 단계 맞춤 안내</li>
+                <li>이름 성명학 풀이 <b>(이름·한자 입력 시)</b></li>
                 <li>예상 배정 학교·반경 학교군 <b>(주소 입력 시)</b></li>
                 <li>웹 결과 페이지 + PDF</li>
               </ul>

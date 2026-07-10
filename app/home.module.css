@@ -247,11 +247,15 @@
 
 /* ── 리포트 구성 ── */
 .features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 16px;
 }
 .feature {
+  /* flex 기반 — 카드 개수가 3의 배수가 아니어도 마지막 줄이 가운데로 정렬됨 */
+  flex: 1 1 260px;
+  max-width: 320px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -683,13 +687,12 @@
     grid-template-columns: 1fr;
   }
   .stepArrow { transform: rotate(90deg); }
-  .features { grid-template-columns: 1fr 1fr; }
   .reviews { grid-template-columns: 1fr; }
   .ctaTitle { font-size: 1.75rem; }
   .sectionTitle { font-size: 1.45rem; }
 }
 
 @media (max-width: 480px) {
-  .features { grid-template-columns: 1fr; }
+  .feature { flex-basis: 100%; max-width: none; }
   .heroTitle { font-size: 1.85rem; }
 }

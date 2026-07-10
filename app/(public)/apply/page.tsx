@@ -81,6 +81,7 @@ export default function ApplyPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [consent, setConsent] = useState(false);
+  const [refundConsent, setRefundConsent] = useState(false);
 
   const [searching, setSearching] = useState(false);
   const postcodeBoxRef = useRef<HTMLDivElement>(null);
@@ -92,7 +93,7 @@ export default function ApplyPage() {
   const birthYear = birthDate.slice(0, 4);
 
   const canProceed =
-    birthDate && (timeUnknown || birthTime !== "") && consent;
+    birthDate && (timeUnknown || birthTime !== "") && consent && refundConsent;
 
   // 결제 단계 진입 시 토스 결제위젯 렌더
   useEffect(() => {
@@ -392,6 +393,14 @@ export default function ApplyPage() {
               <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>이용약관</a>
             </span>
           </label>
+
+          <label className={styles.checkRow} style={{ marginTop: 12 }}>
+            <input type="checkbox" checked={refundConsent} onChange={(e) => setRefundConsent(e.target.checked)} />
+            <span>
+              (필수) 개별 제작되는 리포트로, <b>제작 시작 후에는 단순 변심 환불이 어렵습니다.</b>{" "}
+              <a href="/terms#refund" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>환불정책</a>
+            </span>
+          </label>
         </div>
 
         <button className={styles.submit} type="submit" disabled={!canProceed}>
@@ -399,7 +408,7 @@ export default function ApplyPage() {
         </button>
 
         <p className={styles.notice}>
-          본 리포트의 해석은 사주 명리의 관점이며, 실측 검사 결과가 아닙니다.
+          제작 전 취소는 전액 환불 · 리포트 내용에 오류가 있으면 재제작/환불해 드립니다.
         </p>
       </form>
     </div>

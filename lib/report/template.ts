@@ -85,6 +85,10 @@ export const INTERPRETATION_NOTICE =
   "학교 정보는 공공데이터 기반 예상으로 실제 배정은 교육청 확인이 필요합니다. " +
   "아이의 실제 모습과 보호자의 판단이 항상 우선합니다.";
 
+/** 이름 한자 원획 관련 참고 — 이름 섹션에 획수를 표기한 리포트에만 하단에 모아 고지 */
+export const NAME_STROKE_NOTICE =
+  "이름 한자의 원획 획수는 참고 정보이며, 획수의 길흉(수리길흉)은 학설이 갈려 본 리포트에서는 판정하지 않습니다.";
+
 /** 학교 배정 결과에 항상 붙이는 라벨 */
 export const ASSIGNED_SCHOOL_LABEL = "예상 배정(교육청 확인 필요)";
 
@@ -1081,8 +1085,9 @@ export function buildNameSajuSection(
         hcomp
       );
       if (ha.totalStrokes) {
+        // 획수 길흉 판정 안 함 고지는 리포트 하단 면책(NAME_STROKE_NOTICE)으로 모은다.
         hanjaBlock.push(
-          `이름 한자의 원획 합은 **${ha.totalStrokes}획**입니다. (획수의 길흉은 학설이 갈려 본 리포트에서는 판정하지 않습니다.)`
+          `이름 한자의 원획 합은 **${ha.totalStrokes}획**입니다.`
         );
       }
 
@@ -1422,6 +1427,8 @@ export function assembleReport(
 
   const notices = [TIME_STANDARD_NOTICE];
   if (saju.dstApplied) notices.push(DST_CORRECTION_NOTICE);
+  // 이름 한자를 받은 리포트에만 원획 길흉 관련 고지를 하단에 추가
+  if (meta.childName?.trim() && meta.childNameHanja?.trim()) notices.push(NAME_STROKE_NOTICE);
   notices.push(INTERPRETATION_NOTICE);
 
   return [

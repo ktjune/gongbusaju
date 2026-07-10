@@ -99,7 +99,9 @@ export type GenerateReportOptions = {
  */
 function tidyProse(s: string): string {
   return s
-    .replace(/([.!?])([가-힣“"‘'(《「])/g, "$1 $2")
+    // 문장부호 뒤 공백 없이 다음 문장이 붙은 경우 공백 삽입.
+    // 곧은 따옴표(" ')는 닫는 용도로도 쓰여(…이네!') 오탐하므로 제외 — 명확히 여는 기호만.
+    .replace(/([.!?])([가-힣“‘(《「])/g, "$1 $2")
     .replace(/[ \t]{2,}/g, " ");
 }
 

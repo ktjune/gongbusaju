@@ -152,31 +152,59 @@ export default function Home() {
       {/* ── 리포트 미리보기 카드 ── */}
       <div className={styles.previewBand}>
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>이렇게 만들어집니다</h2>
-          <p className={styles.sectionLead}>실제 리포트의 일부를 살펴보세요</p>
+          <h2 className={styles.sectionTitle}>맛보기 리포트</h2>
+          <p className={styles.sectionLead}>실제 리포트의 일부입니다 — 전체는 아래 버튼에서 열어볼 수 있어요</p>
           <div className={styles.previewCard}>
             <div className={styles.previewHeader}>
-              <div className={styles.previewTitle}>공부사주 리포트 — 甲木 일간 (예시)</div>
+              <div className={styles.previewTitle}>공부사주 리포트 — 壬水 일간 · 준서 (예시)</div>
               <div className={styles.previewTier}>예시</div>
             </div>
             <div className={styles.previewBody}>
+              <div className={styles.previewImagery}>
+                <div className={styles.previewImageryForm}>
+                  &ldquo;온갖 물길이 큰 바다로 모여드는 형상(百川歸海)&rdquo;
+                </div>
+                <div className={styles.previewImageryReading}>
+                  무엇이든 담아 깊고 넓게 흐르는 강물의 기상 — 포용력과 깊은 사고력을 품은 아이
+                </div>
+              </div>
               <div className={styles.previewSection}>
-                <div className={styles.previewSectionTitle}>🧭 타고난 결</div>
+                <div className={styles.previewSectionTitle}>🧭 타고난 결 · 일간</div>
                 <p className={styles.previewText}>
-                  甲木 일간은 곧고 위로 자라는 큰 나무의 기운입니다. 목표를 향해 꾸준히 나아가는 힘이 강하고,
-                  자신만의 원칙과 페이스를 지키며 배울 때 가장 잘 흡수합니다…
+                  일간은 壬(임), 깊고 넓게 흐르는 큰 물입니다. 겉은 잔잔해도 속으로 많은 생각을 굴리며,
+                  새로운 지식을 자기 속도로 소화해 자기 것으로 만드는 힘이 있습니다…
                 </p>
               </div>
               <div className={styles.previewSection}>
-                <div className={styles.previewSectionTitle}>📚 공부 스타일</div>
+                <div className={styles.previewSectionTitle}>🌱 오행 · 강점과 보완</div>
                 <p className={styles.previewText}>
-                  시간 압박보다 충분한 이해를 선호합니다. 개념을 먼저 큰 그림으로 잡고 세부를 채우는 방식이 맞으며…
+                  金(금) 38%로 정리·분별의 힘이 도드라지고, 火(화)는 옅어 표현·발산은 앞으로 채워 갈
+                  여백입니다. 노래·율동·바깥 놀이로 균형을 참고해 볼 수 있어요…
+                </p>
+              </div>
+              <div className={styles.previewSection}>
+                <div className={styles.previewSectionTitle}>✍️ 이름 · 성명학</div>
+                <p className={styles.previewText}>
+                  이름의 소리는 강점 金을 밀어주고, 한자(俊書)는 부족한 火를 채워 줍니다 — 한 이름이 두
+                  방향으로 아이를 돕는 셈…
                 </p>
               </div>
               <div className={styles.previewBlur}>
-                <div className={styles.previewBlurText}>검수 완료 후 전체 내용이 전달됩니다</div>
+                <div className={styles.previewBlurText}>
+                  오행·십성·공부 스타일·진로·대운·세운 등 22개 섹션
+                </div>
               </div>
             </div>
+          </div>
+          <div className={styles.previewCtaWrap}>
+            <a
+              href="/sample"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.previewCta}
+            >
+              실제 리포트 전체 예시 보기 →
+            </a>
           </div>
         </section>
       </div>

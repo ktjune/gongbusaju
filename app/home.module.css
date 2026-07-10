@@ -370,6 +370,45 @@
   border-radius: 20px;
   border: 1px solid var(--line);
 }
+.previewImagery {
+  background: #f9f3e7;
+  border: 1px solid var(--gold);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+.previewImageryForm {
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.previewImageryReading {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.previewCtaWrap {
+  text-align: center;
+  margin-top: 24px;
+}
+.previewCta {
+  display: inline-block;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.98rem;
+  padding: 14px 30px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.previewCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(31, 59, 99, 0.22);
+}
 
 /* ── 요금제 ── */
 .tiers {

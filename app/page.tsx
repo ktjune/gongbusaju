@@ -38,7 +38,7 @@ export default function Home() {
             </a>
           </div>
           <p className={styles.heroNote}>
-            전문 검수 후 웹·PDF로 전달 · 카카오/이메일 알림
+            자동 검수 후 웹·PDF로 전달 · 카카오/이메일 알림
           </p>
         </div>
       </section>
@@ -87,7 +87,7 @@ export default function Home() {
               <div className={styles.stepNum}>2</div>
               <div className={styles.stepName}>계산 · 검수</div>
               <div className={styles.stepDesc}>
-                만세력 계산과 해석을<br />전문 검수로 한 번 더 거릅니다
+                만세력 계산과 해석을<br />자동 검수로 한 번 더 거칩니다
               </div>
             </div>
             <div className={styles.stepArrow} aria-hidden="true">→</div>
@@ -272,8 +272,8 @@ export default function Home() {
             <details className={styles.faq}>
               <summary className={styles.faqQ}>리포트는 얼마나 걸려 오나요?</summary>
               <p className={styles.faqA}>
-                신청 후 전문 검수를 거쳐 전달합니다. 목표 납기는 영업일 기준 1~2일이며,
-                완성되면 입력하신 이메일·카카오로 결과 링크를 보내드립니다.
+                신청 후 자동 검수를 거쳐 전달합니다. 완성되면 입력하신 이메일·카카오로
+                결과 링크를 보내드립니다.
               </p>
             </details>
             <details className={styles.faq}>

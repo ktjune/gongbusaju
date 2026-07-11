@@ -224,11 +224,61 @@ const perspectiveProvider: LlmProvider = {
   },
 };
 
+/** 공개 맛보기에서 이 앵커(십성)부터 잠근다 — 앞 6개 섹션만 공개 */
+const GATE_ANCHOR = '<a id="sec-7">';
+
+/** 잠금 지점에 넣을 안내 + 구매 CTA (인라인 스타일 — 리포트 스타일시트 미오염) */
+const LOCK_BLOCK = [
+  "---",
+  "",
+  '<div style="margin:44px auto;max-width:560px;text-align:center;background:linear-gradient(180deg,#fff,#f1f5fb);border:1px solid #d9e2f0;border-radius:20px;padding:44px 28px;box-shadow:0 14px 44px rgba(31,59,99,.14)">' +
+    '<div style="font-size:2.4rem;margin-bottom:10px">🔒</div>' +
+    '<div style="font-family:\'Nanum Myeongjo\',\'Noto Serif KR\',serif;font-size:1.32rem;font-weight:700;color:#1f3b63;margin-bottom:12px">여기부터는 실제 리포트에서 이어집니다</div>' +
+    '<div style="font-size:.95rem;color:#5a6472;line-height:1.75;margin-bottom:26px">십성 구조 · 공부 스타일 · 학습 영역 · 과목/직업/전공 경향 · 대운·세운 흐름 · 학령 단계별 로드맵 · 학교 선택 참고 등 <b>16개 섹션</b>이 더 담깁니다.</div>' +
+    '<a href="/apply" style="display:inline-block;background:#1f3b63;color:#fff;font-weight:700;font-size:1rem;padding:15px 34px;border-radius:12px;text-decoration:none">9,900원 · 우리 아이 리포트 신청하기 →</a>' +
+    "</div>",
+  "",
+].join("\n");
+
+/** 공개 샘플 마크다운을 앞 6개 섹션까지로 자르고 잠금 블록을 붙인다. */
+function gateMarkdown(md: string): string {
+  const cut = md.indexOf(GATE_ANCHOR);
+  if (cut === -1) return md; // 앵커 못 찾으면 안전하게 전체 유지
+  return md.slice(0, cut).trimEnd() + "\n\n" + LOCK_BLOCK + "\n";
+}
+
+/**
+ * 공개 샘플 HTML에 방어막을 주입한다(복사 차단·워터마크). 실제 배송 리포트에는
+ * 적용하지 않으며 오직 /sample 응답에만 쓴다. 완벽한 차단은 불가능하고, 게으른
+ * 복사·스크린샷 유출에 대한 마찰·브랜딩 목적이다.
+ */
+function injectSampleGuards(html: string): string {
+  const wmSvg =
+    "<svg xmlns='http://www.w3.org/2000/svg' width='330' height='230'>" +
+    "<text x='6' y='120' transform='rotate(-22 6 120)' fill='rgba(31,59,99,0.05)' " +
+    "font-size='20' font-weight='700' font-family='sans-serif'>GONGBUSAJU · SAMPLE</text></svg>";
+  const wmUrl = "data:image/svg+xml," + encodeURIComponent(wmSvg);
+  const guards =
+    `<style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}` +
+    `.sample-wm{position:fixed;inset:0;pointer-events:none;z-index:9998;background-image:url("${wmUrl}")}</style>` +
+    `<div class="sample-wm" aria-hidden="true"></div>` +
+    `<script>["contextmenu","copy","cut","dragstart"].forEach(function(t){` +
+    `document.addEventListener(t,function(e){e.preventDefault();});});</script>`;
+  return html.includes("</body>")
+    ? html.replace("</body>", guards + "</body>")
+    : html + guards;
+}
+
 /**
  * 맛보기 샘플 리포트를 생성한다 (마크다운 + 렌더된 HTML).
  * 프로덕션과 동일한 코드 경로 — LLM 산문만 고정 텍스트로 주입.
+ *
+ * @param opts.gated true면 공개용: 앞 6개 섹션만 남기고 잠금 + 복사 방어막 주입.
+ *                   false(기본)면 전체 — 내부 검수·스크립트용.
  */
-export async function buildSampleReport(): Promise<{ markdown: string; html: string }> {
+export async function buildSampleReport(
+  opts: { gated?: boolean } = {}
+): Promise<{ markdown: string; html: string }> {
   const result = await generateReport(
     {
       saju: SAMPLE_SAJU,
@@ -241,12 +291,16 @@ export async function buildSampleReport(): Promise<{ markdown: string; html: str
     { llmProvider: perspectiveProvider }
   );
 
-  const html = renderReportHtml(SAMPLE_SAJU, result.markdown, {
+  const markdown = opts.gated ? gateMarkdown(result.markdown) : result.markdown;
+
+  let html = renderReportHtml(SAMPLE_SAJU, markdown, {
     subjectLabel: "2020년 9월 16일 16:43 출생 · 남아 (만 5세)",
     childName: "준서",
     generatedAt: "2026-06-11",
     sampleNotice: "미리보기용 샘플 — 학교 정보는 샘플 데이터입니다",
   });
 
-  return { markdown: result.markdown, html };
+  if (opts.gated) html = injectSampleGuards(html);
+
+  return { markdown, html };
 }

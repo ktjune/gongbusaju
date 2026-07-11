@@ -13,11 +13,14 @@ export const runtime = "nodejs";
 export const dynamic = "force-static";
 
 export async function GET() {
-  const { html } = await buildSampleReport();
+  // gated: 앞 6개 섹션만 공개 + 복사 방어막 주입 (전체 유출 방지)
+  const { html } = await buildSampleReport({ gated: true });
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "public, max-age=3600",
+      // 검색·AI 크롤러 색인 제외 (robots.txt와 이중 차단)
+      "x-robots-tag": "noindex, nofollow",
     },
   });
 }

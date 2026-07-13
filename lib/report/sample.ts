@@ -224,27 +224,59 @@ const perspectiveProvider: LlmProvider = {
   },
 };
 
-/** 공개 맛보기에서 이 앵커(십성)부터 잠근다 — 앞 6개 섹션만 공개 */
-const GATE_ANCHOR = '<a id="sec-7">';
+/** 공개 맛보기에서 각 섹션이 노출하는 비율 (나머지는 그라데이션으로 가림) */
+const SAMPLE_REVEAL = 0.3;
 
-/** 잠금 지점에 넣을 안내 + 구매 CTA (인라인 스타일 — 리포트 스타일시트 미오염) */
-const LOCK_BLOCK = [
-  "---",
-  "",
-  '<div style="margin:44px auto;max-width:560px;text-align:center;background:linear-gradient(180deg,#fff,#f1f5fb);border:1px solid #d9e2f0;border-radius:20px;padding:44px 28px;box-shadow:0 14px 44px rgba(31,59,99,.14)">' +
-    '<div style="font-size:2.4rem;margin-bottom:10px">🔒</div>' +
-    '<div style="font-family:\'Nanum Myeongjo\',\'Noto Serif KR\',serif;font-size:1.32rem;font-weight:700;color:#1f3b63;margin-bottom:12px">여기부터는 실제 리포트에서 이어집니다</div>' +
-    '<div style="font-size:.95rem;color:#5a6472;line-height:1.75;margin-bottom:26px">십성 구조 · 공부 스타일 · 학습 영역 · 과목/직업/전공 경향 · 대운·세운 흐름 · 학령 단계별 로드맵 · 학교 선택 참고 등 <b>16개 섹션</b>이 더 담깁니다.</div>' +
-    '<a href="/apply" style="display:inline-block;background:#1f3b63;color:#fff;font-weight:700;font-size:1rem;padding:15px 34px;border-radius:12px;text-decoration:none">9,900원 · 우리 아이 리포트 신청하기 →</a>' +
-    "</div>",
-  "",
-].join("\n");
+/** 섹션 말미에 붙는 그라데이션 페이드 + "샘플" 표기 (본문 배경 #faf7f1로 자연스럽게 사라짐) */
+const VEIL =
+  '<div aria-hidden="true" style="position:relative;height:104px;margin:-56px 0 6px;' +
+  "background:linear-gradient(180deg,rgba(250,247,241,0) 0%,rgba(250,247,241,.72) 46%,#faf7f1 82%);" +
+  'display:flex;align-items:flex-end;justify-content:center;pointer-events:none">' +
+  '<span style="font-size:.76rem;font-weight:700;color:#8a7a4e;background:rgba(255,255,255,.92);' +
+  'border:1px solid #e6dcc2;border-radius:20px;padding:5px 14px;margin-bottom:6px">🔒 샘플 · 이어지는 내용은 실제 리포트에서</span></div>';
 
-/** 공개 샘플 마크다운을 앞 6개 섹션까지로 자르고 잠금 블록을 붙인다. */
+/** 문서 맨 끝 구매 CTA 카드 */
+const FOOTER_CTA =
+  "---\n\n" +
+  '<div style="margin:36px auto;max-width:560px;text-align:center;background:linear-gradient(180deg,#fff,#f1f5fb);border:1px solid #d9e2f0;border-radius:20px;padding:40px 28px;box-shadow:0 14px 44px rgba(31,59,99,.14)">' +
+  '<div style="font-size:2.2rem;margin-bottom:10px">📖</div>' +
+  '<div style="font-family:\'Nanum Myeongjo\',\'Noto Serif KR\',serif;font-size:1.3rem;font-weight:700;color:#1f3b63;margin-bottom:12px">전체 리포트는 22개 섹션으로 이어집니다</div>' +
+  '<div style="font-size:.95rem;color:#5a6472;line-height:1.75;margin-bottom:26px">위 미리보기는 각 항목의 일부입니다. 십성·공부 스타일·진로·전공·대운·세운·학령 단계별 로드맵까지 <b>전체 내용</b>은 실제 리포트에서 확인하실 수 있어요.</div>' +
+  '<a href="/apply" style="display:inline-block;background:#1f3b63;color:#fff;font-weight:700;font-size:1rem;padding:15px 34px;border-radius:12px;text-decoration:none">9,900원 · 우리 아이 리포트 신청하기 →</a>' +
+  "</div>";
+
+/**
+ * 공개 샘플 마크다운을 "섹션마다 앞 30%만 남기고 나머지는 그라데이션으로 가리는"
+ * 형태로 재구성한다. 목차는 유지(전체 구성 노출), 가려진 본문은 DOM에서 제거되어
+ * 스크래핑도 함께 막는다.
+ */
 function gateMarkdown(md: string): string {
-  const cut = md.indexOf(GATE_ANCHOR);
-  if (cut === -1) return md; // 앵커 못 찾으면 안전하게 전체 유지
-  return md.slice(0, cut).trimEnd() + "\n\n" + LOCK_BLOCK + "\n";
+  const segs = md.split(/\n\n---\n\n/);
+  const out: string[] = [];
+  for (const seg of segs) {
+    // 섹션이 아닌 세그먼트: 목차만 유지, 말미 면책 등은 버린다.
+    if (!seg.includes('<a id="sec-')) {
+      if (seg.includes('class="toc"')) out.push(seg);
+      continue;
+    }
+    const blocks = seg.split("\n\n");
+    const hIdx = blocks.findIndex((b) => b.trimStart().startsWith("##"));
+    if (hIdx === -1) {
+      out.push(seg);
+      continue;
+    }
+    const preamble = blocks.slice(0, hIdx + 1); // 앵커·챕터구분·제목
+    const content = blocks.slice(hIdx + 1).filter((b) => b.trim() !== "");
+    if (content.length <= 1) {
+      out.push(seg); // 짧은 섹션은 그대로
+      continue;
+    }
+    const keep = Math.max(1, Math.round(content.length * SAMPLE_REVEAL));
+    const parts = [...preamble, ...content.slice(0, keep)];
+    if (keep < content.length) parts.push(VEIL);
+    out.push(parts.join("\n\n"));
+  }
+  return out.join("\n\n---\n\n") + "\n\n" + FOOTER_CTA + "\n";
 }
 
 /**

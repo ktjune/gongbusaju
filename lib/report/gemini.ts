@@ -11,7 +11,8 @@
  *
  * 환경변수:
  *   GEMINI_API_KEY  — Google AI Studio 발급 키 (aistudio.google.com/apikey)
- *   GEMINI_MODEL    — 모델 ID (기본: gemini-2.0-flash)
+ *   GEMINI_MODEL    — 모델 ID (기본: gemini-3.5-flash).
+ *                     구버전(2.0/2.5-flash)은 신규 프로젝트에서 404 — 최신 flash 사용.
  */
 
 import type { LlmProvider } from "./generate";
@@ -61,7 +62,7 @@ export class GeminiLlmProvider implements LlmProvider {
 
   constructor(apiKey?: string, model?: string) {
     this.apiKey = apiKey ?? process.env.GEMINI_API_KEY ?? "";
-    this.model = model ?? process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    this.model = model ?? process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
   }
 
   async complete(

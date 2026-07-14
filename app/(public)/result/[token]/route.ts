@@ -45,7 +45,21 @@ function injectActionButtons(html: string, token: string): string {
   }
 </script>` : "";
 
-  const injection = pdfBtn + kakaoBtn;
+  // 공유받은 사람이 리포트를 다 보고 자연스럽게 신청/홈으로 넘어가도록 하는 전환 CTA.
+  // 본문 흐름 맨 끝에 배치(고정 버튼과 겹치지 않게 아래 여백 확보).
+  const ctaBanner = `
+<div style="max-width:720px;margin:36px auto 96px;padding:0 20px;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <div style="background:linear-gradient(135deg,#1f3b63,#2a5a9a);border-radius:20px;padding:40px 28px;text-align:center;color:#fff;box-shadow:0 12px 40px rgba(31,59,99,0.22);">
+    <div style="font-size:1.35rem;font-weight:700;line-height:1.5;margin-bottom:12px;">우리 아이의 타고난 공부 결도<br>궁금하지 않으세요?</div>
+    <div style="font-size:0.95rem;opacity:0.9;line-height:1.75;margin-bottom:26px;">생년월일시로 풀어낸 공부 기질·학습 스타일·진로 경향 리포트를<br>지금 <b style="color:#FEE500;">9,900원</b>에 받아보실 수 있어요.</div>
+    <div>
+      <a href="${siteUrl}/apply" style="display:inline-block;background:#FEE500;color:#191919;font-weight:700;font-size:1rem;padding:15px 32px;border-radius:12px;text-decoration:none;margin:0 4px 10px;">우리 아이 리포트 신청하기 →</a>
+      <a href="${siteUrl}/" style="display:inline-block;color:#fff;font-weight:600;font-size:0.92rem;padding:15px 18px;text-decoration:underline;opacity:0.85;margin:0 4px;">공부사주 둘러보기</a>
+    </div>
+  </div>
+</div>`;
+
+  const injection = ctaBanner + pdfBtn + kakaoBtn;
   return html.includes("</body>")
     ? html.replace("</body>", `${injection}\n</body>`)
     : html + injection;

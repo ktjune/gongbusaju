@@ -378,14 +378,14 @@ export default function ApplyPage() {
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>연락처 (결과 안내)</h2>
           <p className={styles.hint} style={{ marginTop: -4, marginBottom: 12 }}>
-            완성된 리포트 링크를 보내드립니다. <b>이메일 또는 휴대폰 중 하나는 꼭 입력</b>해 주세요.
+            완성된 리포트 링크를 보내드립니다. <b>이메일·휴대폰 중 하나만 입력하면 됩니다</b> (둘 다 넣으셔도 됩니다).
           </p>
           <div className={styles.field}>
-            <label className={styles.label}>이메일</label>
+            <label className={styles.label}>이메일 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
             <input className={styles.input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="parent@example.com" />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>휴대폰</label>
+            <label className={styles.label}>휴대폰 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
             <input className={styles.input} type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="010-0000-0000" />
           </div>
           {!hasContact && (

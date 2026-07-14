@@ -100,6 +100,13 @@ export const S: Record<string, React.CSSProperties> = {
     padding: "2px 10px",
     fontSize: "0.8rem",
   },
+  statusPub: {
+    background: "#edf7ee",
+    color: "#2e7d43",
+    borderRadius: 12,
+    padding: "2px 10px",
+    fontSize: "0.8rem",
+  },
   errText: {
     color: "#a33",
     fontSize: "0.85rem",

@@ -18,11 +18,13 @@ import { S } from "./styles";
 import { ReviewQueueSection, type ReviewItem } from "./ReviewQueueSection";
 import { RegenQueueSection, type RegenOrderItem } from "./RegenQueueSection";
 import { NotifyFailureSection, type NotifyFailureItem } from "./NotifyFailureSection";
+import { SentSection, type SentOrderItem } from "./SentSection";
 
 export default function AdminPage() {
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [regenOrders, setRegenOrders] = useState<RegenOrderItem[]>([]);
   const [notifyFailures, setNotifyFailures] = useState<NotifyFailureItem[]>([]);
+  const [sentOrders, setSentOrders] = useState<SentOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -30,14 +32,16 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [rep, ord, fail] = await Promise.all([
+      const [rep, ord, fail, sent] = await Promise.all([
         fetch("/api/admin/reports").then((r) => r.json()),
         fetch("/api/admin/orders").then((r) => r.json()),
         fetch("/api/admin/notify-failures").then((r) => r.json()),
+        fetch("/api/admin/sent").then((r) => r.json()),
       ]);
       setItems(rep.items ?? []);
       setRegenOrders(ord.items ?? []);
       setNotifyFailures(fail.items ?? []);
+      setSentOrders(sent.items ?? []);
     } finally {
       setLoading(false);
     }
@@ -167,6 +171,13 @@ export default function AdminPage() {
           loading={loading}
           busy={busy}
           onRetry={retryNotify}
+        />
+
+        <SentSection
+          orders={sentOrders}
+          loading={loading}
+          busy={busy}
+          onRefund={refund}
         />
       </div>
     </div>

@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
+import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
 
 const PRICE = "9,900";
@@ -92,12 +93,16 @@ export default function ApplyPage() {
 
   const birthYear = birthDate.slice(0, 4);
 
-  // 리포트 전달용 — 이메일 또는 휴대폰 중 최소 하나는 필수
+  // 리포트 전달용 — 이메일 또는 휴대폰 중 최소 하나는 필수 + 입력한 값은 형식이 맞아야 함
   const hasContact = contactEmail.trim() !== "" || contactPhone.trim() !== "";
+  const emailInvalid = contactEmail.trim() !== "" && !isValidEmail(contactEmail);
+  const phoneInvalid = contactPhone.trim() !== "" && !isValidKoreanMobile(contactPhone);
   const canProceed =
     birthDate &&
     (timeUnknown || birthTime !== "") &&
     hasContact &&
+    !emailInvalid &&
+    !phoneInvalid &&
     consent &&
     refundConsent;
 
@@ -383,10 +388,20 @@ export default function ApplyPage() {
           <div className={styles.field}>
             <label className={styles.label}>이메일 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
             <input className={styles.input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="parent@example.com" />
+            {emailInvalid && (
+              <p className={styles.hint} style={{ color: "#a4442a" }}>
+                이메일 형식이 올바르지 않습니다. (예: parent@example.com)
+              </p>
+            )}
           </div>
           <div className={styles.field}>
             <label className={styles.label}>휴대폰 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
             <input className={styles.input} type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="010-0000-0000" />
+            {phoneInvalid && (
+              <p className={styles.hint} style={{ color: "#a4442a" }}>
+                휴대폰 번호를 다시 확인해 주세요. (예: 010-1234-5678)
+              </p>
+            )}
           </div>
           {!hasContact && (
             <p className={styles.hint} style={{ color: "#a4442a" }}>

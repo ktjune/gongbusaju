@@ -275,13 +275,14 @@ describe("refundOrder", () => {
     expect(refunded.status).toBe("refunded");
   });
 
-  it("published(이미 발행) 주문은 환불 불가 — 잘못된 전이 거부", async () => {
+  it("published(발송 완료) 주문도 하자·민원 시 환불 가능", async () => {
     const order = await createOrder(basicInput);
     await transitionOrder(order.id, "generating");
     const store = getOrderStore();
     await store.updateOrderStatus(order.id, "review");
     await transitionOrder(order.id, "published");
-    await expect(refundOrder(order.id)).rejects.toThrow(/전이/);
+    const refunded = await refundOrder(order.id, "발송 후 민원 — 환불");
+    expect(refunded.status).toBe("refunded");
   });
 
   it("없는 주문 환불 시 에러", async () => {

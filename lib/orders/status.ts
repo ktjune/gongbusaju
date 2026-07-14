@@ -6,7 +6,8 @@
  *                   ↘ failed (생성 오류)
  *          review → rejected → generating (재생성)
  *
- * paid / rejected / failed → refunded (환불 — 제작 착수 전이거나 회사 귀책으로 미제공)
+ * paid / rejected / failed / published → refunded
+ *   (환불 — 제작 착수 전, 회사 귀책 미제공, 또는 발송 후 하자·민원 처리)
  */
 
 import type { OrderStatus } from "./types";
@@ -16,7 +17,8 @@ const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   paid: ["generating", "refunded"],
   generating: ["review", "failed", "generating"], // generating→generating: 타임아웃 고착 재시도
   review: ["published", "rejected"],
-  published: [], // 종료 상태
+  // 발송(published) 후에도 하자·민원 시 어드민이 환불할 수 있어야 한다.
+  published: ["refunded"],
   rejected: ["generating", "refunded"], // 재생성 또는 환불
   failed: ["generating", "refunded"], // 재시도 또는 환불
   refunded: [], // 종료 상태

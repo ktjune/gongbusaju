@@ -92,8 +92,14 @@ export default function ApplyPage() {
 
   const birthYear = birthDate.slice(0, 4);
 
+  // 리포트 전달용 — 이메일 또는 휴대폰 중 최소 하나는 필수
+  const hasContact = contactEmail.trim() !== "" || contactPhone.trim() !== "";
   const canProceed =
-    birthDate && (timeUnknown || birthTime !== "") && consent && refundConsent;
+    birthDate &&
+    (timeUnknown || birthTime !== "") &&
+    hasContact &&
+    consent &&
+    refundConsent;
 
   // 결제 단계 진입 시 토스 결제위젯 렌더
   useEffect(() => {
@@ -371,14 +377,22 @@ export default function ApplyPage() {
         {/* 연락처 */}
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>연락처 (결과 안내)</h2>
+          <p className={styles.hint} style={{ marginTop: -4, marginBottom: 12 }}>
+            완성된 리포트 링크를 보내드립니다. <b>이메일 또는 휴대폰 중 하나는 꼭 입력</b>해 주세요.
+          </p>
           <div className={styles.field}>
             <label className={styles.label}>이메일</label>
             <input className={styles.input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="parent@example.com" />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>휴대폰 (선택)</label>
+            <label className={styles.label}>휴대폰</label>
             <input className={styles.input} type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="010-0000-0000" />
           </div>
+          {!hasContact && (
+            <p className={styles.hint} style={{ color: "#a4442a" }}>
+              이메일 또는 휴대폰 중 하나를 입력하셔야 신청할 수 있습니다.
+            </p>
+          )}
         </div>
 
         {/* 동의 */}

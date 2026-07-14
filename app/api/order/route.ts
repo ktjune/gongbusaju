@@ -55,6 +55,14 @@ export async function POST(req: Request) {
     );
   }
 
+  // 리포트 전달용 연락처 — 이메일 또는 휴대폰 중 최소 하나 필수
+  if (!body.contactEmail?.trim() && !body.contactPhone?.trim()) {
+    return Response.json(
+      { error: "리포트를 받으실 이메일 또는 휴대폰 중 하나를 입력해 주세요." },
+      { status: 400 }
+    );
+  }
+
   // 결제 승인 — TOSS_SECRET_KEY 설정 시 실결제 검증 필수.
   // (미설정 환경에서는 모의 결제로 통과 — 로컬 개발용)
   if (process.env.TOSS_SECRET_KEY) {

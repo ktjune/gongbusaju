@@ -79,12 +79,38 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       subjectLabel: buildSubjectLabel(subject),
     };
 
-    const built = await buildReportForSubject(subject, buildOpts);
+    let built = await buildReportForSubject(subject, buildOpts);
+
+    // 금지 표현(가드레일) 감지 시 1회 재생성 시도 — LLM 단어 선택 문제는 대개 재생성으로 해소.
+    // 그래도 남으면 하드 실패시키지 않고 사람 검수로 보낸다(유료 주문 유실 방지).
+    if (built.guardrailViolations.length > 0) {
+      console.warn(
+        `[order] 가드레일 위반 — 재생성 시도: 주문 ${orderId}`,
+        built.guardrailViolations.map((v) => v.reason)
+      );
+      const retry = await buildReportForSubject(subject, buildOpts);
+      if (retry.guardrailViolations.length <= built.guardrailViolations.length) {
+        built = retry;
+      }
+    }
+    const guardrailFailed = built.guardrailViolations.length > 0;
+
     // 자동 QA는 LLM 산문만 검수한다 (코드가 만든 표·칩·도식·면책은 제외)
     const qa = await runAutoQa(built.prose);
+    // 자동 발행 조건: QA 통과 + 가드레일 위반 없음(법적 안전). 하나라도 걸리면 사람 검수로.
+    const autoApprovable = qa.passed && !guardrailFailed;
 
-    if (!qa.passed) {
-      console.warn(`[order] QA 실패 — 사람 검수 대기: 주문 ${orderId}`, qa.issues);
+    if (!autoApprovable) {
+      console.warn(
+        `[order] 자동 승인 보류 — 사람 검수 대기: 주문 ${orderId}`,
+        guardrailFailed ? built.guardrailViolations.map((v) => v.reason) : qa.issues
+      );
+    }
+
+    const noteParts: string[] = [];
+    if (!qa.passed) noteParts.push(`[자동 QA] ${qa.issues.join(" / ")}`);
+    if (guardrailFailed) {
+      noteParts.push(`[가드레일] ${built.guardrailViolations.map((v) => v.reason).join(" / ")}`);
     }
 
     const report = await store.createReport({
@@ -93,15 +119,15 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       html: built.html,
       tier: order.tier,
       reviewStatus: "pending",
-      reviewNote: qa.passed ? null : `[자동 QA] ${qa.issues.join(" / ")}`,
+      reviewNote: autoApprovable ? null : noteParts.join(" · "),
       pdfUrl: null,
     });
 
     await store.setOrderReport(orderId, report.id);
     await store.updateOrderStatus(orderId, "review");
 
-    // QA 통과 → 사람 검수 없이 자동 승인·발행 (보호자 발송 포함)
-    if (qa.passed) {
+    // QA 통과 + 가드레일 OK → 사람 검수 없이 자동 승인·발행 (보호자 발송 포함)
+    if (autoApprovable) {
       return await approveReport(report.id);
     }
     return report;

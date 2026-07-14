@@ -21,7 +21,8 @@ import { buildFactBlock, assembleReport } from "./template";
 import { generatePerspective, ClaudeLlmProvider } from "./generate";
 export { ClaudeLlmProvider } from "./generate";
 import type { LlmProvider } from "./generate";
-import { checkGuardrails } from "./guardrails";
+import { checkGuardrails, GuardrailError } from "./guardrails";
+import type { GuardrailViolation } from "./guardrails";
 
 export { GuardrailError } from "./guardrails";
 export type { GuardrailViolation } from "./guardrails";
@@ -77,6 +78,8 @@ export type ReportOutput = {
   markdown: string;
   /** LLM이 생성한 관점 산문만 이어 붙인 것 — 자동 QA 검수 대상(코드 생성물 제외) */
   prose: string;
+  /** 감지된 금지 표현(가드레일) 목록. guardrailMode="collect"에서 채워진다. 비면 통과. */
+  guardrailViolations: GuardrailViolation[];
 };
 
 export type GenerateReportOptions = {
@@ -85,6 +88,12 @@ export type GenerateReportOptions = {
    * 테스트에서 MockLlmProvider로 교체해 API 없이 테스트 가능.
    */
   llmProvider?: LlmProvider;
+  /**
+   * 가드레일 위반 처리 방식.
+   *   "throw"(기본): 금지 표현 발견 시 GuardrailError throw (발행 즉시 차단).
+   *   "collect": 던지지 않고 위반 목록만 반환 → 호출자가 재생성·사람 검수로 라우팅.
+   */
+  guardrailMode?: "throw" | "collect";
 };
 
 // ──────────────────────────────────────────────────────────────
@@ -103,6 +112,15 @@ function tidyProse(s: string): string {
     // 곧은 따옴표(" ')는 닫는 용도로도 쓰여(…이네!') 오탐하므로 제외 — 명확히 여는 기호만.
     .replace(/([.!?])([가-힣“‘(《「])/g, "$1 $2")
     .replace(/[ \t]{2,}/g, " ");
+}
+
+/**
+ * 가드레일이 권장하는 완화형으로 자동 치환한다 (스타일 단정 → "경향" 표현).
+ * 표시광고법 위험 표현(보장·무조건·틀림없이·학교 인과 등)은 여기서 손대지 않고
+ * 재생성·사람 검수로 보낸다 — 뜻이 바뀔 수 있어 자동 치환하지 않는다.
+ */
+function softenAssertions(s: string): string {
+  return s.replace(/적합합니다/g, "잘 맞는 경향이 있습니다");
 }
 
 /**
@@ -130,13 +148,25 @@ export async function generateReport(
   const perspective = Object.fromEntries(
     Object.entries(perspectiveRaw).map(([k, v]) => [
       k,
-      typeof v === "string" ? tidyProse(v) : v,
+      typeof v === "string" ? softenAssertions(tidyProse(v)) : v,
     ])
   ) as typeof perspectiveRaw;
 
-  // 3. guardrails 검사 — 위반 시 GuardrailError throw → 발행 차단
+  // 3. guardrails 검사 — 각 산문의 금지 표현을 모두 수집
+  const guardrailViolations: GuardrailViolation[] = [];
   for (const prose of Object.values(perspective)) {
-    if (typeof prose === "string") checkGuardrails(prose);
+    if (typeof prose !== "string") continue;
+    try {
+      checkGuardrails(prose);
+    } catch (e) {
+      if (e instanceof GuardrailError) guardrailViolations.push(...e.violations);
+      else throw e;
+    }
+  }
+  // 기본은 즉시 차단(throw). "collect" 모드는 던지지 않고 위반을 반환해
+  // 호출자가 재생성·사람 검수로 라우팅하게 한다 (유료 주문을 잃지 않도록).
+  if ((options.guardrailMode ?? "throw") === "throw" && guardrailViolations.length > 0) {
+    throw new GuardrailError(guardrailViolations);
   }
 
   // 4. 조립 — 이름은 코드가 넣는 조립 단계에서만 사용
@@ -151,5 +181,5 @@ export async function generateReport(
     .filter((v): v is string => typeof v === "string")
     .join("\n\n");
 
-  return { markdown, prose };
+  return { markdown, prose, guardrailViolations };
 }

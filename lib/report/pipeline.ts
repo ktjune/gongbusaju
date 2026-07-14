@@ -13,6 +13,7 @@ import { computeSaju } from "../saju";
 import type { SchoolFixture, ZoneCollection } from "../schools";
 import { getSchoolFacts } from "../schools";
 import { generateReport } from "./index";
+import type { GuardrailViolation } from "./guardrails";
 import type { LlmProvider } from "./generate";
 import { ClaudeLlmProvider } from "./generate";
 import { GeminiLlmProvider, FallbackLlmProvider } from "./gemini";
@@ -73,12 +74,15 @@ export type BuiltReport = {
   isDemo: boolean;
   /** LLM 생성 산문만 이어 붙인 것 — 자동 QA 검수 대상 */
   prose: string;
+  /** 감지된 금지 표현(가드레일). 비어있지 않으면 자동 발행 금지 → 재생성·사람 검수. */
+  guardrailViolations: GuardrailViolation[];
 };
 
 /**
  * 자녀 정보로 완성된 리포트(markdown + 디자인 HTML)를 만든다.
  *
- * @throws {GuardrailError} 산문에 금지 표현이 있으면 (발행 차단)
+ * 금지 표현은 throw하지 않고 guardrailViolations로 반환한다(유료 주문 유실 방지).
+ * 호출자(orders)가 재생성·사람 검수로 라우팅한다.
  */
 export async function buildReportForSubject(
   subject: BuildReportSubject,
@@ -113,7 +117,7 @@ export async function buildReportForSubject(
 
   // 4. 리포트 생성 (관점 산문 + guardrails)
   const currentYear = opts.currentYear ?? new Date().getFullYear();
-  const { markdown, prose } = await generateReport(
+  const { markdown, prose, guardrailViolations } = await generateReport(
     {
       saju,
       schools,
@@ -123,7 +127,7 @@ export async function buildReportForSubject(
       childName: subject.name,
       childNameHanja: subject.nameHanja,
     },
-    { llmProvider: provider }
+    { llmProvider: provider, guardrailMode: "collect" }
   );
 
   // 4. 디자인 HTML 렌더
@@ -136,5 +140,5 @@ export async function buildReportForSubject(
       : undefined,
   });
 
-  return { markdown, html, isDemo, prose };
+  return { markdown, html, isDemo, prose, guardrailViolations };
 }

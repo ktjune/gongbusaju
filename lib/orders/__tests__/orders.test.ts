@@ -97,8 +97,15 @@ describe("주문 상태 전이 규칙", () => {
     expect(canTransition("paid", "published")).toBe(false);
   });
 
-  it("종료 상태에서 전이 불가: published→*", () => {
-    expect(canTransition("published", "generating")).toBe(false);
+  it("환불(refunded)은 종료 상태 — 전이 불가", () => {
+    expect(canTransition("refunded", "generating")).toBe(false);
+    expect(canTransition("refunded", "published")).toBe(false);
+  });
+
+  it("published는 재생성(generating)·환불(refunded)만 허용", () => {
+    expect(canTransition("published", "generating")).toBe(true);
+    expect(canTransition("published", "refunded")).toBe(true);
+    expect(canTransition("published", "rejected")).toBe(false);
   });
 });
 

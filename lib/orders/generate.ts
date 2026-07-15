@@ -53,8 +53,15 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
   const store = getOrderStore();
   const order = await store.getOrder(orderId);
   if (!order) throw new Error(`주문 없음: ${orderId}`);
-  // "generating" 포함: 타임아웃으로 상태가 고착된 경우 어드민 재생성으로 복구 가능
-  if (order.status !== "paid" && order.status !== "rejected" && order.status !== "failed" && order.status !== "generating") {
+  // published: 어드민이 발송 후에도 개선된 내용으로 재생성(재발송) 가능.
+  // generating: 타임아웃으로 고착된 경우 재생성으로 복구.
+  if (
+    order.status !== "paid" &&
+    order.status !== "rejected" &&
+    order.status !== "failed" &&
+    order.status !== "generating" &&
+    order.status !== "published"
+  ) {
     throw new Error(`생성 가능 상태가 아닙니다: ${order.status}`);
   }
 
@@ -152,7 +159,13 @@ function buildSubjectLabel(s: ReturnType<typeof decryptSubject>): string {
   return `${s.birthYear}년 ${s.birthMonth}월 ${s.birthDay}일${time} · ${g}`;
 }
 
-/** 생성 가능한 주문 여부 — 트리거 API에서 사용. generating은 타임아웃 고착 복구용 */
+/** 생성 가능한 주문 여부 — 트리거 API에서 사용. published는 발송 후 재생성(재발송)용 */
 export function isGeneratable(order: Order): boolean {
-  return order.status === "paid" || order.status === "rejected" || order.status === "failed" || order.status === "generating";
+  return (
+    order.status === "paid" ||
+    order.status === "rejected" ||
+    order.status === "failed" ||
+    order.status === "generating" ||
+    order.status === "published"
+  );
 }

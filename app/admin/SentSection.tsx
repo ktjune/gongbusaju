@@ -20,11 +20,13 @@ export function SentSection({
   loading,
   busy,
   onRefund,
+  onRegenerate,
 }: {
   orders: SentOrderItem[];
   loading: boolean;
   busy: string | null;
   onRefund: (orderId: string, hasPayment: boolean) => void;
+  onRegenerate: (orderId: string) => void;
 }) {
   return (
     <>
@@ -41,6 +43,7 @@ export function SentSection({
                 <th style={S.th}>연락처</th>
                 <th style={S.th}>리포트</th>
                 <th style={S.th}>상태</th>
+                <th style={S.th}>재생성</th>
                 <th style={S.th}>환불</th>
               </tr>
             </thead>
@@ -80,6 +83,20 @@ export function SentSection({
                         <span style={S.statusFail}>발송 실패</span>
                       ) : (
                         <span style={S.statusPub}>발송 완료</span>
+                      )}
+                    </td>
+                    <td style={S.td}>
+                      {refunded ? (
+                        <span style={{ color: "#9a9fa8" }}>—</span>
+                      ) : (
+                        <button
+                          style={S.approve}
+                          disabled={busy === o.id}
+                          onClick={() => onRegenerate(o.id)}
+                          title="개선된 내용으로 다시 생성해 재발송합니다 (새 링크)"
+                        >
+                          {busy === o.id ? "처리 중…" : "재생성"}
+                        </button>
                       )}
                     </td>
                     <td style={S.td}>

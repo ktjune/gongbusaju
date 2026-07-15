@@ -178,6 +178,7 @@ export default function AdminPage() {
           loading={loading}
           busy={busy}
           onRefund={refund}
+          onRegenerate={regenerate}
         />
       </div>
     </div>

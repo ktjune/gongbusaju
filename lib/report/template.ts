@@ -1381,7 +1381,15 @@ export function assembleReport(
   });
 
   // ── 예상 배정 학교 + 주변 학교군 (사실 블록 — 코드 삽입) ───
-  if (facts.assignedSchoolSection) {
+  // 배정/통학구역 데이터는 초등 기준이라, 고등학생·졸업 이후에는 맞지 않아 생략한다.
+  // (기질 기반 "고교 유형 참고"는 위에서 이미 제공)
+  const stageKey =
+    meta.birthYear !== undefined
+      ? deriveSchoolStage(meta.birthYear, currentYear).key
+      : undefined;
+  const skipAssignedSchools = stageKey === "high" || stageKey === "post-school";
+
+  if (facts.assignedSchoolSection && !skipAssignedSchools) {
     sections.push({
       title: "예상 배정 학교 (사실 정보)",
       body:
@@ -1391,7 +1399,7 @@ export function assembleReport(
     });
   }
 
-  if (facts.clusterSection) {
+  if (facts.clusterSection && !skipAssignedSchools) {
     sections.push({
       title: "주변 학교 현황",
       body: "## 주변 학교 현황\n\n" + facts.clusterSection,

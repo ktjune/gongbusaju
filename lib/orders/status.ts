@@ -17,8 +17,9 @@ const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   paid: ["generating", "refunded"],
   generating: ["review", "failed", "generating"], // generating→generating: 타임아웃 고착 재시도
   review: ["published", "rejected"],
-  // 발송(published) 후에도 하자·민원 시 어드민이 환불할 수 있어야 한다.
-  published: ["refunded"],
+  // 발송(published) 후에도 어드민이 환불하거나(하자·민원), 개선된 내용으로
+  // 재생성(generating)할 수 있어야 한다.
+  published: ["refunded", "generating"],
   rejected: ["generating", "refunded"], // 재생성 또는 환불
   failed: ["generating", "refunded"], // 재시도 또는 환불
   refunded: [], // 종료 상태

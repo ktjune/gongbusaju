@@ -11,18 +11,17 @@
 <li><a href="#sec-8"><span class="toc-num">08</span><span class="toc-label">공부 스타일과 학습 환경</span></a></li>
 <li><a href="#sec-9"><span class="toc-num">09</span><span class="toc-label">학습 영역별 들여다보기</span></a></li>
 <li><a href="#sec-10"><span class="toc-num">10</span><span class="toc-label">과목 경향 참고</span></a></li>
-<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">강점 분야와 진로 방향</span></a></li>
-<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">직업군 경향 참고</span></a></li>
-<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">전공·학문 계열과 진학 방향</span></a></li>
-<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
-<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
-<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">성장 로드맵 — 유아기부터 진로까지</span></a></li>
-<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">학령기 대운 흐름</span></a></li>
-<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
-<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
-<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
-<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">자주 묻는 질문</span></a></li>
-<li><a href="#sec-22"><span class="toc-num">22</span><span class="toc-label">용어 풀이</span></a></li>
+<li><a href="#sec-11"><span class="toc-num">11</span><span class="toc-label">강점 분야</span></a></li>
+<li><a href="#sec-12"><span class="toc-num">12</span><span class="toc-label">진로·전공 경향 참고</span></a></li>
+<li><a href="#sec-13"><span class="toc-num">13</span><span class="toc-label">부모님을 위한 코칭 포인트</span></a></li>
+<li><a href="#sec-14"><span class="toc-num">14</span><span class="toc-label">지금 우리 아이는 — 예비 초등 (내년 3월 입학)</span></a></li>
+<li><a href="#sec-15"><span class="toc-num">15</span><span class="toc-label">성장 로드맵 — 유아기부터 진로까지</span></a></li>
+<li><a href="#sec-16"><span class="toc-num">16</span><span class="toc-label">학령기 대운 흐름</span></a></li>
+<li><a href="#sec-17"><span class="toc-num">17</span><span class="toc-label">다가오는 3년 — 세운</span></a></li>
+<li><a href="#sec-18"><span class="toc-num">18</span><span class="toc-label">학교 선택 기질 참고</span></a></li>
+<li><a href="#sec-19"><span class="toc-num">19</span><span class="toc-label">부록 · 사주팔자 기초</span></a></li>
+<li><a href="#sec-20"><span class="toc-num">20</span><span class="toc-label">자주 묻는 질문</span></a></li>
+<li><a href="#sec-21"><span class="toc-num">21</span><span class="toc-label">용어 풀이</span></a></li>
 </ol>
 </nav>
 
@@ -294,7 +293,7 @@
 
 <div class="chapter-divider"><div class="chapter-text"><div class="chapter-num">CHAPTER 03</div><div class="chapter-title">강점과 진로</div><div class="chapter-sub">무엇을 잘하고 어디로 나아갈까</div></div><img class="chapter-img" src="/illust/ch3.png" alt="" aria-hidden="true" /></div>
 
-## 강점 분야와 진로 방향
+## 강점 분야
 
 이 아이의 가장 또렷한 강점은 **깊게 파고들어 구조를 세우는 힘**입니다. 강한 금·수 기운과 발달한 인성이 만나, 한 분야를 끝까지 분석하고 자기 언어로 정리하는 데서 빛이 납니다. 또래가 금세 흥미를 잃는 복잡한 규칙·체계 앞에서 오히려 집중력이 올라가는 유형으로 풀이됩니다.
 
@@ -304,9 +303,13 @@
 
 <a id="sec-12"></a>
 
-## 직업군 경향 참고
+## 진로·전공 경향 참고
 
-<table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 직업 분야</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>교육·기획, 출판·콘텐츠, 디자인·건축, 환경·생명</td><td>새로 시작하고 길러 내며 위로 뻗는 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>방송·공연, 마케팅·홍보, 강연·교육, 예술·뷰티</td><td>밖으로 드러내고 사람을 끌어모으는 표현의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>행정·공공, 부동산·중개, 농업·요식, 상담·중재</td><td>신뢰로 사람·자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>공학·기술, 의료·법률, 금융·회계, 군·경·스포츠</td><td>가르고 다듬어 결단하는 정밀·원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>연구·학문, IT·데이터, 기획·전략, 무역·유통</td><td>깊이 사유하고 정보를 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table>
+<table class="maptable"><thead><tr><th>오행</th><th>연결해 보는 직업 분야</th><th>연결해 보는 전공·학문 계열</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>교육·기획, 출판·콘텐츠, 디자인·건축, 환경·생명</td><td>인문·어문, 교육학, 환경·생명과학, 건축·도시계획</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>방송·공연, 마케팅·홍보, 강연·교육, 예술·뷰티</td><td>미디어·영상, 디자인·예술, 광고·홍보, 공연·문화예술</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>행정·공공, 부동산·중개, 농업·요식, 상담·중재</td><td>경영·행정, 사회복지·상담, 부동산·지리, 식품·농업</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>공학·기술, 의료·법률, 금융·회계, 군·경·스포츠</td><td>기계·전자공학, 의학·약학, 법학, 경제·금융</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>연구·학문, IT·데이터, 기획·전략, 무역·유통</td><td>수학·물리, 컴퓨터·데이터과학, 철학, 무역·국제학</td><td>25%</td></tr></tbody></table>
+
+> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.
+
+### 직업군 경향
 
 기질 관점에서 잘 맞을 수 있는 진로 분야를 참고로 짚어 봅니다. 단정이 아니라, 강점이 자연스럽게 발현될 만한 방향입니다.
 
@@ -318,15 +321,7 @@
 
 다시 강조하면, 진로는 아이의 흥미·노력·시대 변화 속에서 스스로 만들어 가는 것이며, 이 풀이는 그 대화를 돕는 하나의 참고자료일 뿐입니다.
 
----
-
-<a id="sec-13"></a>
-
-## 전공·학문 계열과 진학 방향
-
-<table class="maptable"><thead><tr><th>오행</th><th>전통적으로 연결해 보는 전공·학문 계열</th><th>연결 기운</th><th>이 아이</th></tr></thead><tbody><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3d9a50;margin-right:6px;vertical-align:middle"></span>木(목)</td><td>인문·어문, 교육학, 환경·생명과학, 건축·도시계획</td><td>기르고 뻗어 나가는 성장의 기운</td><td>13%</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d64545;margin-right:6px;vertical-align:middle"></span>火(화)</td><td>미디어·영상, 디자인·예술, 광고·홍보, 공연·문화예술</td><td>밖으로 표현하고 빛나는 발산의 기운</td><td>0% (옅음)</td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c9a227;margin-right:6px;vertical-align:middle"></span>土(토)</td><td>경영·행정, 사회복지·상담, 부동산·지리, 식품·농업</td><td>사람과 자원을 잇고 지키는 안정의 기운</td><td>25%</td></tr><tr class="hl"><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8e9aa8;margin-right:6px;vertical-align:middle"></span>金(금)</td><td>기계·전자공학, 의학·약학, 법학, 경제·금융</td><td>정밀하게 가르고 다듬는 원칙의 기운</td><td><strong>38% ◀ 강함</strong></td></tr><tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#3b6fb5;margin-right:6px;vertical-align:middle"></span>水(수)</td><td>수학·물리, 컴퓨터·데이터과학, 철학, 무역·국제학</td><td>깊이 사유하고 흐르게 하는 지혜의 기운</td><td>25%</td></tr></tbody></table>
-
-> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.
+### 전공·학문 계열과 진학 방향
 
 대학 전공·학문 계열로는 이 아이의 강점과 맞닿은 방향을 참고로 짚어 봅니다.
 
@@ -340,7 +335,7 @@
 
 ---
 
-<a id="sec-14"></a>
+<a id="sec-13"></a>
 
 ## 부모님을 위한 코칭 포인트
 
@@ -356,7 +351,7 @@
 
 ---
 
-<a id="sec-15"></a>
+<a id="sec-14"></a>
 
 <div class="chapter-divider"><div class="chapter-text"><div class="chapter-num">CHAPTER 04</div><div class="chapter-title">성장의 흐름</div><div class="chapter-sub">단계마다 무엇을 챙기면 좋을까</div></div><img class="chapter-img" src="/illust/ch4.png" alt="" aria-hidden="true" /></div>
 
@@ -387,13 +382,15 @@
 
 ### 이 단계에서 기질을 살리려면
 
-이 아이는 내년 3월 초등학교 입학을 앞둔 예비 초등 단계입니다. 새 환경 적응에 시간이 필요한 금·수 기질에게 입학은 큰 전환이므로, **남은 1년의 핵심 과제는 한글·수 선행이 아니라 '학교라는 공간을 익숙하게 만드는 것'**으로 풀이됩니다. 입학 예정 학교 운동장을 주말 산책 코스로 삼아 미리 여러 번 가 보고, 교실·급식·알림장 같은 학교의 하루를 그림책이나 역할놀이로 미리 경험하게 해 주시면 적응 부담이 크게 줄어드는 경향이 있습니다.
+예비 초등은 누구에게나 큰 전환이지만, 이 아이에게 특히 중요한 건 **'속도'**입니다. 금·수 기운이 강해 새 환경을 눈으로 충분히 관찰한 뒤에야 마음을 여는 결이라, 낯선 곳에서 처음 며칠 말이 없어지는 건 위축이 아니라 이 아이의 자연스러운 적응 방식으로 보아 주세요. 재촉하지 않고 지켜봐 주시면 스스로 속도를 냅니다.
 
-책상 습관은 '40분 수업'을 목표로 잡기보다, 지금 기질이 편안해하는 10~15분 몰입부터 시작해 입학 무렵 20분 안팎으로 늘리는 완만한 계단이 잘 맞습니다. 인성이 발달한 이 아이는 듣고 배우는 준비가 이미 되어 있으므로, 읽어 주는 책의 폭을 넓히는 것만으로도 입학 후 수업 적응의 좋은 밑돌이 되는 것으로 해석됩니다.
+다만 칠살의 긴장이 있어 '틀리면 어쩌지'가 앞서기 쉬운 점은 지금 미리 살펴 주면 좋습니다. 글씨나 숫자를 틀렸을 때 고쳐 주기보다 시도 자체를 짚어 칭찬해 주시면, 입학 후 새 과제 앞에서 움츠러들지 않는 힘이 생깁니다.
+
+반대로 인성이 발달해 '듣고 받아들이는 준비'는 이미 잘 되어 있는 아이입니다. 그래서 이 아이에게는 선행 학습보다 읽어 주는 이야기의 폭을 넓혀 주는 편이 훨씬 큰 밑돌이 되는 것으로 해석됩니다.
 
 ---
 
-<a id="sec-16"></a>
+<a id="sec-15"></a>
 
 ## 성장 로드맵 — 유아기부터 진로까지
 
@@ -403,7 +400,7 @@
 
 **초등** — 성적보다 '학교는 안전하고 예측 가능한 곳'이라는 감각과, 좋아하는 분야를 깊게 파 보는 경험이 중요합니다. 강한 탐구 기질을 살려 한 분야(공룡·우주·지하철 무엇이든)를 마음껏 파고들게 해 주면, 그 몰입이 자기주도 학습의 밑돌이 됩니다.
 
-**중등** — 첫 시험과 내신이 시작됩니다. 점수 자체보다 '계획을 세우고-실행하고-틀린 것을 복기하는' 틀을 몸에 익히도록 돕는 것이 이 아이의 분석 강점과 잘 맞습니다. 자유학기 활동은 조용히 관찰· 기록하는 역할부터 맡겨 자신감을 쌓게 해 주세요.
+**중등** — 첫 시험과 내신이 시작됩니다. 점수 자체보다 '계획을 세우고-실행하고-틀린 것을 복기하는' 틀을 몸에 익히도록 돕는 것이 이 아이의 분석 강점과 잘 맞습니다. 자유학기 활동은 조용히 관찰·기록하는 역할부터 맡겨 자신감을 쌓게 해 주세요.
 
 **고등** — 학습 전략의 비중이 커지는 시기입니다. 이 아이는 자기에게 맞는 공부법(깊이 이해 후 구조화)을 갖추게 될 결이므로, 그 방식을 신뢰하고 충분한 시간을 확보해 주는 것이 중요합니다. 체력·수면 관리가 곧 성적 관리인 시기이기도 합니다.
 
@@ -411,7 +408,7 @@
 
 ---
 
-<a id="sec-17"></a>
+<a id="sec-16"></a>
 
 ## 학령기 대운 흐름
 
@@ -433,7 +430,7 @@
 
 ---
 
-<a id="sec-18"></a>
+<a id="sec-17"></a>
 
 ## 다가오는 3년 — 세운
 
@@ -453,7 +450,7 @@
 
 ---
 
-<a id="sec-19"></a>
+<a id="sec-18"></a>
 
 ## 학교 선택 기질 참고
 
@@ -474,7 +471,7 @@
 
 ---
 
-<a id="sec-20"></a>
+<a id="sec-19"></a>
 
 ## 부록 · 사주팔자 기초
 
@@ -504,7 +501,7 @@
 
 ---
 
-<a id="sec-21"></a>
+<a id="sec-20"></a>
 
 ## 자주 묻는 질문
 
@@ -538,7 +535,7 @@
 
 ---
 
-<a id="sec-22"></a>
+<a id="sec-21"></a>
 
 ## 용어 풀이
 
@@ -556,8 +553,6 @@
 | 세운(歲運) | 해마다 바뀌는 그해의 운 |
 | 원국(原局) | 태어난 순간의 여덟 글자 그 자체 (대운·세운이 더해지기 전) |
 | 절입시각 | 입춘 등 절기가 시작되는 정확한 시각. 연주·월주의 경계 |
-
----
 
 ---
 

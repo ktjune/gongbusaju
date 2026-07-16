@@ -440,6 +440,25 @@ export function buildMajorMapSection(saju: SajuResult): string {
   return `${table}\n\n> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.`;
 }
 
+/**
+ * 진로·전공 통합 매핑 표 — 직업 분야와 전공 계열을 한 표로 묶는다.
+ * (직업/전공 표가 "오행·연결기운·이 아이" 열까지 똑같아 두 번 보이던 중복 제거.
+ *  '연결 기운'은 앞선 오행 섹션에서 이미 설명하므로 열에서 뺐다.)
+ */
+export function buildCareerMajorMapSection(saju: SajuResult): string {
+  const pctOf = pctByElement(saju);
+  const majorsByElement = new Map(MAJOR_MAP.map((m) => [m.element, m.majors]));
+  const table = mapTableHtml(
+    ["오행", "연결해 보는 직업 분야", "연결해 보는 전공·학문 계열", "이 아이"],
+    CAREER_MAP.map((m) => ({
+      element: m.element,
+      mid: [m.fields, majorsByElement.get(m.element) ?? ""],
+      pct: Math.round(pctOf[m.element] ?? 0),
+    }))
+  );
+  return `${table}\n\n> 관심 전공이 정해지면 그 분야가 강한 국내외 대학을 직접 살펴보시기를 권합니다.`;
+}
+
 /** 대운 시작 나이 구간 → 학령기 라벨 */
 function schoolStageLabel(startAge: number): string {
   const endAge = startAge + 9;
@@ -1261,32 +1280,25 @@ export function assembleReport(
       perspective.subjectTendencyProse,
   });
 
-  // ── 강점 분야 · 진로 방향 (관점) ─────────────────────────
+  // ── 강점 분야 (관점) — 진로 상세는 다음 섹션 ─────────────
   sections.push({
-    title: "강점 분야와 진로 방향",
+    title: "강점 분야",
     body:
       chapterDivider(3, "강점과 진로", "무엇을 잘하고 어디로 나아갈까", "ch3") +
-      "\n\n## 강점 분야와 진로 방향\n\n" +
+      "\n\n## 강점 분야\n\n" +
       perspective.aptitudeProse,
   });
 
-  // ── 직업군 경향 (데이터 + 관점) ──────────────────────────
+  // ── 진로·전공 경향 (데이터 + 관점) ───────────────────────
+  // 직업/전공 표가 열 구성까지 동일해 두 번 보이던 중복 → 통합 표 하나로.
   sections.push({
-    title: "직업군 경향 참고",
+    title: "진로·전공 경향 참고",
     body:
-      "## 직업군 경향 참고\n\n" +
-      buildCareerMapSection(saju) +
-      "\n\n" +
-      perspective.careerProse,
-  });
-
-  // ── 전공·학문 계열 · 진학 방향 (데이터 + 관점) ───────────
-  sections.push({
-    title: "전공·학문 계열과 진학 방향",
-    body:
-      "## 전공·학문 계열과 진학 방향\n\n" +
-      buildMajorMapSection(saju) +
-      "\n\n" +
+      "## 진로·전공 경향 참고\n\n" +
+      buildCareerMajorMapSection(saju) +
+      "\n\n### 직업군 경향\n\n" +
+      perspective.careerProse +
+      "\n\n### 전공·학문 계열과 진학 방향\n\n" +
       perspective.majorProse,
   });
 
@@ -1439,9 +1451,11 @@ export function assembleReport(
   if (meta.childName?.trim() && meta.childNameHanja?.trim()) notices.push(NAME_STROKE_NOTICE);
   notices.push(INTERPRETATION_NOTICE);
 
+  // join이 이미 각 블록 사이에 구분선(---)을 넣으므로, 면책 블록에 별도 "---"를
+  // 앞에 붙이면 구분선이 두 번 나온다(빈 구분선처럼 보임).
   return [
     toc,
     body,
-    "---\n\n" + notices.join("\n\n") ,
+    notices.join("\n\n"),
   ].join("\n\n---\n\n");
 }

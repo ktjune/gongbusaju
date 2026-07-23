@@ -298,6 +298,56 @@ function normalizePhone(phone: string): string {
   return phone.replace(/\D/g, "");
 }
 
+// ──────────────────────────────────────────────────────────────
+// 운영자 알림 — 자동화 예외(검수 대기·재시도 소진) 발생 시 푸시
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * 운영자(사장님)에게 예외 상황을 이메일로 알린다.
+ *
+ * 전체 자동화 원칙: 운영자는 어드민을 주기적으로 열어보지 않는다.
+ * 사람 개입이 필요한 순간(검수 대기 발생, 재시도 소진)에만 이 알림이 간다.
+ *
+ * 환경변수: NOTIFY_OWNER_EMAIL — 미설정 시 경고만 남기고 건너뜀.
+ * @throws 절대 throw 안 함 — 알림 실패가 메인 플로우를 막으면 안 된다.
+ */
+export async function sendOwnerAlert(subject: string, body: string): Promise<void> {
+  const to = process.env.NOTIFY_OWNER_EMAIL?.trim();
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[notify:dev] 운영자 알림 시뮬레이션\n  제목: ${subject}\n  내용: ${body}`);
+    return;
+  }
+  if (!to) {
+    console.warn(`[notify] NOTIFY_OWNER_EMAIL 미설정 — 운영자 알림 미발송: ${subject}`);
+    return;
+  }
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn(`[notify] RESEND_API_KEY 미설정 — 운영자 알림 미발송: ${subject}`);
+    return;
+  }
+
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(apiKey);
+    const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/admin`;
+    const { error } = await resend.emails.send({
+      from: buildFromAddress(),
+      to,
+      subject: `[공부사주 운영] ${subject}`,
+      html: `<div style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.7;color:#2c2c30;">
+<p>${body.replace(/\n/g, "<br>")}</p>
+<p><a href="${adminUrl}" style="color:#2a5a9a;font-weight:600;">어드민에서 확인하기 →</a></p>
+</div>`,
+    });
+    if (error) throw new Error(error.message);
+    console.log(`[notify] 운영자 알림 발송 — ${subject}`);
+  } catch (err) {
+    console.error(`[notify] 운영자 알림 발송 실패 — ${subject}`, err);
+  }
+}
+
 /**
  * 결과 페이지 URL을 조합한다.
  *

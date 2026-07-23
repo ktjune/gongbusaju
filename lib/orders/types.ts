@@ -40,6 +40,8 @@ export type Order = {
   /** 결과 링크 발송 실패 사유 — 성공하면 null. 어드민 "발송 실패" 큐에서 사용. */
   notifyError: string | null;
   notifyFailedAt: string | null;
+  /** 리포트 생성 시도 횟수 — 자동 재시도 상한(6회)용. 매 생성 시작 시 +1 */
+  generateAttempts: number;
   /** 연락처(알림 발송용) — 보호자, 별도 동의 */
   contactEmail: string | null;
   contactPhone: string | null;

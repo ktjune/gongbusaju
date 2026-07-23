@@ -22,6 +22,10 @@ import type { SchoolFixture, ZoneCollection } from "../schools";
 import { getOrderStore } from "./store";
 import { decryptSubject } from "./index";
 import { approveReport } from "./review";
+import { sendOwnerAlert } from "../notify";
+
+/** 생성 시도 상한 — 최초 1회 + 자동 재시도 5회. 초과분은 worker가 건드리지 않는다. */
+export const MAX_GENERATE_ATTEMPTS = 6;
 import type { Order, Report } from "./types";
 
 // 픽스처는 한 번만 읽어 캐시 (DATABASE_URL 없는 로컬 개��� 전용)
@@ -66,6 +70,9 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
   }
 
   await store.updateOrderStatus(orderId, "generating");
+  // 시도 횟수 +1 — worker의 자동 재시도 상한(6회) 판정 기준.
+  // 함수가 타임아웃으로 중간에 죽어도(catch 미도달) 카운트는 남는다.
+  const attempts = await store.recordGenerateAttempt(orderId);
 
   try {
     const subjectRow = await store.getSubject(order.subjectId);
@@ -88,11 +95,11 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
 
     let built = await buildReportForSubject(subject, buildOpts);
 
-    // 금지 표현(가드레일) 감지 시 1회 재생성 시도 — LLM 단어 선택 문제는 대개 재생성으로 해소.
+    // 금지 표현(가드레일) 감지 시 최대 2회 재생성 — LLM 단어 선택 문제는 대개 재생성으로 해소.
     // 그래도 남으면 하드 실패시키지 않고 사람 검수로 보낸다(유료 주문 유실 방지).
-    if (built.guardrailViolations.length > 0) {
+    for (let retryNo = 1; retryNo <= 2 && built.guardrailViolations.length > 0; retryNo++) {
       console.warn(
-        `[order] 가드레일 위반 — 재생성 시도: 주문 ${orderId}`,
+        `[order] 가드레일 위반 — 재생성 ${retryNo}/2: 주문 ${orderId}`,
         built.guardrailViolations.map((v) => v.reason)
       );
       const retry = await buildReportForSubject(subject, buildOpts);
@@ -137,9 +144,22 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
     if (autoApprovable) {
       return await approveReport(report.id);
     }
+
+    // 자동 발행 보류 — 어드민을 지켜보지 않아도 되도록 운영자에게 즉시 통지
+    await sendOwnerAlert(
+      "검수 대기 발생 — 수동 승인 필요",
+      `주문 ${orderId}의 리포트가 자동 승인 기준을 통과하지 못해 검수 큐에 들어갔습니다.\n사유: ${noteParts.join(" · ")}`
+    );
     return report;
   } catch (e) {
     await store.updateOrderStatus(orderId, "failed");
+    // 자동 재시도 소진(6회) — 사람 개입이 필요한 시점에만 운영자에게 통지
+    if (attempts >= MAX_GENERATE_ATTEMPTS) {
+      await sendOwnerAlert(
+        "리포트 생성 자동 재시도 소진 — 확인 필요",
+        `주문 ${orderId}의 리포트 생성이 ${attempts}회 모두 실패했습니다. LLM 장애·잔액 등을 확인해 주세요.\n마지막 오류: ${e instanceof Error ? e.message.slice(0, 300) : String(e).slice(0, 300)}`
+      );
+    }
     // 에러 상세를 명시적으로 직렬화해 Vercel 로그가 잘리지 않게 함
     console.error(`[order] 생성 실패 — 주문: ${orderId}`);
     if (e instanceof Error) {

@@ -39,6 +39,9 @@ model Order {
   // 성공하면 null로 비운다.
   notifyError    String?
   notifyFailedAt DateTime?
+  // 리포트 생성 시도 횟수 — failed/고착 generating 자동 재시도 상한(6회)용.
+  // 매 생성 시작 시 +1 (worker가 candidates 필터에 사용)
+  generateAttempts Int @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

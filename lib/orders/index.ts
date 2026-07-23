@@ -35,7 +35,7 @@ export type {
 export { canTransition, assertTransition, isTerminal } from "./status";
 export type { OrderStore } from "./store";
 export { getOrderStore, InMemoryOrderStore, newReportToken } from "./store";
-export { generateReportForOrder, isGeneratable } from "./generate";
+export { generateReportForOrder, isGeneratable, MAX_GENERATE_ATTEMPTS } from "./generate";
 export { approveReport, rejectReport, listPendingReports, retryNotify } from "./review";
 export { refundOrder } from "./refund";
 

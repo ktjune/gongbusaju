@@ -21,6 +21,7 @@ type OrderRow = {
   paymentKey: string | null; refundedAt: Date | null; refundReason: string | null;
   notifyError: string | null; notifyFailedAt: Date | null;
   contactEmail: string | null; contactPhone: string | null;
+  generateAttempts: number;
   createdAt: Date; updatedAt: Date;
 };
 function toOrder(r: OrderRow): Order {
@@ -36,6 +37,7 @@ function toOrder(r: OrderRow): Order {
     refundReason: r.refundReason,
     notifyError: r.notifyError,
     notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
+    generateAttempts: r.generateAttempts,
     // 연락처는 암호화 저장 — 읽을 때 복호화(레거시 평문도 호환)
     contactEmail: decryptPiiCompat(r.contactEmail),
     contactPhone: decryptPiiCompat(r.contactPhone),
@@ -98,7 +100,7 @@ export class PrismaOrderStore implements OrderStore {
 
   // ── 주문 ──
   async createOrder(
-    data: Omit<Order, "id" | "createdAt" | "updatedAt">
+    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
   ): Promise<Order> {
     const row = await this.db.order.create({
       data: {
@@ -148,6 +150,14 @@ export class PrismaOrderStore implements OrderStore {
       data: { notifyError: error, notifyFailedAt: error ? new Date() : null },
     });
     return toOrder(row);
+  }
+
+  async recordGenerateAttempt(id: string): Promise<number> {
+    const row = await this.db.order.update({
+      where: { id },
+      data: { generateAttempts: { increment: 1 } },
+    });
+    return row.generateAttempts;
   }
 
   async listNotifyFailures(): Promise<Order[]> {

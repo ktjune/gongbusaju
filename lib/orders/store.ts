@@ -16,7 +16,9 @@ import { PrismaOrderStore } from "./prisma-store";
 
 export interface OrderStore {
   // ── 주문 ──
-  createOrder(data: Omit<Order, "id" | "createdAt" | "updatedAt">): Promise<Order>;
+  createOrder(
+    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
+  ): Promise<Order>;
   getOrder(id: string): Promise<Order | null>;
   updateOrderStatus(id: string, status: OrderStatus): Promise<Order>;
   setOrderReport(id: string, reportId: string): Promise<Order>;
@@ -24,6 +26,8 @@ export interface OrderStore {
   refundOrder(id: string, reason: string): Promise<Order>;
   /** 결과 링크 발송 결과 기록 — error=null이면 성공(이전 실패 기록도 비움). */
   recordNotifyResult(id: string, error: string | null): Promise<Order>;
+  /** 생성 시도 카운트 +1 — 자동 재시도 상한 판정용. 갱신된 시도 횟수를 반환. */
+  recordGenerateAttempt(id: string): Promise<number>;
   listOrders(filter?: { status?: OrderStatus }): Promise<Order[]>;
   /** 발송 실패가 기록된(notifyError != null) 주문 목록 — 어드민 "발송 실패" 큐 */
   listNotifyFailures(): Promise<Order[]>;
@@ -63,10 +67,16 @@ export class InMemoryOrderStore implements OrderStore {
   private tokenIndex = new Map<string, string>(); // token → reportId
 
   async createOrder(
-    data: Omit<Order, "id" | "createdAt" | "updatedAt">
+    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
   ): Promise<Order> {
     const ts = nowIso();
-    const order: Order = { ...data, id: randomUUID(), createdAt: ts, updatedAt: ts };
+    const order: Order = {
+      ...data,
+      id: randomUUID(),
+      generateAttempts: 0,
+      createdAt: ts,
+      updatedAt: ts,
+    };
     this.orders.set(order.id, order);
     return order;
   }
@@ -117,6 +127,18 @@ export class InMemoryOrderStore implements OrderStore {
     };
     this.orders.set(id, updated);
     return updated;
+  }
+
+  async recordGenerateAttempt(id: string): Promise<number> {
+    const order = this.orders.get(id);
+    if (!order) throw new Error(`주문 없음: ${id}`);
+    const updated: Order = {
+      ...order,
+      generateAttempts: order.generateAttempts + 1,
+      updatedAt: nowIso(),
+    };
+    this.orders.set(id, updated);
+    return updated.generateAttempts;
   }
 
   async listOrders(filter?: { status?: OrderStatus }): Promise<Order[]> {

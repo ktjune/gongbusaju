@@ -68,6 +68,26 @@ type TossWidgets = {
   }) => Promise<void>;
 };
 
+// ── 한자 탭 선택 (모바일에서 한자 타이핑이 어렵다는 피드백 대응) ──
+type HanjaCand = { c: string; strokes: number; element: string };
+const EL_HANGUL: Record<string, string> = { 木: "목", 火: "화", 土: "토", 金: "금", 水: "수" };
+const EL_COLOR: Record<string, string> = {
+  木: "#3d9a50", 火: "#d64545", 土: "#c9a227", 金: "#8e9aa8", 水: "#3b6fb5",
+};
+const hanjaChipStyle = (selected: boolean, element: string): React.CSSProperties => ({
+  flex: "0 0 auto",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 2,
+  padding: "8px 12px",
+  borderRadius: 10,
+  border: selected ? `2px solid ${EL_COLOR[element] ?? "#1f3b63"}` : "1px solid #ddd6c8",
+  background: selected ? "#fffdf5" : "#fff",
+  cursor: "pointer",
+  fontFamily: "inherit",
+});
+
 export default function ApplyPage() {
   const [step, setStep] = useState<"form" | "pay">("form");
 
@@ -83,6 +103,12 @@ export default function ApplyPage() {
   const [contactPhone, setContactPhone] = useState("");
   const [consent, setConsent] = useState(false);
   const [refundConsent, setRefundConsent] = useState(false);
+
+  // 한자 탭 선택 상태 — 음절별 후보(hanjaCands)에서 골라(hanjaSel) childNameHanja를 구성
+  const [hanjaCands, setHanjaCands] = useState<Record<string, HanjaCand[]>>({});
+  const [hanjaSel, setHanjaSel] = useState<Record<number, string>>({});
+  const [hanjaManual, setHanjaManual] = useState(false);
+  const nameSyllables = [...childName.trim()].filter((c) => /^[가-힣]$/.test(c));
 
   const [searching, setSearching] = useState(false);
   const postcodeBoxRef = useRef<HTMLDivElement>(null);
@@ -105,6 +131,37 @@ export default function ApplyPage() {
     !phoneInvalid &&
     consent &&
     refundConsent;
+
+  // 이름이 바뀌면 음절별 한자 후보를 조회하고 기존 선택을 초기화
+  useEffect(() => {
+    setHanjaSel({});
+    if (!hanjaManual) setChildNameHanja("");
+    const sylls = [...new Set([...childName.trim()].filter((c) => /^[가-힣]$/.test(c)))];
+    if (sylls.length === 0) {
+      setHanjaCands({});
+      return;
+    }
+    const t = setTimeout(() => {
+      fetch(`/api/hanja?name=${encodeURIComponent(sylls.join(""))}`)
+        .then((r) => r.json())
+        .then((d: { candidates?: Record<string, HanjaCand[]> }) => setHanjaCands(d.candidates ?? {}))
+        .catch(() => {
+          /* 후보 조회 실패 시 직접 입력으로 폴백 가능 — 조용히 무시 */
+        });
+    }, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childName]);
+
+  /** i번째 음절의 한자를 선택/해제하고 childNameHanja를 재구성 */
+  // (updater 함수 안에서 다른 setState를 부르면 StrictMode 2회 실행으로 토글이 상쇄됨 — 밖에서 계산)
+  function pickHanja(i: number, c: string) {
+    const next = { ...hanjaSel };
+    if (next[i] === c) delete next[i];
+    else next[i] = c;
+    setHanjaSel(next);
+    setChildNameHanja(nameSyllables.map((_, idx) => next[idx] ?? "").join(""));
+  }
 
   // 결제 단계 진입 시 토스 결제위젯 렌더
   useEffect(() => {
@@ -264,29 +321,101 @@ export default function ApplyPage() {
           <h2 className={styles.sectionTitle}>아이 정보</h2>
 
           <div className={styles.field}>
-            <label className={styles.label}>이름 (선택)</label>
-            <div className={styles.row}>
-              <input
-                className={styles.input}
-                value={childName}
-                maxLength={20}
-                onChange={(e) => setChildName(e.target.value)}
-                placeholder="예: 준서"
-              />
-              <input
-                className={styles.input}
-                value={childNameHanja}
-                maxLength={20}
-                onChange={(e) => setChildNameHanja(e.target.value)}
-                placeholder="한자 (예: 俊書)"
-              />
-            </div>
+            <label className={styles.label}>
+              이름 (선택) <span style={{ fontWeight: 400, color: "#8a8f99" }}>— 성(姓)은 빼고 이름만</span>
+            </label>
+            <input
+              className={styles.input}
+              value={childName}
+              maxLength={20}
+              onChange={(e) => setChildName(e.target.value)}
+              placeholder="이름만 입력 (예: 준서)"
+            />
             <p className={styles.hint}>
-              이름을 입력하시면 리포트 표지·요약에 아이 이름으로 인사드립니다. 한자까지 넣으시면
-              <b> 이름의 자원오행이 사주를 어떻게 보완하는지</b>(성명학 참고)도 풀이해 드립니다.
-              비워 두셔도 됩니다. (이름·한자는 사주 계산·AI 해석에 사용되지 않습니다.)
+              성은 빼고 <b>이름만</b> 입력해 주세요 (예: 김준서 → 준서). 입력하시면 리포트
+              표지·요약에 아이 이름으로 인사드립니다. 비워 두셔도 됩니다.
+              (이름은 사주 계산·AI 해석에 사용되지 않습니다.)
             </p>
           </div>
+
+          {nameSyllables.length > 0 && (
+            <div className={styles.field}>
+              <label className={styles.label}>
+                이름 한자 (선택) <span style={{ fontWeight: 400, color: "#8a8f99" }}>— 탭해서 고르세요</span>
+              </label>
+              <p className={styles.hint} style={{ marginTop: 0 }}>
+                한자를 고르시면 <b>이름의 자원오행 풀이</b>(성명학 참고)를 리포트에 담아드립니다.
+                모르시면 건너뛰셔도 됩니다.
+              </p>
+              {!hanjaManual ? (
+                <>
+                  {nameSyllables.map((s, i) => (
+                    <div key={`${s}-${i}`} style={{ marginBottom: 10 }}>
+                      <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#1f3b63", marginBottom: 5 }}>
+                        {s}
+                        {hanjaSel[i] && (
+                          <span style={{ marginLeft: 6, fontWeight: 400, color: "#8a8f99" }}>
+                            → {hanjaSel[i]} 선택됨
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
+                        {(hanjaCands[s] ?? []).map((cand) => (
+                          <button
+                            type="button"
+                            key={cand.c}
+                            onClick={() => pickHanja(i, cand.c)}
+                            style={hanjaChipStyle(hanjaSel[i] === cand.c, cand.element)}
+                          >
+                            <span style={{ fontSize: "1.2rem", lineHeight: 1.2 }}>{cand.c}</span>
+                            <span style={{ fontSize: "0.62rem", color: EL_COLOR[cand.element] ?? "#8a8f99" }}>
+                              {cand.strokes}획·{EL_HANGUL[cand.element] ?? cand.element}
+                            </span>
+                          </button>
+                        ))}
+                        {(hanjaCands[s]?.length ?? 0) === 0 && (
+                          <span style={{ fontSize: "0.82rem", color: "#9a9fa8", alignSelf: "center" }}>
+                            후보를 찾지 못했어요 — 아래 직접 입력을 이용해 주세요
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.addrClear}
+                    onClick={() => {
+                      setHanjaManual(true);
+                      setHanjaSel({});
+                      setChildNameHanja("");
+                    }}
+                  >
+                    찾는 한자가 없나요? 직접 입력하기
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    className={styles.input}
+                    value={childNameHanja}
+                    maxLength={20}
+                    onChange={(e) => setChildNameHanja(e.target.value)}
+                    placeholder="한자 직접 입력 (예: 俊書)"
+                  />
+                  <button
+                    type="button"
+                    className={styles.addrClear}
+                    onClick={() => {
+                      setHanjaManual(false);
+                      setChildNameHanja("");
+                    }}
+                  >
+                    ← 목록에서 탭으로 고르기
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           <div className={styles.field}>
             <label className={styles.label}>생년월일 (양력)</label>

@@ -1,6 +1,27 @@
 import Link from "next/link";
 import styles from "./home.module.css";
 
+/**
+ * 이용 후기 — **실제 이용자 후기만** 게재한다. 지어낸 후기는 표시광고법상
+ * 거짓·기만 광고에 해당하므로 절대 넣지 않는다.
+ *
+ * 무료 제공·할인·사례품 등 대가가 있었던 후기는 `disclosure`를 반드시 채운다.
+ * (공정위 「추천·보증 등에 관한 표시·광고 심사지침」 — 2024.12.1 시행 개정으로
+ *  경제적 이해관계는 **첫 부분에** 소비자가 쉽게 인식하도록 표시해야 한다)
+ *
+ * 배열이 비어 있으면 후기 섹션 자체가 렌더되지 않는다 → 후기가 모이면 채우기만 하면 된다.
+ */
+type Review = {
+  /** 후기 원문. 의미가 바뀌는 각색·윤문 금지 (오탈자 정정 정도만) */
+  text: string;
+  /** 익명 표기 (예: "초등 2학년 보호자") — 개인 식별정보는 넣지 않는다 */
+  author: string;
+  /** 대가가 있었으면 필수 (예: "리포트를 무료로 제공받아 작성한 후기입니다") */
+  disclosure?: string;
+};
+
+const REVIEWS: Review[] = [];
+
 export default function Home() {
   return (
     <main>
@@ -245,35 +266,23 @@ export default function Home() {
       </div>
 
       {/* ── 후기 ── */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>이런 이야기를 건네 드리고 싶습니다</h2>
-        <p className={styles.sectionLead}>
-          아래는 리포트가 지향하는 경험을 보여 드리는 <b>예시 문구</b>입니다 (실제 이용 후기가 아닙니다)
-        </p>
-        <div className={styles.reviews}>
-          <div className={styles.review}>
-            <p className={styles.reviewText}>
-              &ldquo;아이를 설명하는 단어들이 낯설지 않았어요. 이미 알고 있었지만 말로 정리가 안 됐던 것들이
-              글로 적혀 있으니 오히려 더 잘 보이더라고요.&rdquo;
-            </p>
-            <div className={styles.reviewer}>예시 · 초등 저학년 보호자의 경우</div>
+      {REVIEWS.length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>이용해 보신 분들의 이야기</h2>
+          <p className={styles.sectionLead}>실제로 리포트를 받아보신 보호자분들이 남겨 주신 후기입니다</p>
+          <div className={styles.reviews}>
+            {REVIEWS.map((r, i) => (
+              <div className={styles.review} key={i}>
+                {/* 대가(무료 제공 등)가 있었다면 카드 첫 부분에 표시 —
+                    공정위 「추천·보증 등에 관한 표시·광고 심사지침」(2024.12.1 시행) */}
+                {r.disclosure && <div className={styles.reviewDisclosure}>{r.disclosure}</div>}
+                <p className={styles.reviewText}>&ldquo;{r.text}&rdquo;</p>
+                <div className={styles.reviewer}>{r.author}</div>
+              </div>
+            ))}
           </div>
-          <div className={styles.review}>
-            <p className={styles.reviewText}>
-              &ldquo;학교 배정 정보는 교육청에 확인해야 한다는 안내가 있어서 오히려 신뢰가 갔어요.
-              과하게 단정하지 않는 게 이 서비스의 차이인 것 같습니다.&rdquo;
-            </p>
-            <div className={styles.reviewer}>예시 · 초등 고학년 보호자의 경우</div>
-          </div>
-          <div className={styles.review}>
-            <p className={styles.reviewText}>
-              &ldquo;대운 흐름을 보면서 올해가 왜 이렇게 아이가 예민한지 이해가 됐어요.
-              판단이 아닌 참고라는 전제가 있어서 편하게 읽을 수 있었습니다.&rdquo;
-            </p>
-            <div className={styles.reviewer}>예시 · 중등 보호자의 경우</div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── FAQ ── */}
       <div className={styles.sectionBand}>

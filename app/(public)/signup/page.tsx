@@ -47,7 +47,7 @@ function SignupForm() {
 
   return (
     <div style={S.card}>
-      <div style={S.logo}>공부사주</div>
+      <div style={S.logo}>공부결</div>
       <h1 style={S.title}>회원가입</h1>
       <form onSubmit={handleSubmit}>
         <input style={S.input} type="email" placeholder="이메일" value={email}

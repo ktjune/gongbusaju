@@ -6,7 +6,11 @@ export default function Home() {
     <main>
       {/* ── 네비 ── */}
       <nav className={styles.nav}>
-        <div className={styles.brand}>공부사주</div>
+        {/* 브랜드는 "공부결" — "공부사주"는 설명 문구에서만 사용 */}
+        <div className={styles.brand}>
+          공부결
+          <span className={styles.brandTag}>우리 아이 공부의 결</span>
+        </div>
         <Link href="/apply" className={styles.navCta}>
           리포트 신청
         </Link>
@@ -63,7 +67,7 @@ export default function Home() {
             </div>
           </div>
           <p className={styles.painAnswer}>
-            공부사주는 아이의 <b>타고난 기질과 흐름</b>을 사주 명리로 읽고,<br />
+            공부결은 아이의 <b>타고난 기질과 흐름</b>을 사주 명리로 읽고,<br />
             학교 공공데이터와 나란히 놓아 <b>참고 지도</b>를 그려드립니다.
           </p>
         </section>
@@ -156,7 +160,7 @@ export default function Home() {
           <p className={styles.sectionLead}>실제 리포트의 일부입니다 — 전체는 아래 버튼에서 열어볼 수 있어요</p>
           <div className={styles.previewCard}>
             <div className={styles.previewHeader}>
-              <div className={styles.previewTitle}>공부사주 리포트 — 壬水 일간 · 준서 (예시)</div>
+              <div className={styles.previewTitle}>공부결 리포트 — 壬水 일간 · 준서 (예시)</div>
               <div className={styles.previewTier}>예시</div>
             </div>
             <div className={styles.previewBody}>
@@ -216,7 +220,7 @@ export default function Home() {
           <p className={styles.sectionLead}>아이 한 명, 한 부의 리포트</p>
           <div className={styles.tiers}>
             <div className={`${styles.tier} ${styles.tierFeatured}`}>
-              <div className={styles.tierName}>공부사주 리포트</div>
+              <div className={styles.tierName}>공부결 리포트</div>
               <div className={styles.tierOriginal}>
                 정가 <s>29,000원</s>
               </div>
@@ -341,8 +345,8 @@ export default function Home() {
 
       {/* ── 푸터 ── */}
       <footer className={styles.footer}>
-        <div className={styles.footerBrand}>공부사주</div>
-        <div>공부·기질 사주 리포트 서비스</div>
+        <div className={styles.footerBrand}>공부결</div>
+        <div>우리 아이 공부의 결 · 공부사주 리포트 서비스</div>
         <div className={styles.footerLinks}>
           <Link href="/apply">리포트 신청</Link>
           <span>·</span>

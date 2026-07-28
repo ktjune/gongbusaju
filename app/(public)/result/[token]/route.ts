@@ -54,7 +54,7 @@ function injectActionButtons(html: string, token: string): string {
     <div style="font-size:0.95rem;opacity:0.9;line-height:1.75;margin-bottom:26px;">생년월일시로 풀어낸 공부 기질·학습 스타일·진로 경향 리포트를<br>지금 <b style="color:#FEE500;">9,900원</b>에 받아보실 수 있어요.</div>
     <div>
       <a href="${siteUrl}/apply" style="display:inline-block;background:#FEE500;color:#191919;font-weight:700;font-size:1rem;padding:15px 32px;border-radius:12px;text-decoration:none;margin:0 4px 10px;">우리 아이 리포트 신청하기 →</a>
-      <a href="${siteUrl}/" style="display:inline-block;color:#fff;font-weight:600;font-size:0.92rem;padding:15px 18px;text-decoration:underline;opacity:0.85;margin:0 4px;">공부사주 둘러보기</a>
+      <a href="${siteUrl}/" style="display:inline-block;color:#fff;font-weight:600;font-size:0.92rem;padding:15px 18px;text-decoration:underline;opacity:0.85;margin:0 4px;">공부결 둘러보기</a>
     </div>
   </div>
 </div>`;

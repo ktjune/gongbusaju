@@ -16,6 +16,20 @@
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--navy);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+/* 태그라인 — 브랜드보다 작게 두어 "공부결"이 출처표시임을 분명히 한다 */
+.brandTag {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  letter-spacing: 0;
+}
+@media (max-width: 480px) {
+  .brandTag { display: none; }
 }
 .navCta {
   background: var(--navy);

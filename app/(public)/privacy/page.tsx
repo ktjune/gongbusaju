@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
-  title: "개인정보처리방침 — 공부사주",
-  description: "공부사주 개인정보처리방침",
+  title: "개인정보처리방침 — 공부결",
+  description: "공부결 개인정보처리방침",
 };
 
 const EFFECTIVE_DATE = "2026-06-23";
@@ -22,7 +22,7 @@ export default function PrivacyPage() {
         <p className={styles.meta}>시행일: {EFFECTIVE_DATE}</p>
 
         <p className={styles.p}>
-          공부사주(이하 &ldquo;회사&rdquo;)는 「개인정보 보호법」 등 관계 법령을 준수하며, 정보주체의
+          공부결(이하 &ldquo;회사&rdquo;)는 「개인정보 보호법」 등 관계 법령을 준수하며, 정보주체의
           개인정보를 보호하기 위하여 다음과 같이 개인정보처리방침을 수립·공개합니다. 특히 본 서비스는
           미성년 자녀의 정보를 법정대리인의 동의를 받아 처리하므로, 안전한 처리에 각별히 유의합니다.
         </p>

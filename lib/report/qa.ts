@@ -55,7 +55,7 @@ export async function runLlmQaReview(
   markdown: string,
   provider: LlmProvider
 ): Promise<string[]> {
-  const systemPrompt = `당신은 공부사주 리포트의 품질 검수자입니다.
+  const systemPrompt = `당신은 공부결 리포트의 품질 검수자입니다.
 아래 리포트 본문을 읽고 다음 기준으로만 점검합니다:
 1. 오타·맞춤법 오류 (명백한 것만)
 2. 문맥이 어색하거나 앞뒤 문장이 서로 모순되는 부분

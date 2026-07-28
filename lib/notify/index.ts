@@ -9,7 +9,7 @@
  * 환경변수:
  *   RESEND_API_KEY        — Resend API 키
  *   NOTIFY_FROM_EMAIL     — 발신 주소 (기본: onboarding@resend.dev)
- *   NOTIFY_FROM_NAME      — 발신자 이름 (기본: 공부사주)
+ *   NOTIFY_FROM_NAME      — 발신자 이름 (기본: 공부결)
  *   SOLAPI_API_KEY        — Solapi API 키
  *   SOLAPI_API_SECRET     — Solapi API 시크릿
  *   KAKAO_PF_ID           — 카카오 발신 프로필 ID (pfId, KA01PF…)
@@ -99,7 +99,7 @@ async function sendEmail(
   const { error } = await resend.emails.send({
     from,
     to,
-    subject: "[공부사주] 리포트가 완성됐습니다",
+    subject: "[공부결] 리포트가 완성됐습니다",
     html: buildEmailHtml(resultUrl),
   });
 
@@ -114,7 +114,7 @@ function buildFromAddress(): string {
   // 주의: ?? 가 아니라 빈 문자열까지 기본값으로 처리해야 한다.
   // 환경변수가 "" 로 설정되면 발신 주소가 "공부사주 <>" 가 돼 발송이 조용히 실패한다.
   const email = process.env.NOTIFY_FROM_EMAIL?.trim() || "onboarding@resend.dev";
-  const name = process.env.NOTIFY_FROM_NAME?.trim() || "공부사주";
+  const name = process.env.NOTIFY_FROM_NAME?.trim() || "공부결";
   return `${name} <${email}>`;
 }
 
@@ -128,7 +128,7 @@ function buildEmailHtml(resultUrl: string): string {
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(31,59,99,0.08);">
         <tr>
           <td style="background:#1f3b63;padding:28px 36px;">
-            <h1 style="margin:0;color:#fff;font-size:1.3rem;font-weight:700;">공부사주</h1>
+            <h1 style="margin:0;color:#fff;font-size:1.3rem;font-weight:700;">공부결</h1>
           </td>
         </tr>
         <tr>
@@ -356,7 +356,7 @@ export async function sendOwnerAlert(subject: string, body: string): Promise<voi
     const { error } = await resend.emails.send({
       from: buildFromAddress(),
       to,
-      subject: `[공부사주 운영] ${subject}`,
+      subject: `[공부결 운영] ${subject}`,
       html: `<div style="font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.7;color:#2c2c30;">
 <p>${body.replace(/\n/g, "<br>")}</p>
 <p><a href="${adminUrl}" style="color:#2a5a9a;font-weight:600;">어드민에서 확인하기 →</a></p>

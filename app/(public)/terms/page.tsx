@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
-  title: "이용약관 — 공부사주",
-  description: "공부사주 서비스 이용약관",
+  title: "이용약관 — 공부결",
+  description: "공부결 서비스 이용약관",
 };
 
 const EFFECTIVE_DATE = "2026-06-23";
@@ -36,7 +36,7 @@ export default function TermsPage() {
 
         <h2 className={styles.h2}>제1조 (목적)</h2>
         <p className={styles.p}>
-          본 약관은 공부사주(이하 &ldquo;회사&rdquo;)가 제공하는 사주 기반 공부·진로 리포트 서비스(이하
+          본 약관은 공부결(이하 &ldquo;회사&rdquo;)가 제공하는 사주 기반 공부·진로 리포트 서비스(이하
           &ldquo;서비스&rdquo;)의 이용과 관련하여 회사와 이용자의 권리·의무 및 책임사항을 규정함을 목적으로
           합니다.
         </p>

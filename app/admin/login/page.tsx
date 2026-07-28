@@ -39,7 +39,7 @@ export default async function AdminLoginPage({
         boxShadow: "0 2px 16px rgba(0,0,0,0.08)", width: 320,
       }}>
         <h1 style={{ margin: "0 0 24px", fontSize: "1.2rem", color: "#1f3b63" }}>
-          공부사주 Admin
+          공부결 Admin
         </h1>
         <input
           type="password"

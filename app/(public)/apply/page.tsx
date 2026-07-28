@@ -247,7 +247,7 @@ export default function ApplyPage() {
       sessionStorage.setItem(ORDER_PAYLOAD_KEY, JSON.stringify(buildPayload(tossOrderId)));
       await widgetsRef.current.requestPayment({
         orderId: tossOrderId,
-        orderName: "공부사주 리포트",
+        orderName: "공부결 리포트",
         successUrl: `${window.location.origin}/order/result`,
         failUrl: `${window.location.origin}/order/result`,
         customerEmail: contactEmail.trim() || undefined,
@@ -266,7 +266,7 @@ export default function ApplyPage() {
         <div className={styles.sheet}>
           <div className={styles.badge}>공부·기질 사주 리포트</div>
           <h1 className={styles.title}>결제</h1>
-          <p className={styles.subtitle}>공부사주 리포트 1부 · {PRICE}원</p>
+          <p className={styles.subtitle}>공부결 리포트 1부 · {PRICE}원</p>
 
           {error && <div className={styles.error}>{error}</div>}
 

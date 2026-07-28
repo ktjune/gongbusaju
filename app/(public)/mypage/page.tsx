@@ -30,7 +30,7 @@ export default async function MyPage() {
       <div style={S.sheet}>
         <div style={S.header}>
           <div>
-            <div style={S.logo}>공부사주</div>
+            <div style={S.logo}>공부결</div>
             <h1 style={S.title}>내 리포트</h1>
             <p style={S.email}>{user.email}</p>
           </div>

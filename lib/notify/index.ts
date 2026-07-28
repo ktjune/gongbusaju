@@ -293,6 +293,27 @@ async function buildSolapiAuthAsync(
   return `HMAC-SHA256 ApiKey=${apiKey}, Date=${date}, Salt=${salt}, Signature=${signature}`;
 }
 
+/**
+ * 솔라피 잔액 조회 — 어드민 "비용" 섹션용 실측값.
+ * 키 미설정·API 실패 시 null (호출자가 "조회 불가"로 표시).
+ */
+export async function getSolapiBalance(): Promise<{ balance: number; point: number } | null> {
+  const apiKey = process.env.SOLAPI_API_KEY;
+  const apiSecret = process.env.SOLAPI_API_SECRET;
+  if (!apiKey || !apiSecret) return null;
+  try {
+    const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
+    const res = await fetch("https://api.solapi.com/cash/v1/balance", {
+      headers: { Authorization: auth },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { balance?: number; point?: number };
+    return { balance: data.balance ?? 0, point: data.point ?? 0 };
+  } catch {
+    return null;
+  }
+}
+
 /** 전화번호를 Solapi 형식(숫자만, 국내 010...)으로 정규화한다. */
 function normalizePhone(phone: string): string {
   return phone.replace(/\D/g, "");

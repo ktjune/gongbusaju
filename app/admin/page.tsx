@@ -19,12 +19,14 @@ import { ReviewQueueSection, type ReviewItem } from "./ReviewQueueSection";
 import { RegenQueueSection, type RegenOrderItem } from "./RegenQueueSection";
 import { NotifyFailureSection, type NotifyFailureItem } from "./NotifyFailureSection";
 import { SentSection, type SentOrderItem } from "./SentSection";
+import { CostsSection, type CostsData } from "./CostsSection";
 
 export default function AdminPage() {
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [regenOrders, setRegenOrders] = useState<RegenOrderItem[]>([]);
   const [notifyFailures, setNotifyFailures] = useState<NotifyFailureItem[]>([]);
   const [sentOrders, setSentOrders] = useState<SentOrderItem[]>([]);
+  const [costs, setCosts] = useState<CostsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -32,16 +34,18 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [rep, ord, fail, sent] = await Promise.all([
+      const [rep, ord, fail, sent, cost] = await Promise.all([
         fetch("/api/admin/reports").then((r) => r.json()),
         fetch("/api/admin/orders").then((r) => r.json()),
         fetch("/api/admin/notify-failures").then((r) => r.json()),
         fetch("/api/admin/sent").then((r) => r.json()),
+        fetch("/api/admin/costs").then((r) => r.json()).catch(() => null),
       ]);
       setItems(rep.items ?? []);
       setRegenOrders(ord.items ?? []);
       setNotifyFailures(fail.items ?? []);
       setSentOrders(sent.items ?? []);
+      setCosts(cost && cost.month ? cost : null);
     } finally {
       setLoading(false);
     }
@@ -155,6 +159,8 @@ export default function AdminPage() {
     <div style={S.page}>
       <div style={S.sheet}>
         {msg && <div style={S.msg}>{msg}</div>}
+
+        <CostsSection costs={costs} loading={loading} />
 
         <ReviewQueueSection items={items} loading={loading} busy={busy} onReview={review} />
 

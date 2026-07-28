@@ -581,7 +581,8 @@
 /* 경제적 이해관계 표시 — 공정위 지침상 "쉽게 인식할 수 있게" 해야 하므로
    본문과 비슷한 크기로 카드 첫 부분에 둔다. 작게·흐리게 처리 금지. */
 .reviewDisclosure {
-  font-size: 0.82rem;
+  /* 본문(.reviewText)과 같은 크기 — 지침상 "명확히 인식 가능"해야 하므로 축소 금지 */
+  font-size: 0.9rem;
   font-weight: 600;
   color: #7a5c1e;
   background: #fdf6e6;

@@ -1,60 +1,39 @@
 /**
- * POST /api/payment-webhook — 결제 웹훅 수신
+ * POST /api/payment-webhook — 결제 웹훅 수신 (포트원)
  *
- * [현재 상태] 스텁 — Toss Payments 연동 전
+ * [현재 상태] 스텁 — 주문 생성은 /api/order 의 동기 검증 경로가 담당한다.
+ * 이 엔드포인트는 아직 주문 상태를 바꾸지 않는다(위조 요청으로 주문이
+ * 발행되는 사고를 막기 위해 의도적으로 no-op).
  *
- * [구현 예정: Toss Payments]
- * 1. TOSS_SECRET_KEY 환경변수 설정
- * 2. 아래 TODO 주석 위치에 실 검증 로직 추가:
- *    - Toss 서명 검증: Authorization 헤더 Bearer {base64(secretKey:)}
- *    - 결제 상태 확인: paymentKey로 /v1/payments/{paymentKey} 조회
- *    - orderId로 주문 조회 → createOrder / updateOrderStatus 호출
+ * [구현할 때 반드시]
+ * 1. 포트원 콘솔에서 웹훅 시크릿 발급 → PORTONE_WEBHOOK_SECRET 설정
+ * 2. 서명 검증(@portone/server-sdk 의 Webhook.verify) 통과 후에만 처리
+ * 3. 본문의 금액을 믿지 말고 paymentId로 결제를 재조회해 검증
+ *    (lib/payments/portone.verifyPortOnePayment 재사용)
  *
- * [웹훅 형식 — Toss Payments]
- * POST https://api.tosspayments.com/v1/payments/{paymentKey}/confirm
- * body: { paymentKey, orderId, amount }
- *
- * [보안]
- * - 서명 없이 받으면 임의 주문 발행 위험 → 반드시 검증 후 처리
- * - POST body size 제한 (예: 64KB) 걸 것
+ * 용도: 가상계좌 입금 통보, 결제창 이탈 후 지연 승인 등 비동기 상태 변화 반영.
  */
 
 export const runtime = "nodejs";
 
-type TossWebhookBody = {
-  paymentKey?: string;
-  orderId?: string;
-  amount?: number;
-  status?: string;
+type PortOneWebhookBody = {
+  type?: string;
+  data?: { paymentId?: string; status?: string };
 };
 
 export async function POST(req: Request) {
-  let body: TossWebhookBody;
+  let body: PortOneWebhookBody;
   try {
-    body = (await req.json()) as TossWebhookBody;
+    body = (await req.json()) as PortOneWebhookBody;
   } catch {
     return Response.json({ error: "잘못된 요청 형식" }, { status: 400 });
   }
 
-  // TODO [Toss 연동]: TOSS_SECRET_KEY로 Authorization 헤더 검증
-  // const secretKey = process.env.TOSS_SECRET_KEY;
-  // if (!secretKey) return Response.json({ error: "결제 미연동" }, { status: 501 });
-  // const authHeader = req.headers.get("authorization");
-  // const expected = `Basic ${Buffer.from(secretKey + ":").toString("base64")}`;
-  // if (authHeader !== expected) return Response.json({ error: "인증 실패" }, { status: 401 });
-
-  if (!body.paymentKey || !body.orderId) {
-    return Response.json({ error: "paymentKey, orderId 필요" }, { status: 400 });
-  }
-
-  // TODO [Toss 연동]: 결제 상태 확인 후 주문 상태 업데이트
-  // const confirmed = await confirmTossPayment(body.paymentKey, body.orderId, body.amount);
-  // await createOrder({ ... }) or await store.updateOrderStatus(body.orderId, "paid");
-
+  const paymentId = body.data?.paymentId;
   console.warn(
-    `[payment-webhook] 수신됨 (미연동 스텁). paymentKey=${body.paymentKey}, orderId=${body.orderId}`
+    `[payment-webhook] 수신됨 (미연동 스텁). type=${body.type ?? "-"}, paymentId=${paymentId ?? "-"}`
   );
 
-  // Toss는 200이 아닌 경우 재시도 — 스텁은 200 반환해 재시도 방지
+  // 200이 아니면 재시도되므로, 스텁은 200을 반환해 재시도 폭주를 막는다
   return Response.json({ received: true });
 }

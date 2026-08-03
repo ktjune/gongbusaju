@@ -28,7 +28,7 @@ model Order {
   userId       String?  // Supabase auth.users UUID (null = 비회원)
   subjectId    String   // subjects 외래키 (PII 분리)
   reportId     String?
-  // 토스 결제 승인 키 — 환불(결제취소 API) 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 null.
+  // PG 결제 식별자(포트원 paymentId) — 환불(결제취소 API) 시 필요. 모의 결제면 null.
   paymentKey   String?
   refundedAt   DateTime?
   refundReason String?

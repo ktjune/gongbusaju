@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
+import * as PortOne from "@portone/browser-sdk/v2";
 import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
 
@@ -21,7 +21,9 @@ const PRICE = "9,900";
 const PRICE_VALUE = 9900;
 const MIN_DATE = "1980-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
-const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
+// 포트원 V2 — PG(현재 NHN KCP)는 채널 설정으로 결정된다
+const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID ?? "";
+const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY ?? "";
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 const DAUM_POSTCODE_SRC =
   "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
@@ -53,20 +55,6 @@ function loadDaumPostcode(): Promise<void> {
     document.body.appendChild(s);
   });
 }
-
-// 토스 위젯 인스턴스 타입(부분) — SDK 반환값
-type TossWidgets = {
-  setAmount: (a: { value: number; currency: string }) => Promise<void>;
-  renderPaymentMethods: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
-  renderAgreement: (o: { selector: string; variantKey?: string }) => Promise<unknown>;
-  requestPayment: (o: {
-    orderId: string;
-    orderName: string;
-    successUrl: string;
-    failUrl: string;
-    customerEmail?: string;
-  }) => Promise<void>;
-};
 
 // ── 한자 탭 선택 (모바일에서 한자 타이핑이 어렵다는 피드백 대응) ──
 type HanjaCand = { c: string; strokes: number; element: string };
@@ -115,7 +103,6 @@ export default function ApplyPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  const widgetsRef = useRef<TossWidgets | null>(null);
 
   const birthYear = birthDate.slice(0, 4);
 
@@ -163,31 +150,6 @@ export default function ApplyPage() {
     setChildNameHanja(nameSyllables.map((_, idx) => next[idx] ?? "").join(""));
   }
 
-  // 결제 단계 진입 시 토스 결제위젯 렌더
-  useEffect(() => {
-    if (step !== "pay") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        if (!TOSS_CLIENT_KEY) throw new Error("결제 설정 오류(클라이언트 키 없음)");
-        const toss = await loadTossPayments(TOSS_CLIENT_KEY);
-        const widgets = toss.widgets({ customerKey: ANONYMOUS }) as unknown as TossWidgets;
-        if (cancelled) return;
-        widgetsRef.current = widgets;
-        await widgets.setAmount({ value: PRICE_VALUE, currency: "KRW" });
-        await Promise.all([
-          widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
-          widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
-        ]);
-      } catch {
-        if (!cancelled) setError("결제창을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [step]);
-
   async function openAddressSearch() {
     setError(null);
     try {
@@ -209,7 +171,7 @@ export default function ApplyPage() {
     }
   }
 
-  function buildPayload(tossOrderId: string) {
+  function buildPayload(paymentId: string) {
     const [y, m, d] = birthDate.split("-").map(Number);
     let hour: number | null = null;
     let minute: number | null = null;
@@ -233,28 +195,53 @@ export default function ApplyPage() {
       contactEmail: contactEmail.trim() || undefined,
       contactPhone: contactPhone.trim() || undefined,
       consent,
-      amount: PRICE_VALUE,
-      tossOrderId,
+      paymentId,
     };
   }
 
+  /**
+   * 포트원 결제 요청 → 성공 시 /order/result 로 이동해 주문 생성.
+   *
+   * 모바일은 외부 앱(카드사·간편결제)을 거쳐 redirectUrl로 돌아오고,
+   * PC는 팝업에서 끝나 함수가 값을 반환한다 — 두 경로를 모두 처리한다.
+   * 신청 데이터는 결제 전에 sessionStorage에 넣어 두고, 돌아온 뒤 꺼내 쓴다.
+   */
   async function handlePay() {
-    if (!widgetsRef.current) return;
     setError(null);
     setPaying(true);
     try {
-      const tossOrderId = `gbsj_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
-      sessionStorage.setItem(ORDER_PAYLOAD_KEY, JSON.stringify(buildPayload(tossOrderId)));
-      await widgetsRef.current.requestPayment({
-        orderId: tossOrderId,
+      if (!PORTONE_STORE_ID || !PORTONE_CHANNEL_KEY) {
+        throw new Error("결제 설정 오류(상점 정보 없음)");
+      }
+      const paymentId = `gbg_${crypto.randomUUID().replace(/-/g, "")}`;
+      sessionStorage.setItem(ORDER_PAYLOAD_KEY, JSON.stringify(buildPayload(paymentId)));
+
+      const res = await PortOne.requestPayment({
+        storeId: PORTONE_STORE_ID,
+        channelKey: PORTONE_CHANNEL_KEY,
+        paymentId,
         orderName: "공부결 리포트",
-        successUrl: `${window.location.origin}/order/result`,
-        failUrl: `${window.location.origin}/order/result`,
-        customerEmail: contactEmail.trim() || undefined,
+        totalAmount: PRICE_VALUE,
+        currency: "CURRENCY_KRW",
+        payMethod: "CARD",
+        // 모바일 리다이렉트 복귀 지점 — 이 경우 아래 코드는 실행되지 않는다
+        redirectUrl: `${window.location.origin}/order/result`,
+        customer: {
+          email: contactEmail.trim() || undefined,
+          phoneNumber: contactPhone.trim() || undefined,
+        },
       });
-      // requestPayment 성공 시 리다이렉트되므로 이 아래는 실행되지 않음
-    } catch {
-      // 사용자가 결제창을 닫는 등 — 조용히 복귀
+
+      // PC 팝업 경로: 여기로 값이 돌아온다
+      if (res?.code !== undefined) {
+        // 사용자가 취소했거나 결제 실패 — 안내만 하고 폼에 머문다
+        setError(res.message ?? "결제가 완료되지 않았습니다.");
+        setPaying(false);
+        return;
+      }
+      window.location.href = `/order/result?paymentId=${encodeURIComponent(paymentId)}`;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "결제를 진행하지 못했습니다.");
       setPaying(false);
     }
   }
@@ -270,9 +257,17 @@ export default function ApplyPage() {
 
           {error && <div className={styles.error}>{error}</div>}
 
+          {/* 포트원은 별도 위젯 영역 없이 버튼 클릭 시 결제창이 뜬다 */}
           <div className={styles.section}>
-            <div id="payment-method" />
-            <div id="agreement" />
+            <div className={styles.field}>
+              <div className={styles.row} style={{ justifyContent: "space-between" }}>
+                <span className={styles.label}>공부결 리포트 1부</span>
+                <span className={styles.label}>{PRICE}원</span>
+              </div>
+              <p className={styles.hint}>
+                아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다.
+              </p>
+            </div>
           </div>
 
           <button className={styles.submit} onClick={handlePay} disabled={paying}>
@@ -291,7 +286,7 @@ export default function ApplyPage() {
           </button>
 
           <p className={styles.notice}>
-            테스트 결제 환경입니다. 결제 성공 시 리포트 제작이 접수됩니다.
+            결제는 안전하게 암호화되어 처리되며, 카드 정보는 저희 서버에 저장되지 않습니다.
           </p>
         </div>
       </div>

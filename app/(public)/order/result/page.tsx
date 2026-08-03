@@ -1,11 +1,14 @@
 "use client";
 
 /**
- * /order/result — 토스 결제 성공/실패 리다이렉트 처리
+ * /order/result — 포트원 결제 완료 처리
  *
- * 성공: ?paymentKey=&orderId=&amount=  → sessionStorage의 신청 데이터와 함께
- *       /api/order 로 전송 → 서버가 결제 승인 검증 후 주문 생성.
- * 실패: ?code=&message=               → 실패 안내.
+ * 모바일은 결제 앱에서 redirectUrl로 돌아오고(?paymentId=&code=&message=),
+ * PC 팝업은 apply 페이지가 ?paymentId= 를 붙여 이리로 보낸다 — 둘 다 같은 경로.
+ *
+ * 성공: ?paymentId= → sessionStorage의 신청 데이터와 함께 /api/order 로 전송
+ *       → 서버가 PG에 결제 내역을 조회·검증한 뒤 주문 생성.
+ * 실패: ?code=&message= → 실패 안내.
  */
 
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -30,13 +33,12 @@ function OrderResult() {
     if (started.current) return;
     started.current = true;
 
-    const paymentKey = params.get("paymentKey");
-    const orderId = params.get("orderId");
-    const amount = params.get("amount");
+    const paymentId = params.get("paymentId");
+    const failCode = params.get("code");
     const failMessage = params.get("message");
 
-    // 결제 실패/취소
-    if (!paymentKey) {
+    // 결제 실패/취소 — 포트원은 실패 시 code·message를 붙여 돌려보낸다
+    if (!paymentId || failCode) {
       setState({
         kind: "fail",
         message: failMessage ?? "결제가 취소되었거나 완료되지 않았습니다.",
@@ -61,12 +63,7 @@ function OrderResult() {
         const res = await fetch("/api/order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payload,
-            paymentKey,
-            tossOrderId: orderId,
-            amount: amount ? Number(amount) : payload.amount,
-          }),
+          body: JSON.stringify({ ...payload, paymentId }),
         });
         const data = await res.json();
         sessionStorage.removeItem(ORDER_PAYLOAD_KEY);

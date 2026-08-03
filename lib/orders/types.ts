@@ -33,7 +33,7 @@ export type Order = {
   reportId: string | null;
   /** Supabase Auth 사용자 ID (로그인 후 신청 시 연결) */
   userId: string | null;
-  /** 토스 결제 승인 키 — 환불(결제취소) 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 null. */
+  /** PG 결제 식별자(포트원 paymentId) — 환불(결제취소) 시 필요. 모의 결제면 null. */
   paymentKey: string | null;
   refundedAt: string | null;
   refundReason: string | null;
@@ -119,6 +119,6 @@ export type CreateOrderInput = {
   contactPhone?: string;
   /** Supabase Auth 사용자 ID (로그인 후 신청 시) */
   userId?: string;
-  /** 토스 결제 승인 키 — 환불 시 필요. 모의 결제(TOSS_SECRET_KEY 미설정)면 미전달. */
+  /** PG 결제 식별자(포트원 paymentId) — 환불 시 필요. 모의 결제면 미전달. */
   paymentKey?: string;
 };

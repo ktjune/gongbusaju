@@ -25,6 +25,9 @@ const MAX_DATE = new Date().toISOString().slice(0, 10);
 const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID ?? "";
 const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY ?? "";
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
+const GATE_TOKEN_KEY = "gbsj_gate_token";
+// 심사 모드 잠금 여부 — 서버의 ORDER_GATE_TOKEN과 짝을 이룬다(둘 다 설정하거나 둘 다 비운다)
+const GATE_ENABLED = (process.env.NEXT_PUBLIC_ORDER_GATE ?? "") === "1";
 const DAUM_POSTCODE_SRC =
   "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 
@@ -78,6 +81,16 @@ const hanjaChipStyle = (selected: boolean, element: string): React.CSSProperties
 
 export default function ApplyPage() {
   const [step, setStep] = useState<"form" | "pay">("form");
+
+  // 심사 모드 통행 토큰 — /apply?k=... 로 들어오면 저장해 두고 주문 시 함께 보낸다.
+  // 서버(ORDER_GATE_TOKEN)가 최종 판정하므로 여기 값은 안내용 게이트일 뿐이다.
+  const [gateToken, setGateToken] = useState("");
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("k");
+    if (fromUrl) sessionStorage.setItem(GATE_TOKEN_KEY, fromUrl);
+    setGateToken(fromUrl ?? sessionStorage.getItem(GATE_TOKEN_KEY) ?? "");
+  }, []);
+  const orderLocked = GATE_ENABLED && !gateToken;
 
   const [childName, setChildName] = useState("");
   const [childNameHanja, setChildNameHanja] = useState("");
@@ -196,6 +209,7 @@ export default function ApplyPage() {
       contactPhone: contactPhone.trim() || undefined,
       consent,
       paymentId,
+      gateToken: gateToken || undefined,
     };
   }
 
@@ -210,6 +224,9 @@ export default function ApplyPage() {
     setError(null);
     setPaying(true);
     try {
+      if (orderLocked) {
+        throw new Error("현재 결제 준비 중입니다. 곧 정식 오픈합니다.");
+      }
       if (!PORTONE_STORE_ID || !PORTONE_CHANNEL_KEY) {
         throw new Error("결제 설정 오류(상점 정보 없음)");
       }
@@ -265,13 +282,23 @@ export default function ApplyPage() {
                 <span className={styles.label}>{PRICE}원</span>
               </div>
               <p className={styles.hint}>
-                아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다.
+                {orderLocked
+                  ? "결제 시스템 점검 중입니다. 오픈 후 바로 신청하실 수 있습니다."
+                  : "아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."}
               </p>
             </div>
           </div>
 
-          <button className={styles.submit} onClick={handlePay} disabled={paying}>
-            {paying ? "결제 진행 중…" : `${PRICE}원 결제하기`}
+          <button
+            className={styles.submit}
+            onClick={handlePay}
+            disabled={paying || orderLocked}
+          >
+            {orderLocked
+              ? "결제 준비 중 — 곧 오픈합니다"
+              : paying
+                ? "결제 진행 중…"
+                : `${PRICE}원 결제하기`}
           </button>
           <button
             type="button"

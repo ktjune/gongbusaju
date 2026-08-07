@@ -37,6 +37,8 @@ type Body = {
   consent?: boolean;
   /** 포트원 결제 식별자 — 결제 완료 후 클라이언트가 전달. 서버가 이걸로 검증한다. */
   paymentId?: string;
+  /** 심사 모드 통행 토큰 — ORDER_GATE_TOKEN 설정 시에만 검사한다. */
+  gateToken?: string;
 };
 
 export async function POST(req: Request) {
@@ -45,6 +47,17 @@ export async function POST(req: Request) {
     body = (await req.json()) as Body;
   } catch {
     return Response.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
+  }
+
+  // 심사 모드 잠금 — 테스트 채널(실제 출금 없음)로 운영에 올려둔 기간 동안
+  // PG·카드사 심사자만 주문을 만들 수 있게 막는다. 실연동 채널로 바꾸면
+  // ORDER_GATE_TOKEN을 지워서 해제한다.
+  const gate = process.env.ORDER_GATE_TOKEN;
+  if (gate && body.gateToken !== gate) {
+    return Response.json(
+      { error: "현재 결제 준비 중입니다. 곧 정식 오픈합니다." },
+      { status: 403 }
+    );
   }
 
   // 법정대리인 동의 — PII 수집 전제 (개인정보보호법)

@@ -76,6 +76,12 @@ export default function TermsPage() {
           <li className={styles.li}>
             서비스는 즉시 자동 출력이 아닌, 회사의 검수를 거쳐 전달하는 방식으로 운영될 수 있습니다.
           </li>
+          <li className={styles.li}>
+            <b>서비스 제공 기간</b>: 리포트는 결제 완료 후 <b>1일(24시간) 이내</b>에 이용하실 수
+            있습니다. 대부분은 신청 후 수 분 내 자동 검수를 통과해 발송되며, 추가 검수가 필요한
+            경우에도 1일을 넘기지 않습니다. 완성 시 이용자가 입력한 이메일 또는 카카오 알림으로
+            결과 링크를 발송합니다.
+          </li>
         </ul>
 
         <h2 className={styles.h2}>제5조 (해석의 성격 및 한계)</h2>
@@ -110,6 +116,12 @@ export default function TermsPage() {
           <li className={styles.li}>
             <b>제작 착수 전</b>에는 전액 환불합니다. 회사의 귀책으로 리포트가 제공되지 못한 경우에도
             전액 환불합니다.
+          </li>
+          <li className={styles.li}>
+            <b>환불 신청 방법</b>: 사이트의 <a href="/refund" style={{ textDecoration: "underline" }}>
+            환불 신청</a> 페이지에서 <b>주문번호와 신청 시 입력한 연락처</b>로 접수하실 수 있습니다.
+            전화(0502-1944-3249) 또는 이메일(moondoor_main@naver.com)로도 접수 가능하며, 접수 후
+            담당자가 확인하여 처리하고 결과를 신청 연락처로 안내드립니다.
           </li>
           <li className={styles.li}>
             본 리포트는 이용자가 입력한 정보로 <b>개별 제작되는 디지털 콘텐츠</b>로서, <b>리포트 제작·제공이

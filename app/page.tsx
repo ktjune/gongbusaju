@@ -80,7 +80,8 @@ export default function Home() {
             </a>
           </div>
           <p className={styles.heroNote}>
-            자동 검수 후 웹·PDF로 전달 · 카카오/이메일 알림
+            자동 검수 후 웹·PDF로 전달 · 카카오/이메일 알림<br />
+            <b>결제 후 1일 이내 이용 가능</b> (대부분 수 분 내 발송)
           </p>
         </div>
       </section>
@@ -137,7 +138,8 @@ export default function Home() {
               <div className={styles.stepNum}>3</div>
               <div className={styles.stepName}>전달</div>
               <div className={styles.stepDesc}>
-                웹 결과 페이지와 PDF<br />완성 시 알림으로 안내
+                웹 결과 페이지와 PDF<br />
+                <b>결제 후 1일 이내</b> 알림 발송
               </div>
             </div>
           </div>
@@ -330,8 +332,9 @@ export default function Home() {
             <details className={styles.faq}>
               <summary className={styles.faqQ}>리포트는 얼마나 걸려 오나요?</summary>
               <p className={styles.faqA}>
-                신청 후 자동 검수를 거쳐 전달합니다. 완성되면 입력하신 이메일·카카오로
-                결과 링크를 보내드립니다.
+                <b>결제 완료 후 1일(24시간) 이내</b>에 이용하실 수 있습니다. 대부분은 신청 후
+                수 분 내에 자동 검수를 통과해 바로 발송되며, 추가 검수가 필요한 경우에도
+                1일을 넘기지 않습니다. 완성되면 입력하신 이메일·카카오로 결과 링크를 보내드립니다.
               </p>
             </details>
             <details className={styles.faq}>
@@ -379,6 +382,9 @@ export default function Home() {
           <Link href="/terms">이용약관</Link>
           <span>·</span>
           <Link href="/privacy">개인정보처리방침</Link>
+          <span>·</span>
+          {/* PG 심사 요건 — 취소·환불 창구가 사이트에서 바로 보여야 한다 */}
+          <Link href="/refund">취소 · 환불</Link>
           <span>·</span>
           <a href="mailto:moondoor_main@naver.com">문의</a>
         </div>

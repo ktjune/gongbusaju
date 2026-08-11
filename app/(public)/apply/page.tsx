@@ -281,10 +281,19 @@ export default function ApplyPage() {
                 <span className={styles.label}>공부결 리포트 1부</span>
                 <span className={styles.label}>{PRICE}원</span>
               </div>
+              <div className={styles.row} style={{ justifyContent: "space-between" }}>
+                <span className={styles.label}>서비스 제공 기간</span>
+                <span className={styles.label}>결제 후 1일 이내</span>
+              </div>
               <p className={styles.hint}>
                 {orderLocked
                   ? "결제 시스템 점검 중입니다. 오픈 후 바로 신청하실 수 있습니다."
                   : "아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."}
+              </p>
+              <p className={styles.hint}>
+                본 상품은 온라인으로 제작·전달되는 디지털 콘텐츠로,{" "}
+                <b>결제 완료 후 1일(24시간) 이내 이용 가능</b>합니다. 완성되면 입력하신
+                이메일·카카오로 결과 링크를 보내드립니다.
               </p>
             </div>
           </div>
@@ -579,6 +588,8 @@ export default function ApplyPage() {
             <span>
               (필수) 개별 제작되는 리포트로, <b>제작 시작 후에는 단순 변심 환불이 어렵습니다.</b>{" "}
               <a href="/terms#refund" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>환불정책</a>
+              {" · "}
+              <a href="/refund" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>환불 신청</a>
             </span>
           </label>
         </div>

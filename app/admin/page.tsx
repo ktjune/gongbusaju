@@ -20,12 +20,14 @@ import { RegenQueueSection, type RegenOrderItem } from "./RegenQueueSection";
 import { NotifyFailureSection, type NotifyFailureItem } from "./NotifyFailureSection";
 import { SentSection, type SentOrderItem } from "./SentSection";
 import { CostsSection, type CostsData } from "./CostsSection";
+import { RefundRequestSection, type RefundRequestItem } from "./RefundRequestSection";
 
 export default function AdminPage() {
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [regenOrders, setRegenOrders] = useState<RegenOrderItem[]>([]);
   const [notifyFailures, setNotifyFailures] = useState<NotifyFailureItem[]>([]);
   const [sentOrders, setSentOrders] = useState<SentOrderItem[]>([]);
+  const [refundRequests, setRefundRequests] = useState<RefundRequestItem[]>([]);
   const [costs, setCosts] = useState<CostsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -34,17 +36,19 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [rep, ord, fail, sent, cost] = await Promise.all([
+      const [rep, ord, fail, sent, cost, refundReq] = await Promise.all([
         fetch("/api/admin/reports").then((r) => r.json()),
         fetch("/api/admin/orders").then((r) => r.json()),
         fetch("/api/admin/notify-failures").then((r) => r.json()),
         fetch("/api/admin/sent").then((r) => r.json()),
         fetch("/api/admin/costs").then((r) => r.json()).catch(() => null),
+        fetch("/api/admin/refund-requests").then((r) => r.json()),
       ]);
       setItems(rep.items ?? []);
       setRegenOrders(ord.items ?? []);
       setNotifyFailures(fail.items ?? []);
       setSentOrders(sent.items ?? []);
+      setRefundRequests(refundReq.items ?? []);
       setCosts(cost && cost.month ? cost : null);
     } finally {
       setLoading(false);
@@ -76,11 +80,14 @@ export default function AdminPage() {
     }
   }
 
-  async function refund(orderId: string, hasPayment: boolean) {
+  async function refund(orderId: string, paymentLabel: string, needsCare: boolean) {
+    // 결제 성격을 명시한다. PG 테스트 결제도 취소 API가 성공하고 PG사가
+    // "결제가 취소되었어요" 안내 메일을 자동 발송하므로, 그 메일만으로는
+    // 실제 환불된 돈이 있는지 구분할 수 없다.
     const reason = window.prompt(
-      hasPayment
-        ? "환불 사유를 입력하세요 (토스 결제취소가 실행됩니다):"
-        : "환불 사유를 입력하세요 (모의 결제 — 토스 호출 없이 상태만 전이됩니다):"
+      needsCare
+        ? `[${paymentLabel}] 실제 출금이 있었을 수 있습니다. PG 결제취소가 실행됩니다.\n환불 사유를 입력하세요:`
+        : `[${paymentLabel}] 실제 출금이 없는 결제입니다. 상태 전이만 이뤄집니다.\n환불 사유를 입력하세요:`
     );
     if (reason === null) return; // 취소
     if (!window.confirm("정말 환불 처리하시겠습니까? 되돌릴 수 없습니다.")) return;
@@ -161,6 +168,14 @@ export default function AdminPage() {
         {msg && <div style={S.msg}>{msg}</div>}
 
         <CostsSection costs={costs} loading={loading} />
+
+        {/* 고객이 직접 접수한 환불 요청 — 가장 먼저 눈에 띄어야 한다 */}
+        <RefundRequestSection
+          items={refundRequests}
+          loading={loading}
+          busy={busy}
+          onRefund={refund}
+        />
 
         <ReviewQueueSection items={items} loading={loading} busy={busy} onReview={review} />
 

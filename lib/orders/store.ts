@@ -24,6 +24,12 @@ export interface OrderStore {
   setOrderReport(id: string, reportId: string): Promise<Order>;
   /** 환불 처리 — status=refunded + refundedAt/refundReason 기록 */
   refundOrder(id: string, reason: string): Promise<Order>;
+  /** 고객 환불 요청 접수 — 상태는 바꾸지 않고 요청 사실만 기록(실제 환불은 운영자가 실행) */
+  requestRefund(id: string, reason: string): Promise<Order>;
+  /** 환불 요청이 접수됐고 아직 환불되지 않은 주문 — 어드민 "환불 요청" 큐 */
+  listRefundRequests(): Promise<Order[]>;
+  /** PG 결제 식별자로 주문을 찾는다 — 웹훅의 미아 결제 판정용 */
+  getOrderByPaymentKey(paymentKey: string): Promise<Order | null>;
   /** 결과 링크 발송 결과 기록 — error=null이면 성공(이전 실패 기록도 비움). */
   recordNotifyResult(id: string, error: string | null): Promise<Order>;
   /** 생성 시도 카운트 +1 — 자동 재시도 상한 판정용. 갱신된 시도 횟수를 반환. */
@@ -114,6 +120,30 @@ export class InMemoryOrderStore implements OrderStore {
     };
     this.orders.set(id, updated);
     return updated;
+  }
+
+  async requestRefund(id: string, reason: string): Promise<Order> {
+    const order = this.orders.get(id);
+    if (!order) throw new Error(`주문 없음: ${id}`);
+    const ts = nowIso();
+    const updated: Order = {
+      ...order,
+      refundRequestedAt: ts,
+      refundRequestReason: reason,
+      updatedAt: ts,
+    };
+    this.orders.set(id, updated);
+    return updated;
+  }
+
+  async listRefundRequests(): Promise<Order[]> {
+    return [...this.orders.values()]
+      .filter((o) => o.refundRequestedAt !== null && o.status !== "refunded")
+      .sort((a, b) => (a.refundRequestedAt! < b.refundRequestedAt! ? 1 : -1));
+  }
+
+  async getOrderByPaymentKey(paymentKey: string): Promise<Order | null> {
+    return [...this.orders.values()].find((o) => o.paymentKey === paymentKey) ?? null;
   }
 
   async recordNotifyResult(id: string, error: string | null): Promise<Order> {

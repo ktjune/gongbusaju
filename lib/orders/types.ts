@@ -37,6 +37,9 @@ export type Order = {
   paymentKey: string | null;
   refundedAt: string | null;
   refundReason: string | null;
+  /** 고객이 접수한 환불 요청 시각 — 요청일 뿐 환불 완료가 아니다(refundedAt과 구분). */
+  refundRequestedAt: string | null;
+  refundRequestReason: string | null;
   /** 결과 링크 발송 실패 사유 — 성공하면 null. 어드민 "발송 실패" 큐에서 사용. */
   notifyError: string | null;
   notifyFailedAt: string | null;

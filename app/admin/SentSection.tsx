@@ -13,6 +13,8 @@ export type SentOrderItem = {
   notifyError: string | null;
   refundedAt: string | null;
   hasPayment: boolean;
+  paymentLabel: string;
+  paymentNeedsCare: boolean;
 };
 
 export function SentSection({
@@ -25,7 +27,7 @@ export function SentSection({
   orders: SentOrderItem[];
   loading: boolean;
   busy: string | null;
-  onRefund: (orderId: string, hasPayment: boolean) => void;
+  onRefund: (orderId: string, paymentLabel: string, needsCare: boolean) => void;
   onRegenerate: (orderId: string) => void;
 }) {
   return (
@@ -102,13 +104,20 @@ export function SentSection({
                     <td style={S.td}>
                       {refunded ? (
                         <span style={{ color: "#9a9fa8", fontSize: 12 }}>
-                          {o.refundedAt ? new Date(o.refundedAt).toLocaleDateString("ko-KR") : "완료"}
+                          {o.refundedAt
+                            ? `${new Date(o.refundedAt).toLocaleDateString("ko-KR")} (${o.paymentLabel})`
+                            : "완료"}
                         </span>
                       ) : (
                         <button
                           style={S.reject}
                           disabled={busy === o.id}
-                          onClick={() => onRefund(o.id, o.hasPayment)}
+                          onClick={() => onRefund(o.id, o.paymentLabel, o.paymentNeedsCare)}
+                          title={
+                            o.paymentNeedsCare
+                              ? "실제 출금이 있었을 수 있습니다 — PG 결제취소가 실행됩니다"
+                              : "실제 출금이 없는 결제입니다 — 상태만 전이됩니다"
+                          }
                         >
                           {busy === o.id ? "처리 중…" : "환불"}
                         </button>

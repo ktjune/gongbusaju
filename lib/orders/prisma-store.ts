@@ -19,6 +19,7 @@ type OrderRow = {
   id: string; tier: string; status: string; subjectId: string;
   reportId: string | null; userId: string | null;
   paymentKey: string | null; refundedAt: Date | null; refundReason: string | null;
+  refundRequestedAt: Date | null; refundRequestReason: string | null;
   notifyError: string | null; notifyFailedAt: Date | null;
   contactEmail: string | null; contactPhone: string | null;
   generateAttempts: number;
@@ -35,6 +36,8 @@ function toOrder(r: OrderRow): Order {
     paymentKey: r.paymentKey,
     refundedAt: r.refundedAt ? iso(r.refundedAt) : null,
     refundReason: r.refundReason,
+    refundRequestedAt: r.refundRequestedAt ? iso(r.refundRequestedAt) : null,
+    refundRequestReason: r.refundRequestReason,
     notifyError: r.notifyError,
     notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
     generateAttempts: r.generateAttempts,
@@ -142,6 +145,27 @@ export class PrismaOrderStore implements OrderStore {
       data: { status: "refunded", refundedAt: new Date(), refundReason: reason },
     });
     return toOrder(row);
+  }
+
+  async requestRefund(id: string, reason: string): Promise<Order> {
+    const row = await this.db.order.update({
+      where: { id },
+      data: { refundRequestedAt: new Date(), refundRequestReason: reason },
+    });
+    return toOrder(row);
+  }
+
+  async listRefundRequests(): Promise<Order[]> {
+    const rows = await this.db.order.findMany({
+      where: { refundRequestedAt: { not: null }, status: { not: "refunded" } },
+      orderBy: { refundRequestedAt: "desc" },
+    });
+    return rows.map(toOrder);
+  }
+
+  async getOrderByPaymentKey(paymentKey: string): Promise<Order | null> {
+    const row = await this.db.order.findFirst({ where: { paymentKey } });
+    return row ? toOrder(row) : null;
   }
 
   async recordNotifyResult(id: string, error: string | null): Promise<Order> {

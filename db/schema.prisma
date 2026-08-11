@@ -32,6 +32,10 @@ model Order {
   paymentKey   String?
   refundedAt   DateTime?
   refundReason String?
+  // 고객이 /refund 에서 접수한 환불 요청 — 운영자가 어드민에서 보고 처리한다.
+  // 환불이 실제로 실행되면 refundedAt/refundReason이 채워진다(요청 ≠ 완료).
+  refundRequestedAt    DateTime?
+  refundRequestReason  String?
   // 알림 발송용 연락처 (보호자) — 별도 동의
   contactEmail String?
   contactPhone String?

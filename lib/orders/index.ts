@@ -38,6 +38,8 @@ export { getOrderStore, InMemoryOrderStore, newReportToken } from "./store";
 export { generateReportForOrder, isGeneratable, MAX_GENERATE_ATTEMPTS } from "./generate";
 export { approveReport, rejectReport, listPendingReports, retryNotify } from "./review";
 export { refundOrder } from "./refund";
+export { submitRefundRequest, matchesContact, normalizeContact } from "./refund-request";
+export type { RefundRequestInput, RefundRequestResult } from "./refund-request";
 
 /** SubjectPlain → 암호화된 Subject 필드 (저장 직전 변환) */
 function encryptSubject(
@@ -161,6 +163,8 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     paymentKey: input.paymentKey ?? null,
     refundedAt: null,
     refundReason: null,
+    refundRequestedAt: null,
+    refundRequestReason: null,
     notifyError: null,
     notifyFailedAt: null,
     contactEmail: input.contactEmail ?? null,

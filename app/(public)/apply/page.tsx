@@ -21,6 +21,8 @@ const PRICE = "9,900";
 const PRICE_VALUE = 9900;
 const MIN_DATE = "1980-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
+// 서비스 제공기간 — 이용약관·상품 상세와 동일하게 "결제 후 1일 이내"
+const OFFER_PERIOD_MS = 24 * 60 * 60 * 1000;
 // 포트원 V2 — PG(현재 NHN KCP)는 채널 설정으로 결정된다
 const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID ?? "";
 const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY ?? "";
@@ -39,6 +41,14 @@ declare global {
       }) => { open: () => void; embed: (el: HTMLElement) => void };
     };
   }
+}
+
+/**
+ * 포트원 offerPeriod는 오프셋이 명시된 RFC3339 시각을 받는다.
+ * toISOString()의 Z 표기 대신 KST(+09:00)로 넘겨야 결제창에 우리 기준 시각이 뜬다.
+ */
+function toKstRfc3339(ms: number): string {
+  return `${new Date(ms + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00`;
 }
 
 function loadDaumPostcode(): Promise<void> {
@@ -241,6 +251,14 @@ export default function ApplyPage() {
         totalAmount: PRICE_VALUE,
         currency: "CURRENCY_KRW",
         payMethod: "CARD",
+        // 디지털 콘텐츠 — 에스크로 대상이 아님을 명시하고, KCP 결제창의 "제공기간" 칸을 채운다
+        productType: "PRODUCT_TYPE_DIGITAL",
+        offerPeriod: {
+          range: {
+            from: toKstRfc3339(Date.now()),
+            to: toKstRfc3339(Date.now() + OFFER_PERIOD_MS),
+          },
+        },
         // 모바일 리다이렉트 복귀 지점 — 이 경우 아래 코드는 실행되지 않는다
         redirectUrl: `${window.location.origin}/order/result`,
         customer: {

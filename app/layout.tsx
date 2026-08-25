@@ -44,6 +44,46 @@ export const metadata: Metadata = {
       "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 공부사주 리포트.",
     images: ["/og-image.png"],
   },
+  // Search Console 소유 확인 — 콘솔이 발급한 값을 env에 넣으면 <head>에 실린다.
+  // 값이 없으면 태그 자체를 내보내지 않는다(빈 태그는 확인 실패로 잡힌다).
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
+};
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gongbusaju.kr";
+
+/**
+ * 구조화 데이터 — 검색엔진에 "누가 만드는 서비스인지"를 기계가 읽는 형식으로 알린다.
+ * 푸터에 이미 적힌 사업자 정보와 같은 값이어야 한다(불일치는 신뢰도를 깎는다).
+ *
+ * 별점·후기(aggregateRating·review)는 넣지 않는다. 표본이 2건뿐이라 사실상
+ * 광고 문구가 되고, 사주 서비스에 성과를 암시하는 지표를 붙이면 표시광고법
+ * 리스크가 생긴다(CLAUDE.md 규칙 #3·#7).
+ */
+const ORGANIZATION_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "공부결",
+  legalName: "문도어",
+  url: SITE_URL,
+  logo: `${SITE_URL}/og-image.png`,
+  description:
+    "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 공부사주 리포트 서비스.",
+  telephone: "0502-1944-3249",
+  founder: { "@type": "Person", name: "권태준" },
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "동대문구 답십리로68길 31",
+    addressLocality: "서울",
+    addressCountry: "KR",
+  },
+  identifier: {
+    "@type": "PropertyValue",
+    name: "사업자등록번호",
+    value: "732-46-01157",
+  },
 };
 
 export default function RootLayout({
@@ -53,7 +93,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className={`${serif.variable} ${sans.variable}`}>
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(ORGANIZATION_JSONLD),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

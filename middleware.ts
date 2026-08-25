@@ -22,8 +22,32 @@ import { verifyAdminSessionToken } from "@/lib/auth/admin-session";
 const LOGIN_PATH = "/admin/login";
 const COOKIE_NAME = "admin_session";
 
+/**
+ * 옛 배포 주소 — 정식 도메인 연결 전에 쓰던 안정 별칭.
+ * 여전히 200으로 같은 내용을 서빙해서 검색엔진에 중복 사이트로 보인다.
+ *
+ * 해시가 붙은 배포 주소(gongbusaju-xxxx.vercel.app)는 건드리지 않는다.
+ * 프리뷰 배포 확인에 쓰이므로 리다이렉트하면 테스트가 막힌다. 그쪽은
+ * layout.tsx의 canonical 태그가 정본을 알려주는 것으로 충분하다.
+ */
+const LEGACY_HOST = "gongbusaju.vercel.app";
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
+
+  // ── 옛 주소 → 정식 도메인 (색인 분산 방지) ──────────────────
+  // API는 제외한다. 리다이렉트되면 POST 본문이 유실될 수 있다.
+  if (
+    request.headers.get("host") === LEGACY_HOST &&
+    !pathname.startsWith("/api/")
+  ) {
+    const canonical = new URL(request.nextUrl);
+    canonical.host = new URL(
+      process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gongbusaju.kr"
+    ).host;
+    canonical.protocol = "https:";
+    return NextResponse.redirect(canonical, 308);
+  }
 
   // ── Supabase 세션 갱신 (모든 요청) ─────────────────────────
   let response = NextResponse.next({ request });

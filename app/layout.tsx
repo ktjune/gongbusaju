@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   description:
     "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 공부사주 리포트. 사주 해석과 공공데이터를 분리해 단정이 아닌 참고로 전합니다.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gongbusaju.kr"),
+  // 같은 내용이 www.gongbusaju.kr · gongbusaju.kr · *.vercel.app 여러 주소에서
+  // 열린다. 어느 것이 정본인지 알려주지 않으면 검색엔진이 중복으로 보고 평가를
+  // 나눈다. "./"는 현재 경로를 metadataBase 기준으로 풀어주므로 페이지마다
+  // 자기 자신을 가리킨다(루트에 "/"를 박으면 모든 페이지가 홈을 가리켜 버린다).
+  alternates: { canonical: "./" },
   openGraph: {
     title: "공부결 — 우리 아이 공부의 결을 읽는 공부사주 리포트",
     description:

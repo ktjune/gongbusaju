@@ -44,11 +44,19 @@ export const metadata: Metadata = {
       "자녀의 생년월일시로 공부 기질과 성장 흐름을 풀이하는 공부사주 리포트.",
     images: ["/og-image.png"],
   },
-  // Search Console 소유 확인 — 콘솔이 발급한 값을 env에 넣으면 <head>에 실린다.
-  // 값이 없으면 태그 자체를 내보내지 않는다(빈 태그는 확인 실패로 잡힌다).
-  verification: process.env.GOOGLE_SITE_VERIFICATION
-    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
-    : undefined,
+  // 검색엔진 소유 확인 — 각 콘솔이 발급한 값을 env에 넣으면 <head>에 실린다.
+  // 값이 없으면 해당 태그를 내보내지 않는다(빈 태그는 확인 실패로 잡힌다).
+  // 구글은 public/의 확인 파일로 이미 인증했고, 이쪽은 파일을 못 쓸 때의 대안이다.
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION && {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    }),
+    ...(process.env.NAVER_SITE_VERIFICATION && {
+      other: {
+        "naver-site-verification": process.env.NAVER_SITE_VERIFICATION,
+      },
+    }),
+  },
 };
 
 const SITE_URL =

@@ -114,8 +114,13 @@ export default function TermsPage() {
         <h2 className={styles.h2} id="refund">제7조 (청약철회 및 환불)</h2>
         <ul className={styles.ul}>
           <li className={styles.li}>
-            <b>제작 착수 전</b>에는 전액 환불합니다. 회사의 귀책으로 리포트가 제공되지 못한 경우에도
-            전액 환불합니다.
+            <b>청약철회(단순 변심)</b>: 결제일부터 <b>7일 이내</b>, 리포트 <b>제작 착수 전</b>에는
+            전액 환불합니다. 회사의 귀책으로 리포트가 제공되지 못한 경우에도 전액 환불합니다.
+          </li>
+          <li className={styles.li}>
+            <b>리포트 재발송</b>: 결과 링크를 받지 못했거나 분실하신 경우, <b>발행일부터 7일 이내</b>에
+            무상으로 재발송해 드립니다. 재발송은 최초 발행한 리포트를 다시 보내드리는 것으로,
+            내용의 재제작은 아래 하자·오류 항목에 따릅니다.
           </li>
           <li className={styles.li}>
             <b>환불 신청 방법</b>: 사이트의 <a href="/refund" style={{ textDecoration: "underline" }}>

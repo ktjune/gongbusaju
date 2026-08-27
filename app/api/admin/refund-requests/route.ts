@@ -25,6 +25,7 @@ export async function GET() {
       createdAt: o.createdAt,
       refundRequestedAt: o.refundRequestedAt,
       refundRequestReason: o.refundRequestReason,
+      buyerName: o.buyerName, // store가 복호화해서 반환 (PII — admin 전용)
       contactEmail: o.contactEmail, // store가 복호화해서 반환 (PII — admin 전용)
       contactPhone: o.contactPhone,
       paymentLabel: payment.label,

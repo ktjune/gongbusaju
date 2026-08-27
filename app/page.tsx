@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/lib/support";
 import styles from "./home.module.css";
 
 /**
@@ -386,9 +387,9 @@ export default function Home() {
           {/* PG 심사 요건 — 취소·환불 창구가 사이트에서 바로 보여야 한다 */}
           <Link href="/refund">취소 · 환불</Link>
           <span>·</span>
-          <a href="mailto:moondoor_main@naver.com">문의</a>
+          <a href={`mailto:${SUPPORT_EMAIL}`}>문의</a>
         </div>
-        {/* 토스페이먼츠 PG 심사 요건 — 사업자정보는 사업자등록증과 완전히 일치해야 함 */}
+        {/* PG 입점 심사 요건 — 사업자정보는 사업자등록증과 완전히 일치해야 함 */}
         <div className={styles.footerBiz}>
           상호: 문도어 · 대표자: 권태준 · 사업자등록번호: 732-46-01157
           <br />
@@ -396,7 +397,7 @@ export default function Home() {
           <br />
           사업장 주소: 서울특별시 동대문구 답십리로68길 31, 3층 s46호
           <br />
-          전화번호: 0502-1944-3249 · 고객문의: moondoor_main@naver.com
+          전화번호: 0502-1944-3249 · 고객문의: {SUPPORT_EMAIL}
         </div>
         <div className={styles.footerNote}>
           미성년 자녀 정보는 법정대리인 동의 하에 암호화·분리 저장됩니다.

@@ -8,6 +8,7 @@ export type RefundRequestItem = {
   createdAt: string;
   refundRequestedAt: string | null;
   refundRequestReason: string | null;
+  buyerName: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   paymentLabel: string;
@@ -65,6 +66,9 @@ export function RefundRequestSection({
                       : "-"}
                   </td>
                   <td style={S.td}>
+                    {o.buyerName && (
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1f3b63" }}>{o.buyerName}</div>
+                    )}
                     <div style={{ fontSize: 12 }}>{o.contactEmail ?? "-"}</div>
                     <div style={{ fontSize: 12, color: "#9a9fa8" }}>
                       {o.contactPhone ?? ""}

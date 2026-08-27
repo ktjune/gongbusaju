@@ -33,6 +33,7 @@ type Body = {
   gender?: string;
   address?: string;
   currentSchool?: string;
+  buyerName?: string;
   contactEmail?: string;
   contactPhone?: string;
   consent?: boolean;
@@ -123,6 +124,7 @@ export async function POST(req: Request) {
       name: body.name?.trim().replace(/[<>]/g, "") || undefined,
       nameHanja: body.nameHanja?.trim().replace(/[<>]/g, "") || undefined,
     },
+    buyerName: body.buyerName?.trim() || undefined,
     contactEmail: body.contactEmail?.trim() || undefined,
     contactPhone: body.contactPhone?.trim() || undefined,
     userId: user?.id ?? undefined,

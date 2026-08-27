@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PRIVACY_EMAIL } from "@/lib/support";
 import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
@@ -43,7 +44,7 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <td>보호자(신청자)</td>
-              <td>이메일, (선택) 휴대전화번호, 법정대리인 동의 기록</td>
+              <td>성명, 이메일, (선택) 휴대전화번호, 법정대리인 동의 기록</td>
             </tr>
             <tr>
               <td>자동 생성·수집</td>
@@ -138,11 +139,9 @@ export default function PrivacyPage() {
               </td>
             </tr>
             <tr>
-              <td>
-                <span className={styles.todo}>[예정] 토스페이먼츠/카카오페이</span>
-              </td>
-              <td>결제 처리</td>
-              <td>결제 관련 정보 / 대한민국</td>
+              <td>포트원 · KG이니시스</td>
+              <td>결제 처리·결제 취소(환불)</td>
+              <td>결제 관련 정보(구매자 성명·연락처·결제수단) / 대한민국</td>
             </tr>
           </tbody>
         </table>
@@ -222,7 +221,7 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <th>연락처</th>
-              <td>0502-1944-3249 · moondoor_main@naver.com</td>
+              <td>0502-1944-3249 · {PRIVACY_EMAIL}</td>
             </tr>
           </tbody>
         </table>

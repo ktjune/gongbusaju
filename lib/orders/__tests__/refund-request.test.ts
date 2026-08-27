@@ -23,6 +23,7 @@ function baseOrder(over: Partial<Order> = {}): Omit<
     refundRequestReason: null,
     notifyError: null,
     notifyFailedAt: null,
+    buyerName: null,
     contactEmail: "Parent@Example.com",
     contactPhone: "010-1234-5678",
     ...over,

@@ -167,6 +167,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     refundRequestReason: null,
     notifyError: null,
     notifyFailedAt: null,
+    buyerName: input.buyerName ?? null,
     contactEmail: input.contactEmail ?? null,
     contactPhone: input.contactPhone ?? null,
   });

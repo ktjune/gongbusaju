@@ -45,6 +45,8 @@ export type Order = {
   notifyFailedAt: string | null;
   /** 리포트 생성 시도 횟수 — 자동 재시도 상한(6회)용. 매 생성 시작 시 +1 */
   generateAttempts: number;
+  /** 신청자(보호자) 성명 — 결제 시 PG 요구 + 환불 문의 본인 확인용. 암호화 저장. */
+  buyerName: string | null;
   /** 연락처(알림 발송용) — 보호자, 별도 동의 */
   contactEmail: string | null;
   contactPhone: string | null;
@@ -118,6 +120,8 @@ export type CreateOrderInput = {
   consentAt?: string;
   /** PII 보관 기간(개월). 기본 12개월 */
   retainMonths?: number;
+  /** 신청자(보호자) 성명 — 결제·환불 문의 확인용 */
+  buyerName?: string;
   contactEmail?: string;
   contactPhone?: string;
   /** Supabase Auth 사용자 ID (로그인 후 신청 시) */

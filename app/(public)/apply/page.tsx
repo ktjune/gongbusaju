@@ -4,15 +4,16 @@
  * /apply — 신청 폼 + 결제
  *
  * 1단계(form): 생년월일시·성별·(선택)주소/재학학교·연락처·동의 입력
- * 2단계(pay):  토스페이먼츠 결제위젯 → 결제 요청
+ * 2단계(pay):  포트원 결제창 호출 → 결제 요청 (PG는 채널 설정으로 결정, 현재 KG이니시스)
  *
- * 결제 성공 시 토스가 /order/result 로 리다이렉트하며, 그 페이지가 서버에 결제 승인 +
+ * 결제 성공 시 /order/result 로 돌아오며, 그 페이지가 서버에 결제 검증 +
  * 주문 생성을 요청한다. 신청 데이터는 결제 직전 sessionStorage에 저장해 전달한다.
  *
  * PII는 서버(/api/order)에서 즉시 암호화 저장 — 이 폼/세션스토리지는 평문을 잠시 보관만 한다.
  */
 
 import { useEffect, useRef, useState } from "react";
+import { SUPPORT_EMAIL } from "@/lib/support";
 import * as PortOne from "@portone/browser-sdk/v2";
 import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
@@ -223,7 +224,8 @@ export default function ApplyPage() {
       gender,
       address: address.trim() || undefined,
       currentSchool: currentSchool.trim() || undefined,
-      contactEmail: contactEmail.trim() || undefined,
+            buyerName: buyerName.trim() || undefined,
+contactEmail: contactEmail.trim() || undefined,
       contactPhone: contactPhone.trim() || undefined,
       consent,
       paymentId,
@@ -348,7 +350,7 @@ export default function ApplyPage() {
                 환불 신청 페이지
               </a>
               에서 주문번호와 연락처로 접수하시거나, 전화(0502-1944-3249) 또는
-              이메일(moondoor_main@naver.com)로 요청하실 수 있습니다.
+              이메일({SUPPORT_EMAIL})로 요청하실 수 있습니다.
             </div>
           </div>
 
@@ -651,7 +653,7 @@ export default function ApplyPage() {
           <label className={styles.checkRow}>
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span>
-              (필수) 만 14세 미만 자녀의 개인정보(생년월일시·주소·학교) 수집·이용에
+              (필수) 만 14세 미만 자녀의 개인정보(생년월일시·주소·학교)와 신청자 성명·연락처 수집·이용에
               <b> 법정대리인으로서 동의</b>합니다. 정보는 암호화 저장되며 리포트 제작·보관기간(6개월) 후 파기됩니다.{" "}
               <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>개인정보처리방침</a>
               {" · "}

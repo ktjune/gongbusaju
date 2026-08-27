@@ -36,6 +36,9 @@ model Order {
   // 환불이 실제로 실행되면 refundedAt/refundReason이 채워진다(요청 ≠ 완료).
   refundRequestedAt    DateTime?
   refundRequestReason  String?
+  // 신청자(보호자) 성명 — 결제 시 PG가 요구하고, 환불 문의 본인 확인에 쓴다.
+  // contactEmail·contactPhone과 같이 암호화 저장한다.
+  buyerName    String?
   // 알림 발송용 연락처 (보호자) — 별도 동의
   contactEmail String?
   contactPhone String?

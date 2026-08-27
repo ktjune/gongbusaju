@@ -7,6 +7,7 @@ export type SentOrderItem = {
   tier: string;
   status: string; // "published" | "refunded"
   createdAt: string;
+  buyerName: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
   resultUrl: string | null;
@@ -57,6 +58,9 @@ export function SentSection({
                     <td style={S.td}>{new Date(o.createdAt).toLocaleString("ko-KR")}</td>
                     <td style={S.td}>
                       <div style={{ fontSize: 13, lineHeight: 1.5 }}>
+                        {o.buyerName && (
+                          <div style={{ fontWeight: 600, color: "#1f3b63" }}>{o.buyerName}</div>
+                        )}
                         {o.contactEmail && <div>✉ {o.contactEmail}</div>}
                         {o.contactPhone && <div>📱 {o.contactPhone}</div>}
                         {!o.contactEmail && !o.contactPhone && (

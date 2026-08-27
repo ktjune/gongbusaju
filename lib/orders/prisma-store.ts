@@ -21,6 +21,7 @@ type OrderRow = {
   paymentKey: string | null; refundedAt: Date | null; refundReason: string | null;
   refundRequestedAt: Date | null; refundRequestReason: string | null;
   notifyError: string | null; notifyFailedAt: Date | null;
+  buyerName: string | null;
   contactEmail: string | null; contactPhone: string | null;
   generateAttempts: number;
   createdAt: Date; updatedAt: Date;
@@ -42,6 +43,7 @@ function toOrder(r: OrderRow): Order {
     notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
     generateAttempts: r.generateAttempts,
     // 연락처는 암호화 저장 — 읽을 때 복호화(레거시 평문도 호환)
+    buyerName: decryptPiiCompat(r.buyerName),
     contactEmail: decryptPiiCompat(r.contactEmail),
     contactPhone: decryptPiiCompat(r.contactPhone),
     createdAt: iso(r.createdAt),
@@ -117,6 +119,7 @@ export class PrismaOrderStore implements OrderStore {
         refundReason: data.refundReason,
         notifyError: data.notifyError,
         notifyFailedAt: data.notifyFailedAt ? new Date(data.notifyFailedAt) : null,
+        buyerName: encryptPiiNullable(data.buyerName),
         contactEmail: encryptPiiNullable(data.contactEmail),
         contactPhone: encryptPiiNullable(data.contactPhone),
       },

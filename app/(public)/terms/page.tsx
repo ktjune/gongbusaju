@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/lib/support";
 import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
@@ -31,7 +32,7 @@ export default function TermsPage() {
           <br />
           전화번호: 0502-1944-3249
           <br />
-          고객문의: moondoor_main@naver.com
+          고객문의: {SUPPORT_EMAIL}
         </div>
 
         <h2 className={styles.h2}>제1조 (목적)</h2>
@@ -106,8 +107,8 @@ export default function TermsPage() {
             이용계약은 이용자가 약관 및 개인정보 수집·이용에 동의하고 신청을 완료한 때 성립합니다.
           </li>
           <li className={styles.li}>
-            서비스 이용요금은 리포트 1부당 9,900원(정가 29,000원에서 할인)이며, 결제는 토스페이먼츠를 통한 신용·체크카드 및
-            간편결제로 이루어집니다. 결제 금액은 신청 화면에 표시됩니다.
+            서비스 이용요금은 리포트 1부당 9,900원(정가 29,000원에서 할인)이며, 결제는 결제대행사(포트원을 통한 KG이니시스)를 거쳐
+            신용·체크카드로 이루어집니다. 결제 금액은 신청 화면에 표시됩니다.
           </li>
         </ul>
 
@@ -125,7 +126,7 @@ export default function TermsPage() {
           <li className={styles.li}>
             <b>환불 신청 방법</b>: 사이트의 <a href="/refund" style={{ textDecoration: "underline" }}>
             환불 신청</a> 페이지에서 <b>주문번호와 신청 시 입력한 연락처</b>로 접수하실 수 있습니다.
-            전화(0502-1944-3249) 또는 이메일(moondoor_main@naver.com)로도 접수 가능하며, 접수 후
+            전화(0502-1944-3249) 또는 이메일({SUPPORT_EMAIL})로도 접수 가능하며, 접수 후
             담당자가 확인하여 처리하고 결과를 신청 연락처로 안내드립니다.
           </li>
           <li className={styles.li}>

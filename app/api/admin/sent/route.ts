@@ -40,7 +40,8 @@ export async function GET() {
         tier: o.tier,
         status: o.status,
         createdAt: o.createdAt,
-        contactEmail: o.contactEmail, // store가 복호화해서 반환
+        buyerName: o.buyerName, // store가 복호화해서 반환
+        contactEmail: o.contactEmail,
         contactPhone: o.contactPhone,
         resultUrl,
         // 발송 결과: notifyError가 있으면 알림 발송 실패, refundedAt은 환불 시각

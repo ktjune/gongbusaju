@@ -27,6 +27,7 @@ function baseOrder(paymentKey: string | null): Omit<
     refundRequestReason: null,
     notifyError: null,
     notifyFailedAt: null,
+    buyerName: null,
     contactEmail: "parent@example.com",
     contactPhone: null,
   };

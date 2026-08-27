@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { SUPPORT_EMAIL } from "@/lib/support";
 import Link from "next/link";
 import styles from "../apply/apply.module.css";
 
@@ -68,7 +69,7 @@ export default function RefundPage() {
               담당자가 확인 후 처리해 드립니다. 처리 결과는 신청 시 입력하신
               연락처로 안내드립니다.
               <br />
-              문의: 0502-1944-3249 · moondoor_main@naver.com
+              문의: 0502-1944-3249 · {SUPPORT_EMAIL}
             </p>
             <Link href="/" className={styles.submit} style={{ display: "block", marginTop: 24 }}>
               홈으로
@@ -154,7 +155,7 @@ export default function RefundPage() {
 
         <p className={styles.hint} style={{ marginTop: 16, textAlign: "center" }}>
           주문번호를 모르시면 <b>0502-1944-3249</b> 또는{" "}
-          <b>moondoor_main@naver.com</b> 으로 연락 주세요.
+          <b>{SUPPORT_EMAIL}</b> 으로 연락 주세요.
         </p>
       </div>
     </div>

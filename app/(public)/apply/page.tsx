@@ -112,6 +112,11 @@ export default function ApplyPage() {
   const [birthTime, setBirthTime] = useState("");
   const [address, setAddress] = useState("");
   const [currentSchool, setCurrentSchool] = useState("");
+  // 결제 시 PG에 넘길 구매자명. KG이니시스는 이 값이 없으면 결제창이 진행되지 않는다
+  // (KCP는 없어도 넘어갔다 — PG마다 필수 항목이 다르다).
+  // 리포트 대상은 아이지만 결제·환불 주체는 보호자라 아이 이름으로 대신할 수 없다.
+  // 결제 호출에만 쓰고 서버에 저장하지 않는다(PII 범위를 넓히지 않기 위해).
+  const [buyerName, setBuyerName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [consent, setConsent] = useState(false);
@@ -138,6 +143,7 @@ export default function ApplyPage() {
   const canProceed =
     birthDate &&
     (timeUnknown || birthTime !== "") &&
+    buyerName.trim() !== "" &&
     hasContact &&
     !emailInvalid &&
     !phoneInvalid &&
@@ -264,6 +270,8 @@ export default function ApplyPage() {
         // 모바일 리다이렉트 복귀 지점 — 이 경우 아래 코드는 실행되지 않는다
         redirectUrl: `${window.location.origin}/order/result`,
         customer: {
+          // KG이니시스 필수 — 없으면 결제창이 진행되지 않는다
+          fullName: buyerName.trim() || undefined,
           email: contactEmail.trim() || undefined,
           phoneNumber: contactPhone.trim() || undefined,
         },
@@ -599,6 +607,20 @@ export default function ApplyPage() {
           <p className={styles.hint} style={{ marginTop: -4, marginBottom: 12 }}>
             완성된 리포트 링크를 보내드립니다. <b>이메일·휴대폰 중 하나만 입력하면 됩니다</b> (둘 다 넣으셔도 됩니다).
           </p>
+          <div className={styles.field}>
+            <label className={styles.label}>신청자 이름 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(보호자)</span></label>
+            <input
+              className={styles.input}
+              type="text"
+              value={buyerName}
+              onChange={(e) => setBuyerName(e.target.value)}
+              placeholder="결제하시는 분 성함"
+              autoComplete="name"
+            />
+            <p className={styles.hint}>
+              결제 진행에 필요합니다. 카드 결제창에 표시되며 저장되지 않습니다.
+            </p>
+          </div>
           <div className={styles.field}>
             <label className={styles.label}>이메일 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
             <input className={styles.input} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="parent@example.com" />

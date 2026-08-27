@@ -17,6 +17,8 @@
  *   NOTIFY_FROM_PHONE     — 발신 전화번호 (Solapi 등록 번호, 예: 01012345678)
  */
 
+import { SUPPORT_EMAIL, SUPPORT_PHONE, REFUND_PATH } from "../support";
+
 export type ResultLinkPayload = {
   orderId: string;
   /** 결과 페이지 전체 URL (https://gongbusaju.vercel.app/result/{token}) */
@@ -379,4 +381,157 @@ export function buildResultUrl(token: string): string {
     process.env.NEXT_PUBLIC_SITE_URL ??
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
   return `${base}/result/${token}`;
+}
+
+// ──────────────────────────────────────────────────────────────
+// 주문 접수 확인
+// ──────────────────────────────────────────────────────────────
+
+export type OrderConfirmPayload = {
+  orderId: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+};
+
+/**
+ * 결제 직후 "신청이 접수됐습니다"를 보낸다.
+ *
+ * 왜 필요한가: 이게 없으면 고객은 결제 후 리포트가 나올 때까지(최대 1일)
+ * 아무 연락도 못 받는다. 돈은 나갔는데 아무것도 안 오면 사기로 의심하게 되고,
+ * 무엇보다 **환불 페이지에 필요한 주문번호를 알 방법이 없다**
+ * (결제 완료 화면에만 뜨고, 창을 닫으면 사라진다).
+ *
+ * 전화번호만 있는 고객에게는 알림톡이 아니라 LMS로 보낸다. 알림톡은 카카오에
+ * 심사받은 템플릿에만 실을 수 있는데 현재 승인된 템플릿은 "결과 링크" 하나뿐이다.
+ * 접수 확인용 템플릿을 새로 등록하면 그때 알림톡으로 바꾸면 된다.
+ *
+ * @throws 절대 throw 안 함 — 발송 실패가 주문 생성을 되돌리면 안 된다.
+ */
+export async function sendOrderConfirm(
+  payload: OrderConfirmPayload
+): Promise<SendResultLinkOutcome> {
+  const { orderId, contactEmail, contactPhone } = payload;
+  if (!contactEmail && !contactPhone) return { hasFailure: false, error: null };
+
+  const errors: string[] = [];
+
+  if (contactEmail) {
+    await sendOrderConfirmEmail(orderId, contactEmail).catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[notify] 접수 확인 이메일 실패 — 주문: ${orderId}`, err);
+      errors.push(`이메일: ${msg}`);
+    });
+  }
+
+  // 이메일이 있으면 문자까지 두 번 보내지 않는다(비용·성가심).
+  if (contactPhone && !contactEmail) {
+    await sendOrderConfirmLms(orderId, contactPhone).catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[notify] 접수 확인 문자 실패 — 주문: ${orderId}`, err);
+      errors.push(`문자: ${msg}`);
+    });
+  }
+
+  return errors.length > 0
+    ? { hasFailure: true, error: errors.join(" / ") }
+    : { hasFailure: false, error: null };
+}
+
+async function sendOrderConfirmEmail(orderId: string, to: string): Promise<void> {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[notify:dev] 접수 확인 메일 시뮬레이션\n  주문: ${orderId}\n  수신: ${to}`);
+    return;
+  }
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn(`[notify] RESEND_API_KEY 미설정 — 접수 확인 미발송. 주문: ${orderId}`);
+    return;
+  }
+  const { Resend } = await import("resend");
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: buildFromAddress(),
+    to,
+    subject: "[공부결] 신청이 접수됐습니다",
+    html: buildOrderConfirmHtml(orderId),
+  });
+  if (error) throw new Error(`Resend 오류: ${error.message}`);
+  console.log(`[notify] 접수 확인 메일 완료 — 주문: ${orderId}`);
+}
+
+/** 전화번호만 남긴 고객용 — 알림톡 템플릿이 없으므로 LMS(장문 문자) */
+async function sendOrderConfirmLms(orderId: string, to: string): Promise<void> {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[notify:dev] 접수 확인 문자 시뮬레이션\n  주문: ${orderId}\n  수신: ${to}`);
+    return;
+  }
+  const apiKey = process.env.SOLAPI_API_KEY;
+  const apiSecret = process.env.SOLAPI_API_SECRET;
+  const from = process.env.NOTIFY_FROM_PHONE;
+  if (!apiKey || !apiSecret || !from) {
+    console.warn(`[notify] Solapi 설정 미비 — 접수 확인 문자 미발송. 주문: ${orderId}`);
+    return;
+  }
+
+  const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
+  const text =
+    `[공부결] 신청이 접수됐습니다\n\n` +
+    `주문번호: ${orderId}\n` +
+    `상품: 공부결 리포트 1부 (9,900원)\n` +
+    `제공: 결제 후 1일 이내\n\n` +
+    `완성되면 결과 링크를 보내드립니다.\n` +
+    `문의·환불: ${SUPPORT_PHONE} / ${SUPPORT_EMAIL}`;
+
+  const res = await fetch("https://api.solapi.com/messages/v4/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: auth },
+    body: JSON.stringify({
+      message: { to: normalizePhone(to), from, type: "LMS", subject: "신청 접수 안내", text },
+    }),
+  });
+  const data = (await res.json()) as Record<string, unknown>;
+  if (!res.ok) {
+    throw new Error(`Solapi 오류 ${res.status}: ${data.errorCode ?? ""} ${data.errorMessage ?? ""}`);
+  }
+  console.log(`[notify] 접수 확인 문자 완료 — 주문: ${orderId}`);
+}
+
+function buildOrderConfirmHtml(orderId: string): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.gongbusaju.kr";
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#faf7f1;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f1;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(31,59,99,0.08);">
+        <tr><td style="background:#1f3b63;padding:28px 36px;">
+          <h1 style="margin:0;color:#fff;font-size:1.3rem;font-weight:700;">공부결</h1>
+        </td></tr>
+        <tr><td style="padding:36px;">
+          <p style="margin:0 0 20px;color:#2c2c30;font-size:1rem;line-height:1.7;">
+            안녕하세요.<br>신청과 결제가 <strong>정상 접수</strong>됐습니다.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f1;border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+            <tr><td style="color:#5a5f6a;font-size:0.88rem;line-height:2;">
+              <strong style="color:#2c2c30;">주문번호</strong> ${orderId}<br>
+              <strong style="color:#2c2c30;">상품</strong> 공부결 리포트 1부 · 9,900원<br>
+              <strong style="color:#2c2c30;">제공 기간</strong> 결제 후 1일(24시간) 이내
+            </td></tr>
+          </table>
+          <p style="margin:0 0 24px;color:#5a5f6a;font-size:0.9rem;line-height:1.7;">
+            리포트가 완성되면 결과 링크를 다시 보내드립니다.<br>
+            <strong style="color:#2c2c30;">주문번호는 환불 요청 시 필요하니 이 메일을 보관해 주세요.</strong>
+          </p>
+          <p style="margin:0;color:#8a8f99;font-size:0.84rem;line-height:1.8;">
+            취소·환불: 결제일부터 7일 이내, 리포트 제작 착수 전에는 전액 환불해 드립니다.<br>
+            <a href="${siteUrl}${REFUND_PATH}" style="color:#1f3b63;">환불 신청 페이지</a>
+            · ${SUPPORT_PHONE} · ${SUPPORT_EMAIL}
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }

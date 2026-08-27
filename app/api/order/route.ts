@@ -12,6 +12,7 @@
 
 import { waitUntil } from "@vercel/functions";
 import { createOrder, generateReportForOrder } from "@/lib/orders";
+import { sendOrderConfirm } from "@/lib/notify";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
 import { createClient } from "@/lib/supabase/server";
 import { verifyPortOnePayment, cancelPortOnePayment } from "@/lib/payments/portone";
@@ -133,7 +134,21 @@ export async function POST(req: Request) {
   try {
     const order = await createOrder(input);
 
-    // 주문 생성 직후 백그라운드로 리포트 생성 시작.
+    // 접수 확인을 먼저 보낸다. 리포트는 최대 1일이 걸리는데 그때까지 아무 연락이
+    // 없으면 고객이 불안해하고, 무엇보다 **환불에 필요한 주문번호를 알 방법이 없다**
+    // (결제 완료 화면에만 뜨고 창을 닫으면 사라진다).
+    // 발송 실패가 주문을 되돌리면 안 되므로 결과를 삼킨다.
+    waitUntil(
+      sendOrderConfirm({
+        orderId: order.id,
+        contactEmail: input.contactEmail,
+        contactPhone: input.contactPhone,
+      }).catch((err: unknown) => {
+        console.error(`[order] 접수 확인 발송 실패 — 주문: ${order.id}`, err);
+      })
+    );
+
+    // 리포트 생성은 백그라운드로.
     // waitUntil: 응답을 즉시 반환하고 생성(~40-50s)은 백그라운드에서 완료된다.
     waitUntil(
       generateReportForOrder(order.id).catch((err: unknown) => {

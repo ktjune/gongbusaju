@@ -23,19 +23,44 @@ import type { SajuResult } from "../saju";
 
 /**
  * 사용 가능한 API 키에 따라 LLM 공급자를 결정한다.
- *   - Gemini·Claude 둘 다 → Gemini(무료) 우선, 실패 시 Claude 폴백
- *   - Gemini만 → Gemini
- *   - Claude만 → Claude
+ *
+ *   - Gemini 있음 → Gemini(GEMINI_MODEL). GEMINI_FALLBACK_MODEL이 설정돼 있으면
+ *     실패 시 그 모델로 자동 전환한다.
+ *   - Gemini 없고 Claude만 → Claude
  *   - 둘 다 없음 → 데모 목업(로컬 개발)
+ *
+ * **왜 Claude를 Gemini의 폴백으로 쓰지 않는가** (2026-08-27 변경)
+ *
+ * 예전에는 둘 다 있으면 Gemini→Claude로 넘겼다. 그런데 Anthropic 크레딧이
+ * 소진되자 폴백이 조용히 죽었고, Gemini가 잘 도는 동안에는 그 사실을 알 방법이
+ * 없었다. **죽은 폴백은 폴백이 없는 것보다 나쁘다** — 있다고 착각하게 만든다.
+ *
+ * 실제로 가장 자주 겪을 실패는 공급자 전면 장애가 아니라 **레이트리밋**이다.
+ * 리포트 1건이 5개 그룹을 동시에 호출하므로(generate.ts의 Promise.all),
+ * 주문이 몇 건만 겹쳐도 순간 요청이 수십 개가 된다. 모델별로 할당량이 따로라
+ * **같은 키의 다른 모델로 넘기는 것만으로 이 구간이 커버된다.** 비용도 0이고
+ * 관리할 키도 늘지 않는다.
+ *
+ * 공급자 전면 장애는 이 폴백으로 못 막지만, 그건 worker 크론의 재시도(최대 6회)
+ * 영역이다. 주문은 사라지지 않고 늦어질 뿐이며 소진 시 운영자에게 알림이 간다.
+ *
+ * 폴백 모델명은 env로 둔다 — 모델 목록은 자주 바뀌므로 코드에 박으면
+ * 존재하지 않는 모델로 조용히 실패한다. 미설정이면 폴백 없이 단일 모델로 돈다.
+ * 설정한 모델이 실제로 유효한지는 /api/admin/llm-health에서 확인할 수 있다.
  */
 function resolveProvider(saju: SajuResult): LlmProvider {
   const hasGemini = !!process.env.GEMINI_API_KEY;
   const hasClaude = !!process.env.ANTHROPIC_API_KEY;
 
-  if (hasGemini && hasClaude) {
-    return new FallbackLlmProvider(new GeminiLlmProvider(), new ClaudeLlmProvider());
+  if (hasGemini) {
+    const primary = new GeminiLlmProvider();
+    const fallbackModel = process.env.GEMINI_FALLBACK_MODEL?.trim();
+    if (!fallbackModel) return primary;
+    return new FallbackLlmProvider(
+      primary,
+      new GeminiLlmProvider(undefined, fallbackModel)
+    );
   }
-  if (hasGemini) return new GeminiLlmProvider();
   if (hasClaude) return new ClaudeLlmProvider();
   return new DemoLlmProvider(saju);
 }

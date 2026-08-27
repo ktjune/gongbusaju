@@ -2,6 +2,15 @@
 
 import { S } from "./styles";
 
+/** /api/admin/llm-health 응답 */
+export type LlmHealth = {
+  providers: { label: string; role: "primary" | "fallback"; ok: boolean; ms: number; error?: string }[];
+  primaryOk?: boolean;
+  hasFallback?: boolean;
+  fallbackOk?: boolean;
+  note?: string | null;
+};
+
 export type CostsData = {
   month: string;
   solapi: { balance: number; point: number } | null;
@@ -24,7 +33,15 @@ const cardLabel: React.CSSProperties = { fontSize: "0.78rem", color: "#5a5f6a", 
 const cardValue: React.CSSProperties = { fontSize: "1.25rem", fontWeight: 700, color: "#1f3b63" };
 const cardSub: React.CSSProperties = { fontSize: "0.74rem", color: "#9a9fa8", marginTop: 4, lineHeight: 1.5 };
 
-export function CostsSection({ costs, loading }: { costs: CostsData | null; loading: boolean }) {
+export function CostsSection({
+  costs,
+  health,
+  loading,
+}: {
+  costs: CostsData | null;
+  health: LlmHealth | null;
+  loading: boolean;
+}) {
   return (
     <>
       <h2 style={S.section}>이번 달 비용 {costs ? `(${costs.month})` : ""}</h2>
@@ -65,6 +82,47 @@ export function CostsSection({ costs, loading }: { costs: CostsData | null; load
               <div style={cardValue}>{costs.orders.month}건</div>
               <div style={cardSub}>발행 완료 {costs.orders.published}건</div>
             </div>
+          </div>
+          {/* LLM 생존 확인 — 폴백은 정작 필요한 순간에 처음 호출된다.
+              평소에 상태를 보여주지 않으면 죽어 있어도 알 수 없다. */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ ...cardLabel, marginBottom: 6 }}>LLM 공급자 상태</div>
+            {!health ? (
+              <div style={{ fontSize: "0.8rem", color: "#9a9fa8" }}>확인 중…</div>
+            ) : health.providers.length === 0 ? (
+              <div style={{ fontSize: "0.8rem", color: "#9a9fa8" }}>{health.note}</div>
+            ) : (
+              <>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {health.providers.map((p) => (
+                    <span
+                      key={p.label}
+                      title={p.error ?? ""}
+                      style={{
+                        fontSize: "0.78rem",
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        border: `1px solid ${p.ok ? "#cfe3d0" : "#f0c9c9"}`,
+                        background: p.ok ? "#f3faf3" : "#fdf3f3",
+                        color: p.ok ? "#2f6b39" : "#a33",
+                      }}
+                    >
+                      {p.ok ? "●" : "▲"} {p.label}
+                      <span style={{ color: "#9a9fa8" }}>
+                        {" "}
+                        · {p.role === "primary" ? "주력" : "폴백"}
+                        {p.ok ? ` · ${p.ms}ms` : " · 실패"}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+                {health.note && (
+                  <div style={{ fontSize: "0.76rem", color: "#a33", marginTop: 6 }}>
+                    {health.note}
+                  </div>
+                )}
+              </>
+            )}
           </div>
           <p style={{ fontSize: "0.78rem", color: "#9a9fa8", marginTop: 10 }}>
             정확한 청구액:{" "}

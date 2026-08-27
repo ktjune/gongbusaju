@@ -130,6 +130,14 @@ export default function PrivacyPage() {
               <td>식별정보를 제외한 사주 계산값(학교명·이름·생년월일 등 미전송) / 미국</td>
             </tr>
             <tr>
+              <td>Google (Google Analytics)</td>
+              <td>웹사이트 이용 통계 분석</td>
+              <td>
+                접속 기기·브라우저 정보, 방문 페이지·체류시간, 쿠키 기반 식별자, 결제 완료 시
+                주문번호·금액 (이름·연락처·생년월일 등 개인 식별정보 미전송) / 미국
+              </td>
+            </tr>
+            <tr>
               <td>
                 <span className={styles.todo}>[예정] 토스페이먼츠/카카오페이</span>
               </td>
@@ -140,10 +148,10 @@ export default function PrivacyPage() {
         </table>
         <p className={styles.callout}>
           <b>개인정보 국외 이전 고지</b> (「개인정보 보호법」 제28조의8)
-          <br />위 수탁사 중 Vercel·Resend·Anthropic은 미국에 서버를 두고 있어, 처리 과정에서 개인정보가
-          국외로 이전됩니다. (Supabase는 대한민국 서울 리전, 카카오·결제대행사는 국내)
-          <br />· 이전받는 자 / 국가: Vercel·Resend·Anthropic / 미국
-          <br />· 이전 항목: 위 표의 수탁사별 항목 (보호자 이메일, 서비스 이용 데이터, 식별정보를 제외한 사주 계산값)
+          <br />위 수탁사 중 Vercel·Resend·Anthropic·Google은 미국에 서버를 두고 있어, 처리 과정에서
+          개인정보가 국외로 이전됩니다. (Supabase는 대한민국 서울 리전, 카카오·결제대행사는 국내)
+          <br />· 이전받는 자 / 국가: Vercel·Resend·Anthropic·Google / 미국
+          <br />· 이전 항목: 위 표의 수탁사별 항목 (보호자 이메일, 서비스 이용 데이터, 식별정보를 제외한 사주 계산값, 웹사이트 이용 통계)
           <br />· 이전 일시 및 방법: 서비스 이용 시점에 암호화된 통신(HTTPS/TLS)으로 전송
           <br />· 보유·이용 기간: 위탁 목적 달성 또는 회사의 개인정보 보유기간(6개월)까지
           <br />· 정보주체는 국외 이전을 거부할 수 있으나, 거부 시 서비스 제공이 제한될 수 있습니다.
@@ -179,8 +187,30 @@ export default function PrivacyPage() {
 
         <h2 className={styles.h2}>10. 쿠키 등 자동 수집 장치의 설치·운영 및 거부</h2>
         <p className={styles.p}>
-          회사는 로그인 세션 유지 등을 위해 쿠키를 사용합니다. 이용자는 웹브라우저 설정에서 쿠키 저장을
-          거부할 수 있으나, 이 경우 로그인 등 일부 기능 이용이 제한될 수 있습니다.
+          회사는 두 가지 목적으로 쿠키를 사용합니다.
+        </p>
+        <ul className={styles.ul}>
+          <li className={styles.li}>
+            <b>필수 쿠키</b> — 로그인 세션 유지 등 서비스 제공에 필요한 쿠키입니다.
+          </li>
+          <li className={styles.li}>
+            <b>분석 쿠키</b> — Google Analytics가 웹사이트 이용 통계(방문 경로·체류시간·결제 완료 여부)를
+            집계하기 위해 사용합니다. 이름·연락처·생년월일 등 개인을 식별할 수 있는 정보는 전송하지 않으며,
+            어떤 광고를 보고 오셨는지와 서비스 개선에만 활용합니다.
+          </li>
+        </ul>
+        <p className={styles.p}>
+          이용자는 웹브라우저 설정에서 쿠키 저장을 거부할 수 있으나, 이 경우 로그인 등 일부 기능 이용이
+          제한될 수 있습니다. 분석 쿠키만 별도로 거부하시려면 Google이 제공하는{" "}
+          <a
+            href="https://tools.google.com/dlpage/gaoptout"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "underline" }}
+          >
+            Google Analytics 차단 브라우저 부가기능
+          </a>
+          을 설치하시면 됩니다. 분석 쿠키를 거부해도 서비스 이용에는 아무런 제한이 없습니다.
         </p>
 
         <h2 className={styles.h2}>11. 개인정보 보호책임자</h2>

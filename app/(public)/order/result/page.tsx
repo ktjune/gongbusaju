@@ -15,6 +15,8 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import styles from "../../apply/apply.module.css";
+import { trackPurchase } from "@/lib/analytics";
+import { REPORT_PRICE } from "@/lib/pricing";
 
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 
@@ -71,6 +73,9 @@ function OrderResult() {
           setState({ kind: "error", message: data.error ?? "주문 생성에 실패했습니다." });
           return;
         }
+        // 주문이 실제로 만들어진 뒤에만 결제완료를 기록한다.
+        // 결제창을 띄운 시점에 기록하면 이탈한 사람까지 매출로 잡힌다.
+        trackPurchase(data.orderId, REPORT_PRICE);
         setState({ kind: "success", orderId: data.orderId });
       } catch {
         setState({

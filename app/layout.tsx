@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nanum_Myeongjo, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "./analytics";
 
 const serif = Nanum_Myeongjo({
   subsets: ["latin"],
@@ -109,6 +110,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   );

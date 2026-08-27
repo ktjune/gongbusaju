@@ -15,8 +15,10 @@
  *   NEXT_PUBLIC_PORTONE_CHANNEL_KEY— 채널 키 (공개)
  */
 
-/** 리포트 1부 가격 (원). 결제 금액 검증의 단일 기준. (정가 29,000 → 할인가 9,900) */
-export const REPORT_PRICE = 9900;
+// 가격은 lib/pricing이 단일 출처다. 여기서 따로 선언하면 신청 화면과
+// 어긋나 "결제 금액 불일치"로 정상 결제가 거부된다.
+export { REPORT_PRICE } from "../pricing";
+import { REPORT_PRICE } from "../pricing";
 
 const API_BASE = "https://api.portone.io";
 

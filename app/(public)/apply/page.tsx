@@ -16,9 +16,11 @@ import { useEffect, useRef, useState } from "react";
 import * as PortOne from "@portone/browser-sdk/v2";
 import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
+import { REPORT_PRICE, REPORT_PRICE_LABEL } from "@/lib/pricing";
 
-const PRICE = "9,900";
-const PRICE_VALUE = 9900;
+// 가격 단일 출처 — 서버 검증값(lib/payments/portone)과 같은 상수를 쓴다.
+const PRICE = REPORT_PRICE_LABEL;
+const PRICE_VALUE = REPORT_PRICE;
 const MIN_DATE = "1980-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
 // 서비스 제공기간 — 이용약관·상품 상세와 동일하게 "결제 후 1일 이내"

@@ -127,15 +127,27 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
       noteParts.push(`[가드레일] ${built.guardrailViolations.map((v) => v.reason).join(" / ")}`);
     }
 
-    const report = await store.createReport({
-      orderId,
-      markdown: built.markdown,
-      html: built.html,
-      tier: order.tier,
-      reviewStatus: "pending",
-      reviewNote: autoApprovable ? null : noteParts.join(" · "),
-      pdfUrl: null,
-    });
+    // 이미 리포트가 있으면 새로 만들지 않고 덮어쓴다.
+    // reports.orderId가 @unique라 create를 부르면 재생성이 항상 실패한다
+    // (그것도 LLM 생성을 다 끝낸 뒤 마지막 저장에서 터져 비용만 태운다).
+    // **토큰은 유지한다** — 고객이 이미 받은 결과 링크가 갱신된 내용을 가리켜야 한다.
+    const existing = order.reportId ? await store.getReport(order.reportId) : null;
+    const report = existing
+      ? await store.updateReport(existing.id, {
+          markdown: built.markdown,
+          html: built.html,
+          reviewStatus: "pending",
+          reviewNote: autoApprovable ? null : noteParts.join(" · "),
+        })
+      : await store.createReport({
+          orderId,
+          markdown: built.markdown,
+          html: built.html,
+          tier: order.tier,
+          reviewStatus: "pending",
+          reviewNote: autoApprovable ? null : noteParts.join(" · "),
+          pdfUrl: null,
+        });
 
     await store.setOrderReport(orderId, report.id);
     await store.updateOrderStatus(orderId, "review");

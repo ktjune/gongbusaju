@@ -53,7 +53,7 @@ export interface OrderStore {
   getReportByToken(token: string): Promise<Report | null>;
   updateReport(
     id: string,
-    patch: Partial<Pick<Report, "markdown" | "reviewStatus" | "reviewNote" | "pdfUrl">>
+    patch: Partial<Pick<Report, "markdown" | "html" | "reviewStatus" | "reviewNote" | "pdfUrl">>
   ): Promise<Report>;
   listReports(filter?: { reviewStatus?: Report["reviewStatus"] }): Promise<Report[]>;
 }
@@ -231,7 +231,7 @@ export class InMemoryOrderStore implements OrderStore {
 
   async updateReport(
     id: string,
-    patch: Partial<Pick<Report, "markdown" | "reviewStatus" | "reviewNote" | "pdfUrl">>
+    patch: Partial<Pick<Report, "markdown" | "html" | "reviewStatus" | "reviewNote" | "pdfUrl">>
   ): Promise<Report> {
     const report = this.reports.get(id);
     if (!report) throw new Error(`리포트 없음: ${id}`);

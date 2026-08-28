@@ -273,7 +273,7 @@ export class PrismaOrderStore implements OrderStore {
 
   async updateReport(
     id: string,
-    patch: Partial<Pick<Report, "markdown" | "reviewStatus" | "reviewNote" | "pdfUrl">>
+    patch: Partial<Pick<Report, "markdown" | "html" | "reviewStatus" | "reviewNote" | "pdfUrl">>
   ): Promise<Report> {
     const row = await this.db.report.update({ where: { id }, data: patch });
     return toReport(row);

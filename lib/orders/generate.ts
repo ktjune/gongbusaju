@@ -165,10 +165,18 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
     return report;
   } catch (e) {
     await store.updateOrderStatus(orderId, "failed");
-    // 자동 재시도 소진(6회) — 사람 개입이 필요한 시점에만 운영자에게 통지
-    if (attempts >= MAX_GENERATE_ATTEMPTS) {
+    // 재시도해도 같은 결과인 실패는 여기서 끊는다 — 크론이 6회를 돌며 토큰만 태운다
+    const deterministic = isDeterministicFailure(e);
+    if (deterministic && attempts < MAX_GENERATE_ATTEMPTS) {
+      await store.exhaustGenerateAttempts(orderId, MAX_GENERATE_ATTEMPTS);
+    }
+
+    // 사람 개입이 필요한 시점에만 운영자에게 통지
+    if (deterministic || attempts >= MAX_GENERATE_ATTEMPTS) {
       await sendOwnerAlert(
-        "리포트 생성 자동 재시도 소진 — 확인 필요",
+        deterministic
+          ? "리포트 생성 실패 — 재시도 불가(코드·데이터 문제)"
+          : "리포트 생성 자동 재시도 소진 — 확인 필요",
         `주문 ${orderId}의 리포트 생성이 ${attempts}회 모두 실패했습니다. LLM 장애·잔액 등을 확인해 주세요.\n마지막 오류: ${e instanceof Error ? e.message.slice(0, 300) : String(e).slice(0, 300)}`
       );
     }
@@ -182,6 +190,26 @@ export async function generateReportForOrder(orderId: string): Promise<Report> {
     }
     throw e;
   }
+}
+
+/**
+ * 재시도해도 결과가 달라지지 않는 실패인가.
+ *
+ * 일시 장애(LLM 순단·타임아웃·레이트리밋)는 재시도가 의미 있지만, 제약 위반이나
+ * 데이터 없음은 몇 번을 돌려도 같은 자리에서 터진다. 문제는 그 실패 지점이 대개
+ * **LLM 생성을 끝낸 뒤**라, 재시도마다 리포트 한 편치 토큰이 그대로 나간다는 것이다.
+ * (2026-08-27 재생성 유니크 제약 사고 — 클릭 한 번에 생성 6회를 태웠다.)
+ *
+ * 보수적으로 판단한다 — 확실히 결정적인 것만 잡고 애매하면 재시도에 맡긴다.
+ */
+function isDeterministicFailure(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e);
+  return (
+    /Unique constraint failed/i.test(msg) ||
+    /Foreign key constraint/i.test(msg) ||
+    /Record to update not found/i.test(msg) ||
+    /주문 없음|자녀 정보 없음|생성 가능 상태가 아닙니다/.test(msg)
+  );
 }
 
 /** 표지 라벨 — PII를 최소 노출 (연·월·일·성별까지만, 분 단위 시각 제외) */

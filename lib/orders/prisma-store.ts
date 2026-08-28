@@ -187,6 +187,13 @@ export class PrismaOrderStore implements OrderStore {
     return row.generateAttempts;
   }
 
+  async exhaustGenerateAttempts(id: string, to: number): Promise<void> {
+    await this.db.order.update({
+      where: { id },
+      data: { generateAttempts: to },
+    });
+  }
+
   async listNotifyFailures(): Promise<Order[]> {
     const rows = await this.db.order.findMany({
       where: { notifyError: { not: null } },

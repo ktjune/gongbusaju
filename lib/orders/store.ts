@@ -34,6 +34,8 @@ export interface OrderStore {
   recordNotifyResult(id: string, error: string | null): Promise<Order>;
   /** 생성 시도 카운트 +1 — 자동 재시도 상한 판정용. 갱신된 시도 횟수를 반환. */
   recordGenerateAttempt(id: string): Promise<number>;
+  /** 시도 횟수를 상한(to)까지 채워 자동 재시도 대상에서 제외한다(결정적 실패용). */
+  exhaustGenerateAttempts(id: string, to: number): Promise<void>;
   listOrders(filter?: { status?: OrderStatus }): Promise<Order[]>;
   /** 발송 실패가 기록된(notifyError != null) 주문 목록 — 어드민 "발송 실패" 큐 */
   listNotifyFailures(): Promise<Order[]>;
@@ -169,6 +171,12 @@ export class InMemoryOrderStore implements OrderStore {
     };
     this.orders.set(id, updated);
     return updated.generateAttempts;
+  }
+
+  async exhaustGenerateAttempts(id: string, to: number): Promise<void> {
+    const order = this.orders.get(id);
+    if (!order) return;
+    this.orders.set(id, { ...order, generateAttempts: to });
   }
 
   async listOrders(filter?: { status?: OrderStatus }): Promise<Order[]> {

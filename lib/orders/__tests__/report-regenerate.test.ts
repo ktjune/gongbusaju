@@ -74,3 +74,29 @@ describe("리포트 재생성", () => {
     expect(regenerated.reviewNote).toBeNull();
   });
 });
+
+describe("결정적 실패는 재시도하지 않는다", () => {
+  it("exhaustGenerateAttempts가 시도 횟수를 상한까지 채운다", async () => {
+    const store = new InMemoryOrderStore();
+    const subject = await store.createSubject({
+      encBirth: "x", encGender: "x", encAddress: null, encSchool: null,
+      encName: null, encNameHanja: null,
+      consentAt: new Date().toISOString(),
+      retainUntil: new Date(Date.now() + 86400000).toISOString(),
+    } as never);
+    const order = await store.createOrder({
+      tier: "basic", status: "paid", subjectId: subject.id, reportId: null,
+      userId: null, paymentKey: null, refundedAt: null, refundReason: null,
+      refundRequestedAt: null, refundRequestReason: null,
+      notifyError: null, notifyFailedAt: null,
+      buyerName: null, contactEmail: null, contactPhone: null,
+    });
+
+    await store.recordGenerateAttempt(order.id); // 1회 시도
+    await store.exhaustGenerateAttempts(order.id, 6);
+
+    const after = await store.getOrder(order.id);
+    // 크론은 generateAttempts < 6 인 것만 재시도한다 → 제외된다
+    expect(after?.generateAttempts).toBe(6);
+  });
+});

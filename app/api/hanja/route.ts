@@ -16,9 +16,8 @@ export const runtime = "nodejs";
 
 type HanjaEntry = { strokes: number; radical: number; element: string; sound: string; hun?: string };
 /** hun: 한국 전통 훈(뜻). 같은 음의 후보가 수십 개라 이게 없으면 고를 수가 없다
- *  — "높을 준(峻)"인지 "술그릇 준(樽)"인지는 훈이라야 갈린다.
- *  Unihan에 훈이 없어 영어 정의를 옮겨 만들었고, 확신이 없는 글자는 비어 있다. */
-type Candidate = { c: string; strokes: number; element: string; hun: string | null };
+ *  — "높을 준(峻)"인지 "술그릇 준(樽)"인지는 훈이라야 갈린다. */
+type Candidate = { c: string; strokes: number; element: string; hun: string };
 
 const DB = hanjaData as Record<string, HanjaEntry>;
 
@@ -31,8 +30,13 @@ function bySound(): Map<string, Candidate[]> {
     if (!e.sound) continue;
     // BMP 밖 확장한자(𢓭 등)는 모바일에서 □로 깨지기 쉬워 후보에서 제외
     if ((c.codePointAt(0) ?? 0) > 0xffff) continue;
+    // 훈이 없는 글자는 후보에서 뺀다(전체의 11%, 942자).
+    // 뜻을 못 보여주면 부모가 고를 수 없어 목록만 길어진다. 부수를 대신 보여주는
+    // 방안도 있었으나 "구슬옥"이 일반 사용자에게 전달되지 않는다.
+    // 정말 그 한자를 쓰려는 경우엔 폼의 "직접 입력하기"로 넣을 수 있다.
+    if (!e.hun) continue;
     const arr = m.get(e.sound);
-    const item = { c, strokes: e.strokes, element: e.element, hun: e.hun || null };
+    const item = { c, strokes: e.strokes, element: e.element, hun: e.hun };
     if (arr) arr.push(item);
     else m.set(e.sound, [item]);
   }

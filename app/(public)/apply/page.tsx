@@ -73,7 +73,7 @@ function loadDaumPostcode(): Promise<void> {
 }
 
 // ── 한자 탭 선택 (모바일에서 한자 타이핑이 어렵다는 피드백 대응) ──
-type HanjaCand = { c: string; strokes: number; element: string; hun: string | null };
+type HanjaCand = { c: string; strokes: number; element: string; hun: string };
 const EL_HANGUL: Record<string, string> = { 木: "목", 火: "화", 土: "토", 金: "금", 水: "수" };
 const EL_COLOR: Record<string, string> = {
   木: "#3d9a50", 火: "#d64545", 土: "#c9a227", 金: "#8e9aa8", 水: "#3b6fb5",
@@ -457,12 +457,11 @@ contactEmail: contactEmail.trim() || undefined,
                           >
                             <span style={{ fontSize: "1.2rem", lineHeight: 1.2 }}>{cand.c}</span>
                             {/* 같은 음의 후보가 수십 개라 훈이 없으면 고를 수가 없다
-                                — "높을 준(峻)"인지 "술그릇 준(樽)"인지 */}
-                            {cand.hun && (
-                              <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#2c2c30", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {cand.hun}
-                              </span>
-                            )}
+                                — "높을 준(峻)"인지 "술그릇 준(樽)"인지.
+                                훈 없는 글자는 API가 걸러내므로 항상 값이 있다. */}
+                            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#2c2c30", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {cand.hun}
+                            </span>
                             <span style={{ fontSize: "0.62rem", color: EL_COLOR[cand.element] ?? "#8a8f99" }}>
                               {cand.strokes}획·{EL_HANGUL[cand.element] ?? cand.element}
                             </span>
@@ -476,6 +475,9 @@ contactEmail: contactEmail.trim() || undefined,
                       </div>
                     </div>
                   ))}
+                  <p className={styles.hint} style={{ marginTop: 2, marginBottom: 6 }}>
+                    뜻을 확인할 수 있는 한자만 보여드립니다. 원하시는 글자가 없으면 직접 입력해 주세요.
+                  </p>
                   <button
                     type="button"
                     className={styles.addrClear}
@@ -485,7 +487,7 @@ contactEmail: contactEmail.trim() || undefined,
                       setChildNameHanja("");
                     }}
                   >
-                    찾는 한자가 없나요? 직접 입력하기
+                    찾는 한자가 없나요? 직접 입력하기 →
                   </button>
                 </>
               ) : (

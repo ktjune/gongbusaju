@@ -73,7 +73,7 @@ function loadDaumPostcode(): Promise<void> {
 }
 
 // ── 한자 탭 선택 (모바일에서 한자 타이핑이 어렵다는 피드백 대응) ──
-type HanjaCand = { c: string; strokes: number; element: string };
+type HanjaCand = { c: string; strokes: number; element: string; hun: string | null };
 const EL_HANGUL: Record<string, string> = { 木: "목", 火: "화", 土: "토", 金: "금", 水: "수" };
 const EL_COLOR: Record<string, string> = {
   木: "#3d9a50", 火: "#d64545", 土: "#c9a227", 金: "#8e9aa8", 水: "#3b6fb5",
@@ -84,7 +84,8 @@ const hanjaChipStyle = (selected: boolean, element: string): React.CSSProperties
   flexDirection: "column",
   alignItems: "center",
   gap: 2,
-  padding: "8px 12px",
+  padding: "8px 10px",
+  minWidth: 64,
   borderRadius: 10,
   border: selected ? `2px solid ${EL_COLOR[element] ?? "#1f3b63"}` : "1px solid #ddd6c8",
   background: selected ? "#fffdf5" : "#fff",
@@ -455,6 +456,13 @@ contactEmail: contactEmail.trim() || undefined,
                             style={hanjaChipStyle(hanjaSel[i] === cand.c, cand.element)}
                           >
                             <span style={{ fontSize: "1.2rem", lineHeight: 1.2 }}>{cand.c}</span>
+                            {/* 같은 음의 후보가 수십 개라 훈이 없으면 고를 수가 없다
+                                — "높을 준(峻)"인지 "술그릇 준(樽)"인지 */}
+                            {cand.hun && (
+                              <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#2c2c30", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {cand.hun}
+                              </span>
+                            )}
                             <span style={{ fontSize: "0.62rem", color: EL_COLOR[cand.element] ?? "#8a8f99" }}>
                               {cand.strokes}획·{EL_HANGUL[cand.element] ?? cand.element}
                             </span>

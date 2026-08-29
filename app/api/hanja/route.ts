@@ -11,10 +11,14 @@
 
 import hanjaData from "../../../data-pipeline/hanja/hanja.json";
 
+
 export const runtime = "nodejs";
 
-type HanjaEntry = { strokes: number; radical: number; element: string; sound: string };
-type Candidate = { c: string; strokes: number; element: string };
+type HanjaEntry = { strokes: number; radical: number; element: string; sound: string; hun?: string };
+/** hun: 한국 전통 훈(뜻). 같은 음의 후보가 수십 개라 이게 없으면 고를 수가 없다
+ *  — "높을 준(峻)"인지 "술그릇 준(樽)"인지는 훈이라야 갈린다.
+ *  Unihan에 훈이 없어 영어 정의를 옮겨 만들었고, 확신이 없는 글자는 비어 있다. */
+type Candidate = { c: string; strokes: number; element: string; hun: string | null };
 
 const DB = hanjaData as Record<string, HanjaEntry>;
 
@@ -28,7 +32,7 @@ function bySound(): Map<string, Candidate[]> {
     // BMP 밖 확장한자(𢓭 등)는 모바일에서 □로 깨지기 쉬워 후보에서 제외
     if ((c.codePointAt(0) ?? 0) > 0xffff) continue;
     const arr = m.get(e.sound);
-    const item = { c, strokes: e.strokes, element: e.element };
+    const item = { c, strokes: e.strokes, element: e.element, hun: e.hun || null };
     if (arr) arr.push(item);
     else m.set(e.sound, [item]);
   }

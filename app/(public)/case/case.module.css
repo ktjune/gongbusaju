@@ -1,0 +1,167 @@
+/*
+ * /case 전용 스타일 — 광고 유입 전용 랜딩.
+ * 공통 요소(네비·가격·후기·FAQ·푸터)는 home.module.css를 그대로 쓰고,
+ * 여기에는 이 페이지에만 있는 "사례" 블록만 정의한다.
+ */
+
+/* ── 사례 히어로 ── */
+.caseHero {
+  padding: 72px 20px 56px;
+  background: linear-gradient(180deg, #fbf7ef 0%, #f4efe4 100%);
+  text-align: center;
+}
+.caseHeroInner { max-width: 720px; margin: 0 auto; }
+.caseKicker {
+  display: inline-block;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: #7a6a4f;
+  border: 1px solid #d8cbb0;
+  border-radius: 999px;
+  padding: 5px 14px;
+  margin-bottom: 22px;
+}
+.caseHeadline {
+  font-size: clamp(28px, 6vw, 42px);
+  line-height: 1.35;
+  font-weight: 800;
+  color: #1f3b63;
+  margin: 0 0 18px;
+  word-break: keep-all;
+}
+.caseLede {
+  font-size: clamp(15px, 3.4vw, 17px);
+  line-height: 1.8;
+  color: #4a4438;
+  margin: 0;
+  word-break: keep-all;
+}
+
+/* ── 사례 본문 ── */
+.caseBody { max-width: 720px; margin: 0 auto; padding: 56px 20px; }
+.caseStep { margin-bottom: 52px; }
+.caseStep:last-child { margin-bottom: 0; }
+.caseStepLabel {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #b08d57;
+  margin-bottom: 10px;
+}
+.caseStepTitle {
+  font-size: clamp(20px, 4.4vw, 25px);
+  font-weight: 800;
+  color: #1f3b63;
+  line-height: 1.45;
+  margin: 0 0 16px;
+  word-break: keep-all;
+}
+.caseText {
+  font-size: 16px;
+  line-height: 1.85;
+  color: #3f3a30;
+  margin: 0 0 14px;
+  word-break: keep-all;
+}
+.caseText:last-child { margin-bottom: 0; }
+.caseText b { color: #1f3b63; }
+
+/* 아이 말 인용 */
+.caseQuote {
+  border-left: 3px solid #d8cbb0;
+  padding: 4px 0 4px 16px;
+  margin: 0 0 18px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #6b5c42;
+  font-style: italic;
+  word-break: keep-all;
+}
+
+/* 원국 카드 */
+.chart {
+  background: #fffdf8;
+  border: 1px solid #e4dac4;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 0 0 22px;
+}
+.chartRow {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4a4438;
+}
+.chartRow + .chartRow { margin-top: 6px; }
+.chartKey { flex: 0 0 68px; color: #8a7a5e; }
+.chartVal { flex: 1; color: #2c2a24; font-weight: 600; }
+
+/* 기질 막대 */
+.bars { margin: 0 0 22px; }
+.bar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.bar:last-child { margin-bottom: 0; }
+.barName { flex: 0 0 62px; font-size: 14px; color: #4a4438; }
+.barTrack {
+  flex: 1;
+  /* span이라 인라인이다 — block으로 바꿔야 height/width가 먹는다 */
+  display: block;
+  height: 10px;
+  background: #eae2d0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.barFill { display: block; height: 100%; border-radius: 999px; background: #c9b78e; }
+.barFillHigh { background: #1f3b63; }
+.barVal { flex: 0 0 34px; text-align: right; font-size: 14px; font-variant-numeric: tabular-nums; color: #4a4438; }
+.barValHigh { color: #1f3b63; font-weight: 700; }
+
+/* 실천 제안 목록 */
+.tryList { margin: 0; padding: 0; list-style: none; }
+.tryList li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #3f3a30;
+  margin-bottom: 12px;
+  word-break: keep-all;
+}
+.tryList li:last-child { margin-bottom: 0; }
+.tryList li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b08d57;
+}
+
+/* 다음 섹션으로 넘기는 다리 문단 */
+.bridge {
+  background: #1f3b63;
+  color: #f4efe4;
+  padding: 40px 20px;
+  text-align: center;
+}
+.bridgeInner { max-width: 640px; margin: 0 auto; }
+.bridgeText {
+  font-size: clamp(17px, 3.8vw, 20px);
+  line-height: 1.75;
+  margin: 0;
+  word-break: keep-all;
+}
+.bridgeText b { color: #e8c98a; }
+
+/* 예시임을 밝히는 주석 */
+.exampleNote {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #8a7a5e;
+  word-break: keep-all;
+}

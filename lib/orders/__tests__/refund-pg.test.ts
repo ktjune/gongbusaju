@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import type { Order } from "../types";
+import type { Order, NewOrder } from "../types";
 
 // 포트원 취소 API는 호출 여부만 확인한다 (실제 네트워크 호출 금지)
 const cancelPortOne = vi.hoisted(() => vi.fn());
@@ -10,10 +10,7 @@ vi.mock("../../payments/portone", () => ({
 import { getOrderStore, InMemoryOrderStore } from "../store";
 import { refundOrder } from "../refund";
 
-function baseOrder(paymentKey: string | null): Omit<
-  Order,
-  "id" | "createdAt" | "updatedAt" | "generateAttempts"
-> {
+function baseOrder(paymentKey: string | null): NewOrder {
   return {
     tier: "basic",
     status: "paid",

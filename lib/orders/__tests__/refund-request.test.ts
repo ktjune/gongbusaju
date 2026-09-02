@@ -1,15 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { InMemoryOrderStore } from "../store";
 import { matchesContact, normalizeContact, submitRefundRequest } from "../refund-request";
-import type { Order } from "../types";
+import type { Order, NewOrder } from "../types";
 
 // getOrderStore()가 DATABASE_URL 없을 때 반환하는 인메모리 싱글턴을 그대로 쓴다
 import { getOrderStore } from "../store";
 
-function baseOrder(over: Partial<Order> = {}): Omit<
-  Order,
-  "id" | "createdAt" | "updatedAt" | "generateAttempts"
-> {
+function baseOrder(over: Partial<Order> = {}): NewOrder {
   return {
     tier: "basic",
     status: "paid",

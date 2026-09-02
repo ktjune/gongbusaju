@@ -3,6 +3,8 @@
  * 주문·자녀정보·리포트 도메인 타입 (SPEC §6 데이터 모델)
  */
 
+import type { Attribution } from "../attribution";
+
 export type Tier = "basic";
 
 /**
@@ -50,9 +52,43 @@ export type Order = {
   /** 연락처(알림 발송용) — 보호자, 별도 동의 */
   contactEmail: string | null;
   contactPhone: string | null;
+  /**
+   * PG가 확인한 실제 결제 금액(원). 모의 결제는 null.
+   * 코드 상수로 계산하지 않는다 — 가격을 바꾸면 과거 매출까지 새 가격이 된다.
+   */
+  amountKrw: number | null;
+  /** 유입 경로 — 결제 시점 기록. 개인정보 아님(캠페인명·유입 도메인·진입 경로뿐). */
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmContent: string | null;
+  referrer: string | null;
+  landingPath: string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+/**
+ * 금액·유입 경로 — 주문의 본질이 아니라 측정용 부가 정보다.
+ * 측정이 안 되더라도 주문은 만들어져야 하므로 스토어에 넘길 때는 선택 항목으로 둔다.
+ */
+export type OrderMetrics = Pick<
+  Order,
+  | "amountKrw"
+  | "utmSource"
+  | "utmMedium"
+  | "utmCampaign"
+  | "utmContent"
+  | "referrer"
+  | "landingPath"
+>;
+
+/** 스토어 createOrder에 넘기는 형태 — 측정 필드는 빠져도 된다. */
+export type NewOrder = Omit<
+  Order,
+  "id" | "createdAt" | "updatedAt" | "generateAttempts" | keyof OrderMetrics
+> &
+  Partial<OrderMetrics>;
 
 /**
  * 자녀 PII — enc* 필드는 모두 암호화 저장 (lib/crypto/pii).
@@ -128,4 +164,8 @@ export type CreateOrderInput = {
   userId?: string;
   /** PG 결제 식별자(포트원 paymentId) — 환불 시 필요. 모의 결제면 미전달. */
   paymentKey?: string;
+  /** PG가 확인한 결제 금액(원) — 클라이언트 값이 아니라 결제 조회 결과를 넣는다. */
+  amountKrw?: number;
+  /** 유입 경로 — 클라이언트가 sessionStorage에서 읽어 보낸다(lib/attribution). */
+  attribution?: Attribution;
 };

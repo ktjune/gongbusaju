@@ -12,11 +12,12 @@
 
 import { waitUntil } from "@vercel/functions";
 import { createOrder, generateReportForOrder } from "@/lib/orders";
-import { sendOrderConfirm } from "@/lib/notify";
+import { sendOrderConfirm, sendOwnerAlert } from "@/lib/notify";
 import type { CreateOrderInput, Tier } from "@/lib/orders";
 import { createClient } from "@/lib/supabase/server";
 import { verifyPortOnePayment, cancelPortOnePayment } from "@/lib/payments/portone";
 import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
+import { sanitizeAttribution, describeChannel } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // Pro: 300s, Hobby: 자동 60s 상한
@@ -41,6 +42,8 @@ type Body = {
   paymentId?: string;
   /** 심사 모드 통행 토큰 — ORDER_GATE_TOKEN 설정 시에만 검사한다. */
   gateToken?: string;
+  /** 유입 경로 — 클라이언트 sessionStorage에서 온다. 서버에서 걸러 쓴다(신뢰하지 않음). */
+  attribution?: unknown;
 };
 
 export async function POST(req: Request) {
@@ -90,13 +93,18 @@ export async function POST(req: Request) {
   // 결제 검증 — PORTONE_API_SECRET 설정 시 실결제 검증 필수.
   // (미설정 환경에서는 모의 결제로 통과 — 로컬 개발용)
   const paymentId = body.paymentId?.trim() ?? "";
+  // PG가 확인해 준 실제 결제 금액. 매출 집계는 이 값으로 한다 —
+  // 코드 상수로 계산하면 가격을 바꿨을 때 과거 매출까지 새 가격이 된다.
+  // 모의 결제(로컬)는 undefined로 남겨 실제 매출과 구분한다.
+  let paidAmountKrw: number | undefined;
   if (process.env.PORTONE_API_SECRET) {
     if (!paymentId) {
       return Response.json({ error: "결제 정보가 없습니다." }, { status: 400 });
     }
     try {
       // 상태(PAID)·금액(9,900원)을 PG 기록으로 직접 확인 — 클라이언트 값은 신뢰하지 않는다
-      await verifyPortOnePayment(paymentId);
+      const payment = await verifyPortOnePayment(paymentId);
+      paidAmountKrw = payment.amount?.total;
     } catch (e) {
       const msg = e instanceof Error ? e.message : "결제 확인에 실패했습니다.";
       return Response.json({ error: msg }, { status: 402 });
@@ -131,6 +139,10 @@ export async function POST(req: Request) {
     // paymentKey 컬럼에 포트원 paymentId를 저장한다 (컬럼명은 하위호환 유지).
     // 환불(결제취소) 시 이 값으로 PG를 호출한다.
     paymentKey: paymentId || undefined,
+    amountKrw: paidAmountKrw,
+    // 유입 경로 — 광고를 켜고 끌 판단을 GA4(확정까지 24~48시간)에 기대지 않으려고
+    // 결제되는 순간 주문에 같이 박아둔다. 없어도 주문은 정상 진행된다.
+    attribution: sanitizeAttribution(body.attribution),
   };
 
   try {
@@ -149,6 +161,26 @@ export async function POST(req: Request) {
         console.error(`[order] 접수 확인 발송 실패 — 주문: ${order.id}`, err);
       })
     );
+
+    // 새 주문 알림 — 지금까지 정상 주문은 아무 신호도 없어서 어드민을 열어봐야 알았다.
+    // 광고를 돌리는 동안은 "언제 어디서 팔렸는지"가 바로 와야 판단이 선다.
+    // 개인정보는 넣지 않는다 — 금액·유입 경로·주문번호까지만.
+    const amountLabel = paidAmountKrw
+      ? `${paidAmountKrw.toLocaleString("ko-KR")}원`
+      : "모의 결제";
+    waitUntil(
+      // 줄바꿈은 템플릿 리터럴의 실제 개행을 쓴다
+      sendOwnerAlert(
+        `새 주문 ${amountLabel}`,
+        `주문번호: ${order.id}
+금액: ${amountLabel}
+유입: ${describeChannel(input.attribution ?? {})}
+진입 경로: ${input.attribution?.landingPath ?? "-"}`
+      ).catch((err: unknown) => {
+        console.error(`[order] 새 주문 알림 실패 — 주문: ${order.id}`, err);
+      })
+    );
+
 
     // 리포트 생성은 백그라운드로.
     // waitUntil: 응답을 즉시 반환하고 생성(~40-50s)은 백그라운드에서 완료된다.

@@ -11,14 +11,12 @@
  */
 
 import { randomBytes, randomUUID } from "node:crypto";
-import type { Order, Subject, Report, OrderStatus } from "./types";
+import type { Order, NewOrder, Subject, Report, OrderStatus } from "./types";
 import { PrismaOrderStore } from "./prisma-store";
 
 export interface OrderStore {
   // ── 주문 ──
-  createOrder(
-    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
-  ): Promise<Order>;
+  createOrder(data: NewOrder): Promise<Order>;
   getOrder(id: string): Promise<Order | null>;
   updateOrderStatus(id: string, status: OrderStatus): Promise<Order>;
   setOrderReport(id: string, reportId: string): Promise<Order>;
@@ -74,11 +72,17 @@ export class InMemoryOrderStore implements OrderStore {
   private reports = new Map<string, Report>();
   private tokenIndex = new Map<string, string>(); // token → reportId
 
-  async createOrder(
-    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
-  ): Promise<Order> {
+  async createOrder(data: NewOrder): Promise<Order> {
     const ts = nowIso();
     const order: Order = {
+      // 측정 필드는 선택이라 기본값을 먼저 깔고 덮어쓴다
+      amountKrw: null,
+      utmSource: null,
+      utmMedium: null,
+      utmCampaign: null,
+      utmContent: null,
+      referrer: null,
+      landingPath: null,
       ...data,
       id: randomUUID(),
       generateAttempts: 0,

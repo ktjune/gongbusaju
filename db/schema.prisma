@@ -49,6 +49,19 @@ model Order {
   // 리포트 생성 시도 횟수 — failed/고착 generating 자동 재시도 상한(6회)용.
   // 매 생성 시작 시 +1 (worker가 candidates 필터에 사용)
   generateAttempts Int @default(0)
+  // PG가 확인한 실제 결제 금액(원). 코드 상수로 계산하면 가격을 바꿨을 때
+  // 과거 매출까지 새 가격으로 바뀐다 — 결제 시점 금액을 그대로 박아둔다.
+  amountKrw    Int?
+  // 유입 경로 — 결제되는 순간 남긴다. GA4 표준 보고서는 확정에 24~48시간이 걸려서
+  // "어제 들어온 매출이 어디서 왔는지"를 이틀 뒤에나 알 수 있었다.
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmContent   String?
+  /// UTM이 없는 유입(검색·카톡 인앱)의 유일한 단서. 외부 도메인만 저장한다.
+  referrer     String?
+  /// 첫 진입 경로 — 광고 랜딩(/case)이 실제로 파는지 본다.
+  landingPath  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

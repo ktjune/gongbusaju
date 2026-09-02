@@ -170,6 +170,14 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     buyerName: input.buyerName ?? null,
     contactEmail: input.contactEmail ?? null,
     contactPhone: input.contactPhone ?? null,
+    amountKrw: input.amountKrw ?? null,
+    // 유입 경로 — 없으면 null(직접 방문·측정 차단). 없다고 주문이 막히면 안 된다.
+    utmSource: input.attribution?.utmSource ?? null,
+    utmMedium: input.attribution?.utmMedium ?? null,
+    utmCampaign: input.attribution?.utmCampaign ?? null,
+    utmContent: input.attribution?.utmContent ?? null,
+    referrer: input.attribution?.referrer ?? null,
+    landingPath: input.attribution?.landingPath ?? null,
   });
 }
 

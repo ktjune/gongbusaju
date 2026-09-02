@@ -18,6 +18,7 @@ import * as PortOne from "@portone/browser-sdk/v2";
 import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
 import { REPORT_PRICE, REPORT_PRICE_LABEL } from "@/lib/pricing";
+import { readAttribution } from "@/lib/attribution";
 
 // 가격 단일 출처 — 서버 검증값(lib/payments/portone)과 같은 상수를 쓴다.
 const PRICE = REPORT_PRICE_LABEL;
@@ -225,12 +226,15 @@ export default function ApplyPage() {
       gender,
       address: address.trim() || undefined,
       currentSchool: currentSchool.trim() || undefined,
-            buyerName: buyerName.trim() || undefined,
-contactEmail: contactEmail.trim() || undefined,
+      buyerName: buyerName.trim() || undefined,
+      contactEmail: contactEmail.trim() || undefined,
       contactPhone: contactPhone.trim() || undefined,
       consent,
       paymentId,
       gateToken: gateToken || undefined,
+      // 어느 광고·채널을 타고 왔는지. 진입 시점(/case 등)에 담아둔 값을 결제와 함께 보낸다.
+      // 없어도 주문은 그대로 진행된다 — 측정이 결제를 막으면 안 된다.
+      attribution: readAttribution(),
     };
   }
 

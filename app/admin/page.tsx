@@ -20,6 +20,7 @@ import { RegenQueueSection, type RegenOrderItem } from "./RegenQueueSection";
 import { NotifyFailureSection, type NotifyFailureItem } from "./NotifyFailureSection";
 import { SentSection, type SentOrderItem } from "./SentSection";
 import { CostsSection, type CostsData, type LlmHealth } from "./CostsSection";
+import { RevenueSection, type RevenueData } from "./RevenueSection";
 import { RefundRequestSection, type RefundRequestItem } from "./RefundRequestSection";
 
 export default function AdminPage() {
@@ -29,6 +30,7 @@ export default function AdminPage() {
   const [sentOrders, setSentOrders] = useState<SentOrderItem[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequestItem[]>([]);
   const [costs, setCosts] = useState<CostsData | null>(null);
+  const [revenue, setRevenue] = useState<RevenueData | null>(null);
   const [health, setHealth] = useState<LlmHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export default function AdminPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [rep, ord, fail, sent, cost, llm, refundReq] = await Promise.all([
+      const [rep, ord, fail, sent, cost, llm, refundReq, rev] = await Promise.all([
         fetch("/api/admin/reports").then((r) => r.json()),
         fetch("/api/admin/orders").then((r) => r.json()),
         fetch("/api/admin/notify-failures").then((r) => r.json()),
@@ -45,6 +47,7 @@ export default function AdminPage() {
         fetch("/api/admin/costs").then((r) => r.json()).catch(() => null),
         fetch("/api/admin/llm-health").then((r) => r.json()).catch(() => null),
         fetch("/api/admin/refund-requests").then((r) => r.json()),
+        fetch("/api/admin/revenue").then((r) => r.json()).catch(() => null),
       ]);
       setItems(rep.items ?? []);
       setRegenOrders(ord.items ?? []);
@@ -52,6 +55,7 @@ export default function AdminPage() {
       setSentOrders(sent.items ?? []);
       setRefundRequests(refundReq.items ?? []);
       setCosts(cost && cost.month ? cost : null);
+      setRevenue(rev && rev.total ? rev : null);
       setHealth(llm && Array.isArray(llm.providers) ? llm : null);
     } finally {
       setLoading(false);
@@ -170,6 +174,7 @@ export default function AdminPage() {
       <div style={S.sheet}>
         {msg && <div style={S.msg}>{msg}</div>}
 
+        <RevenueSection revenue={revenue} loading={loading} />
         <CostsSection costs={costs} health={health} loading={loading} />
 
         {/* 고객이 직접 접수한 환불 요청 — 가장 먼저 눈에 띄어야 한다 */}

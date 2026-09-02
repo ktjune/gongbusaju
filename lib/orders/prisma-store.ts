@@ -10,7 +10,7 @@ import { getPrisma } from "../db";
 import { encryptPiiNullable, decryptPiiCompat } from "../crypto/pii";
 import { newReportToken } from "./store";
 import type { OrderStore } from "./store";
-import type { Order, OrderStatus, Report, Subject } from "./types";
+import type { Order, NewOrder, OrderStatus, Report, Subject } from "./types";
 
 const iso = (d: Date): string => d.toISOString();
 
@@ -24,6 +24,10 @@ type OrderRow = {
   buyerName: string | null;
   contactEmail: string | null; contactPhone: string | null;
   generateAttempts: number;
+  amountKrw: number | null;
+  utmSource: string | null; utmMedium: string | null;
+  utmCampaign: string | null; utmContent: string | null;
+  referrer: string | null; landingPath: string | null;
   createdAt: Date; updatedAt: Date;
 };
 function toOrder(r: OrderRow): Order {
@@ -46,6 +50,14 @@ function toOrder(r: OrderRow): Order {
     buyerName: decryptPiiCompat(r.buyerName),
     contactEmail: decryptPiiCompat(r.contactEmail),
     contactPhone: decryptPiiCompat(r.contactPhone),
+    // 유입 경로는 개인정보가 아니라 암호화하지 않는다 — 어드민에서 집계해야 한다
+    amountKrw: r.amountKrw,
+    utmSource: r.utmSource,
+    utmMedium: r.utmMedium,
+    utmCampaign: r.utmCampaign,
+    utmContent: r.utmContent,
+    referrer: r.referrer,
+    landingPath: r.landingPath,
     createdAt: iso(r.createdAt),
     updatedAt: iso(r.updatedAt),
   };
@@ -104,9 +116,7 @@ export class PrismaOrderStore implements OrderStore {
   }
 
   // ── 주문 ──
-  async createOrder(
-    data: Omit<Order, "id" | "createdAt" | "updatedAt" | "generateAttempts">
-  ): Promise<Order> {
+  async createOrder(data: NewOrder): Promise<Order> {
     const row = await this.db.order.create({
       data: {
         tier: data.tier,
@@ -122,6 +132,13 @@ export class PrismaOrderStore implements OrderStore {
         buyerName: encryptPiiNullable(data.buyerName),
         contactEmail: encryptPiiNullable(data.contactEmail),
         contactPhone: encryptPiiNullable(data.contactPhone),
+        amountKrw: data.amountKrw,
+        utmSource: data.utmSource,
+        utmMedium: data.utmMedium,
+        utmCampaign: data.utmCampaign,
+        utmContent: data.utmContent,
+        referrer: data.referrer,
+        landingPath: data.landingPath,
       },
     });
     return toOrder(row);

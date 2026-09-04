@@ -120,7 +120,14 @@
 
 .postcodeBox {
   width: 100%;
-  height: 420px;
+  /*
+   * 카카오 주소검색 위젯은 검색창 + 안내(tip) + 결과 목록이 세로로 쌓인다.
+   * 높이를 420px로 고정해 두었더니 화면이 작은 폰에서 결과 목록이 통째로
+   * 잘려 나갔다("화면이 잘려서 안 보인다" 실제 제보). 뷰포트에 맞춰 늘리되,
+   * 너무 작아지지 않도록 하한을 둔다.
+   */
+  height: min(70vh, 520px);
+  min-height: 320px;
   border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;

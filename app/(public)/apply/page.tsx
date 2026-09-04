@@ -199,6 +199,10 @@ export default function ApplyPage() {
             setSearching(false);
           },
         }).embed(box);
+        // 검색창이 화면 아래에 걸쳐 열리면 결과 목록이 잘린 것처럼 보인다.
+        // 박스 높이를 뷰포트의 70% 이하로 묶어 두었으므로(apply.module.css),
+        // 가운데로 맞추면 위아래가 모두 화면 안에 들어온다.
+        box.scrollIntoView({ behavior: "smooth", block: "center" });
       });
     } catch {
       setError("주소 검색을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");

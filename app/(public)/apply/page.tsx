@@ -23,8 +23,27 @@ import { readAttribution } from "@/lib/attribution";
 // 가격 단일 출처 — 서버 검증값(lib/payments/portone)과 같은 상수를 쓴다.
 const PRICE = REPORT_PRICE_LABEL;
 const PRICE_VALUE = REPORT_PRICE;
-const MIN_DATE = "1980-01-01";
+// 아이용 서비스지만 어른이 자기 것을 먼저 해 보는 경우가 많다("제 것도 해보았는데" — 실제 후기).
+// 1980으로 묶어 두었더니 그분들이 날짜를 아예 고를 수 없었다. 만세력은 1900년까지 정상
+// 계산되는 것을 확인했고(대운 포함), 여유를 두어 1930으로 잡는다.
+const MIN_DATE = "1930-01-01";
 const MAX_DATE = new Date().toISOString().slice(0, 10);
+
+/**
+ * 입력하는 대로 010-1234-5678 꼴로 맞춘다.
+ * 검증(normalizePhone)은 숫자만 보므로 하이픈이 없어도 통과하지만,
+ * 칸에 형식이 잡혀야 사용자가 자기 번호를 눈으로 확인하기 쉽다.
+ */
+function formatKoreanMobile(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length < 4) return d;
+  if (d.length < 8) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  // 010은 항상 3-4-4. 그 외(011·016~019)에서 10자리면 3-3-4.
+  if (!d.startsWith("010") && d.length === 10) {
+    return `${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}`;
+  }
+  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+}
 // 서비스 제공기간 — 이용약관·상품 상세와 동일하게 "결제 후 1일 이내"
 const OFFER_PERIOD_MS = 24 * 60 * 60 * 1000;
 // 포트원 V2 — PG(현재 NHN KCP)는 채널 설정으로 결정된다
@@ -129,6 +148,9 @@ export default function ApplyPage() {
   const [hanjaCands, setHanjaCands] = useState<Record<string, HanjaCand[]>>({});
   const [hanjaSel, setHanjaSel] = useState<Record<number, string>>({});
   const [hanjaManual, setHanjaManual] = useState(false);
+  // 한자 후보 조회 실패 표시 + 다시 시도 트리거
+  const [hanjaLoadFailed, setHanjaLoadFailed] = useState(false);
+  const [hanjaReloadKey, setHanjaReloadKey] = useState(0);
   const nameSyllables = [...childName.trim()].filter((c) => /^[가-힣]$/.test(c));
 
   const [searching, setSearching] = useState(false);
@@ -143,15 +165,23 @@ export default function ApplyPage() {
   const hasContact = contactEmail.trim() !== "" || contactPhone.trim() !== "";
   const emailInvalid = contactEmail.trim() !== "" && !isValidEmail(contactEmail);
   const phoneInvalid = contactPhone.trim() !== "" && !isValidKoreanMobile(contactPhone);
-  const canProceed =
-    birthDate &&
-    (timeUnknown || birthTime !== "") &&
-    buyerName.trim() !== "" &&
-    hasContact &&
-    !emailInvalid &&
-    !phoneInvalid &&
-    consent &&
-    refundConsent;
+  /*
+   * 아직 못 채운 항목들. 버튼을 그냥 비활성화만 해 두었더니 "다 넣었는데 결제가 안 된다"는
+   * 문의가 들어왔다 — 비활성화된 버튼은 눌러도 아무 반응이 없고, 폼 제출도 안 되니
+   * 브라우저의 "이 항목을 입력하세요" 안내조차 뜨지 않는다. 무엇이 남았는지 보여 준다.
+   * canProceed를 이 목록에서 끌어내 두 판정이 어긋날 수 없게 한다.
+   */
+  const missing: string[] = [];
+  if (!birthDate) missing.push("생년월일");
+  if (!timeUnknown && birthTime === "") missing.push("태어난 시각 (모르면 ‘시간 모름’ 체크)");
+  if (buyerName.trim() === "") missing.push("신청자 이름");
+  if (!hasContact) missing.push("이메일 또는 휴대폰 (둘 중 하나)");
+  if (emailInvalid) missing.push("이메일 형식 확인");
+  if (phoneInvalid) missing.push("휴대폰 번호 형식 확인");
+  if (!consent) missing.push("개인정보 수집·이용 동의");
+  if (!refundConsent) missing.push("취소·환불 규정 확인 동의");
+
+  const canProceed = missing.length === 0;
 
   // 이름이 바뀌면 음절별 한자 후보를 조회하고 기존 선택을 초기화
   useEffect(() => {
@@ -162,17 +192,28 @@ export default function ApplyPage() {
       setHanjaCands({});
       return;
     }
-    const t = setTimeout(() => {
-      fetch(`/api/hanja?name=${encodeURIComponent(sylls.join(""))}`)
-        .then((r) => r.json())
-        .then((d: { candidates?: Record<string, HanjaCand[]> }) => setHanjaCands(d.candidates ?? {}))
-        .catch(() => {
-          /* 후보 조회 실패 시 직접 입력으로 폴백 가능 — 조용히 무시 */
-        });
-    }, 350);
+    const t = setTimeout(() => void loadHanja(sylls.join("")), 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childName]);
+  }, [childName, hanjaReloadKey]);
+
+  /**
+   * 음절별 한자 후보 조회.
+   * 실패를 조용히 삼키면 후보 칸이 빈 채로 멈춰 사용자는 이유를 알 수 없다
+   * — 실패했다고 알리고 다시 시도할 수단을 준다.
+   */
+  async function loadHanja(name: string) {
+    setHanjaLoadFailed(false);
+    try {
+      const r = await fetch(`/api/hanja?name=${encodeURIComponent(name)}`);
+      if (!r.ok) throw new Error(String(r.status));
+      const d = (await r.json()) as { candidates?: Record<string, HanjaCand[]> };
+      setHanjaCands(d.candidates ?? {});
+    } catch {
+      setHanjaCands({});
+      setHanjaLoadFailed(true);
+    }
+  }
 
   /** i번째 음절의 한자를 선택/해제하고 childNameHanja를 재구성 */
   // (updater 함수 안에서 다른 setState를 부르면 StrictMode 2회 실행으로 토글이 상쇄됨 — 밖에서 계산)
@@ -483,6 +524,18 @@ export default function ApplyPage() {
                       </div>
                     </div>
                   ))}
+                  {hanjaLoadFailed && (
+                    <p className={styles.hint} style={{ color: "#a4442a", marginTop: 2 }}>
+                      한자 목록을 불러오지 못했습니다.{" "}
+                      <button
+                        type="button"
+                        className={styles.addrClear}
+                        onClick={() => setHanjaReloadKey((k) => k + 1)}
+                      >
+                        다시 시도 →
+                      </button>
+                    </p>
+                  )}
                   <p className={styles.hint} style={{ marginTop: 2, marginBottom: 6 }}>
                     뜻을 확인할 수 있는 한자만 보여드립니다. 원하시는 글자가 없으면 직접 입력해 주세요.
                   </p>
@@ -652,7 +705,15 @@ export default function ApplyPage() {
           </div>
           <div className={styles.field}>
             <label className={styles.label}>휴대폰 <span style={{ fontWeight: 400, color: "#8a8f99" }}>(둘 중 하나)</span></label>
-            <input className={styles.input} type="tel" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="010-0000-0000" />
+            <input
+              className={styles.input}
+              type="tel"
+              inputMode="numeric"
+              value={contactPhone}
+              onChange={(e) => setContactPhone(formatKoreanMobile(e.target.value))}
+              placeholder="010-0000-0000"
+              autoComplete="tel"
+            />
             {phoneInvalid && (
               <p className={styles.hint} style={{ color: "#a4442a" }}>
                 휴대폰 번호를 다시 확인해 주세요. (예: 010-1234-5678)
@@ -689,6 +750,17 @@ export default function ApplyPage() {
             </span>
           </label>
         </div>
+
+        {missing.length > 0 && (
+          <div className={styles.missingBox}>
+            <div className={styles.missingTitle}>결제하려면 아래가 필요합니다</div>
+            <ul className={styles.missingList}>
+              {missing.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <button className={styles.submit} type="submit" disabled={!canProceed}>
           {`결제하기 (${PRICE}원)`}

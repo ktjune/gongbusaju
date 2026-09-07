@@ -14,6 +14,26 @@ export const maxDuration = 60;
 
 import { getOrderStore } from "@/lib/orders";
 import { generatePdfFromHtml } from "@/lib/pdf";
+import { decryptPiiCompat } from "@/lib/crypto/pii";
+
+/** 파일명에 못 쓰는 문자·경로 구분자를 걷어낸다. */
+function safeFileWord(s: string): string {
+  return s.replace(/[\\/:*?"<>|\s]/g, "").slice(0, 20);
+}
+
+/**
+ * 내려받을 파일 이름을 만든다.
+ *
+ * 기존에는 `report_7BBXVNuD.pdf`라 다운로드 폴더에서 무엇인지 알 수 없었다.
+ * 브랜드(출처표시)는 "공부결"만 쓴다 — "공부사주"는 설명어 자리에만 (CLAUDE.md 규칙 #0).
+ * 예) 공부결_리포트_준서_20260907.pdf
+ */
+function buildFileName(name: string | null, createdAtIso: string): string {
+  const kst = new Date(new Date(createdAtIso).getTime() + 9 * 60 * 60 * 1000);
+  const date = kst.toISOString().slice(0, 10).replace(/-/g, "");
+  const who = name ? safeFileWord(name) : "";
+  return ["공부결", "리포트", who, date].filter(Boolean).join("_") + ".pdf";
+}
 
 export async function GET(
   _req: Request,
@@ -38,10 +58,25 @@ export async function GET(
     );
   }
 
+  // 아이 이름은 선택 입력이라 없을 수 있다 — 없으면 날짜만으로 짓는다.
+  // 조회가 실패해도 PDF 다운로드 자체는 막지 않는다(파일명만 덜 친절해진다).
+  let childName: string | null = null;
+  try {
+    const order = await store.getOrder(report.orderId);
+    const subject = order ? await store.getSubject(order.subjectId) : null;
+    childName = decryptPiiCompat(subject?.encName ?? null);
+  } catch {
+    /* 파일명 개인화 실패 — 기본 이름으로 계속 */
+  }
+
+  const fileName = buildFileName(childName, report.createdAt);
+  // 한글 파일명은 filename*(RFC 5987)로 넘기고, 구형 클라이언트용 ASCII 이름을 함께 준다.
+  const asciiFallback = `gongbugyeol_report_${report.createdAt.slice(0, 10).replace(/-/g, "")}.pdf`;
+
   return new Response(pdf as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="report_${token.slice(0, 8)}.pdf"`,
+      "Content-Disposition": `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
       "Cache-Control": "private, max-age=3600",
     },
   });

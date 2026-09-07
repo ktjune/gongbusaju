@@ -212,3 +212,33 @@
   font-size: 2.4rem;
   margin-bottom: 12px;
 }
+
+/*
+ * 결제 버튼 위 "남은 항목" 안내.
+ * 비활성 버튼은 눌러도 아무 반응이 없어서 무엇이 빠졌는지 알 길이 없었다
+ * ("다 입력했는데 결제가 안 된다" 실제 문의).
+ */
+.missingBox {
+  margin: 16px 0 10px;
+  padding: 12px 14px;
+  border: 1px solid #e3cfa6;
+  border-left: 3px solid #b08d57;
+  border-radius: 8px;
+  background: #fdf9f0;
+}
+
+.missingTitle {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #7a5f2e;
+  margin-bottom: 6px;
+}
+
+.missingList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.86rem;
+  line-height: 1.75;
+  color: #5d5442;
+  word-break: keep-all;
+}

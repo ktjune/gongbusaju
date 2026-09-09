@@ -152,33 +152,44 @@ export async function POST(req: Request) {
     // 없으면 고객이 불안해하고, 무엇보다 **환불에 필요한 주문번호를 알 방법이 없다**
     // (결제 완료 화면에만 뜨고 창을 닫으면 사라진다).
     // 발송 실패가 주문을 되돌리면 안 되므로 결과를 삼킨다.
-    waitUntil(
-      sendOrderConfirm({
-        orderId: order.id,
-        contactEmail: input.contactEmail,
-        contactPhone: input.contactPhone,
-      }).catch((err: unknown) => {
-        console.error(`[order] 접수 확인 발송 실패 — 주문: ${order.id}`, err);
-      })
-    );
-
-    // 새 주문 알림 — 지금까지 정상 주문은 아무 신호도 없어서 어드민을 열어봐야 알았다.
-    // 광고를 돌리는 동안은 "언제 어디서 팔렸는지"가 바로 와야 판단이 선다.
+    // 새 주문 알림 — 정상 주문은 아무 신호도 없어서 어드민을 열어봐야 알았다.
     // 개인정보는 넣지 않는다 — 금액·유입 경로·주문번호까지만.
     const amountLabel = paidAmountKrw
       ? `${paidAmountKrw.toLocaleString("ko-KR")}원`
       : "모의 결제";
+
+    /*
+     * 두 메일을 **순서대로** 보낸다.
+     *
+     * 처음에는 각각 waitUntil로 동시에 쐈는데, 9/5·9/6 주문에서 고객 접수 확인만 나가고
+     * 운영자 알림은 오지 않았다. 같은 시기 리포트 생성 중에 단독으로 나간 알림
+     * (검수 대기·재시도 소진)은 정상 도착했다 — 동시에 쏜 것만 죽었다.
+     * 메일 발송 API에는 초당 요청 수 제한이 있어 뒤엣것이 429로 떨어진다.
+     *
+     * 접수 확인이 먼저다. 고객은 환불에 필요한 주문번호를 이 메일로만 알 수 있고
+     * (결제 완료 화면은 닫으면 사라진다), 운영자 알림은 늦어도 되기 때문이다.
+     */
     waitUntil(
-      // 줄바꿈은 템플릿 리터럴의 실제 개행을 쓴다
-      sendOwnerAlert(
-        `새 주문 ${amountLabel}`,
-        `주문번호: ${order.id}
+      (async () => {
+        await sendOrderConfirm({
+          orderId: order.id,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone,
+        }).catch((err: unknown) => {
+          console.error(`[order] 접수 확인 발송 실패 — 주문: ${order.id}`, err);
+        });
+
+        // 줄바꿈은 템플릿 리터럴의 실제 개행을 쓴다
+        await sendOwnerAlert(
+          `새 주문 ${amountLabel}`,
+          `주문번호: ${order.id}
 금액: ${amountLabel}
 유입: ${describeChannel(input.attribution ?? {})}
 진입 경로: ${input.attribution?.landingPath ?? "-"}`
-      ).catch((err: unknown) => {
-        console.error(`[order] 새 주문 알림 실패 — 주문: ${order.id}`, err);
-      })
+        ).catch((err: unknown) => {
+          console.error(`[order] 새 주문 알림 실패 — 주문: ${order.id}`, err);
+        });
+      })()
     );
 
 

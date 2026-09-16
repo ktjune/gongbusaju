@@ -73,14 +73,19 @@ type PayOption = "card" | "kakaopay";
 function filterByHun(
   cands: HanjaCand[],
   query: string,
-  sound: string
+  sound: string,
+  showUnknown: boolean
 ): HanjaCand[] {
+  // 뜻을 확인하지 못한 글자(923자)는 기본으로 숨긴다 — 뜻 없이 늘어놓으면
+  // 목록만 길어져 고르기 어렵다. 펼쳤을 때만 눈으로 찾아 고를 수 있게 한다.
+  const base = showUnknown ? cands : cands.filter((c) => c.hun);
   let q = query.replace(/\s+/g, "");
-  if (!q) return cands;
+  if (!q) return base;
   // "높을준"처럼 음까지 붙여 쓴 경우 끝의 음을 떼어 낸다
   if (q.length > sound.length && q.endsWith(sound)) q = q.slice(0, -sound.length);
-  if (!q) return cands;
-  return cands.filter((c) => c.hun.replace(/\s+/g, "").includes(q));
+  if (!q) return base;
+  // 뜻으로 검색할 때는 뜻이 있는 글자만 걸린다(빈 훈은 매칭 대상이 아니다)
+  return base.filter((c) => c.hun.replace(/\s+/g, "").includes(q));
 }
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 const GATE_TOKEN_KEY = "gbsj_gate_token";
@@ -185,6 +190,8 @@ export default function ApplyPage() {
   const [hanjaLoadFailed, setHanjaLoadFailed] = useState(false);
   // 음절별 "뜻으로 찾기" 입력값
   const [hunQuery, setHunQuery] = useState<Record<number, string>>({});
+  // 음절별 "뜻 미상 한자도 보기" 펼침 상태
+  const [showUnknownHun, setShowUnknownHun] = useState<Record<number, boolean>>({});
   const [hanjaReloadKey, setHanjaReloadKey] = useState(0);
   const nameSyllables = [...childName.trim()].filter((c) => /^[가-힣]$/.test(c));
 
@@ -225,6 +232,7 @@ export default function ApplyPage() {
   useEffect(() => {
     setHanjaSel({});
     setHunQuery({});
+    setShowUnknownHun({});
     if (!hanjaManual) setChildNameHanja("");
     const sylls = [...new Set([...childName.trim()].filter((c) => /^[가-힣]$/.test(c)))];
     if (sylls.length === 0) {
@@ -568,7 +576,7 @@ export default function ApplyPage() {
                       {/* 훈으로 좁히기 — 폰에서 한자를 직접 치는 건 거의 불가능하지만,
                           부모는 자기 아이 이름 한자를 "높을 준"처럼 훈음으로 알고 있다.
                           "높을"만 쳐도 되고 "높을 준"처럼 음까지 붙여도 걸리게 한다. */}
-                      {(hanjaCands[s]?.length ?? 0) > 8 && (
+                      {(hanjaCands[s] ?? []).filter((c) => c.hun).length > 8 && (
                         <input
                           className={styles.input}
                           type="text"
@@ -581,7 +589,7 @@ export default function ApplyPage() {
                         />
                       )}
                       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
-                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s).map((cand) => (
+                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s, showUnknownHun[i] ?? false).map((cand) => (
                           <button
                             type="button"
                             key={cand.c}
@@ -591,16 +599,17 @@ export default function ApplyPage() {
                             <span style={{ fontSize: "1.2rem", lineHeight: 1.2 }}>{cand.c}</span>
                             {/* 같은 음의 후보가 수십 개라 훈이 없으면 고를 수가 없다
                                 — "높을 준(峻)"인지 "술그릇 준(樽)"인지.
-                                훈 없는 글자는 API가 걸러내므로 항상 값이 있다. */}
-                            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#2c2c30", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {cand.hun}
+                                뜻을 확인하지 못한 글자는 펼쳤을 때만 나오고, 그때는
+                                뜻 대신 그 사실을 적어 눈으로 알아보고 고르게 한다. */}
+                            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: cand.hun ? "#2c2c30" : "#a8a296", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {cand.hun || "뜻 미상"}
                             </span>
                             <span style={{ fontSize: "0.62rem", color: EL_COLOR[cand.element] ?? "#8a8f99" }}>
                               {cand.strokes}획·{EL_HANGUL[cand.element] ?? cand.element}
                             </span>
                           </button>
                         ))}
-                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s).length === 0 && (
+                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s, showUnknownHun[i] ?? false).length === 0 && (
                           <span style={{ fontSize: "0.82rem", color: "#9a9fa8", alignSelf: "center" }}>
                             {(hunQuery[i] ?? "").trim()
                               ? "그 뜻으로는 찾지 못했어요 — 다른 말로 찾아보세요 (예: 밝을, 맑을)"
@@ -608,6 +617,21 @@ export default function ApplyPage() {
                           </span>
                         )}
                       </div>
+                      {/* 폰에서는 한자를 직접 칠 방법이 사실상 없다. 뜻을 확인하지 못한
+                          글자라도 눈으로 알아보고 고를 수 있게 펼침을 제공한다. */}
+                      {(hanjaCands[s] ?? []).some((c) => !c.hun) && (
+                        <button
+                          type="button"
+                          className={styles.addrClear}
+                          onClick={() =>
+                            setShowUnknownHun((v) => ({ ...v, [i]: !(v[i] ?? false) }))
+                          }
+                        >
+                          {showUnknownHun[i]
+                            ? "뜻 미상 한자 접기"
+                            : `찾는 글자가 없나요? 뜻 미상 한자 ${(hanjaCands[s] ?? []).filter((c) => !c.hun).length}자 더 보기 →`}
+                        </button>
+                      )}
                     </div>
                   ))}
                   {hanjaLoadFailed && (
@@ -646,12 +670,20 @@ export default function ApplyPage() {
                     onChange={(e) => setChildNameHanja(e.target.value)}
                     placeholder="한자 직접 입력 (예: 俊書)"
                   />
-                  {/* 폰에는 한자 키보드가 따로 없다고 생각해 여기서 포기하는 경우가 많다.
-                      대부분의 한글 키보드에 한자 변환이 들어 있는데 이걸 모른다. */}
+                  {/* 모바일 웹 입력창에서는 한글 키보드의 한자 변환이 사실상 동작하지 않는다
+                      — 그 방법을 안내했다가 되레 헛수고를 시킨다. 복사·붙여넣기가 현실적이다. */}
                   <p className={styles.hint}>
-                    폰에서는 <b>한글을 입력하면 키보드 위쪽 추천줄에 한자 후보</b>가 뜹니다.
-                    안 보이면 키보드 설정에서 한자 변환을 켜 주세요. 한자를 넣지 않으셔도
-                    신청은 그대로 진행됩니다(이름 성명학 풀이만 빠집니다).
+                    폰에서는 한자를 직접 치기 어렵습니다. 위 목록에서 고르시거나,{" "}
+                    <a
+                      href="https://hanja.dict.naver.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: "underline" }}
+                    >
+                      한자사전
+                    </a>
+                    에서 찾아 <b>복사해 붙여넣어</b> 주세요. 한자를 넣지 않으셔도 신청은 그대로
+                    진행됩니다(이름 성명학 풀이만 빠집니다).
                   </p>
                   <button
                     type="button"

@@ -2,7 +2,7 @@
  * POST /api/order
  * 결제 성공 후 → 결제 승인 검증 → 주문 생성 (PII 암호화 저장, status=paid)
  *
- * 결제: 포트원(PortOne) V2 — PG는 채널 설정으로 결정(현재 NHN KCP).
+ * 결제: 포트원(PortOne) V2 — PG는 채널 설정으로 결정(현재 KG이니시스).
  * 클라이언트가 결제를 마치고 paymentId를 보내오면, 서버가 API 시크릿으로
  * 결제 내역을 조회해 상태·금액을 검증한 뒤에만 주문을 만든다.
  * (PORTONE_API_SECRET 미설정 시 모의 결제로 통과 — 로컬 개발용)

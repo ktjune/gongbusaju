@@ -46,7 +46,7 @@ function formatKoreanMobile(value: string): string {
 }
 // 서비스 제공기간 — 이용약관·상품 상세와 동일하게 "결제 후 1일 이내"
 const OFFER_PERIOD_MS = 24 * 60 * 60 * 1000;
-// 포트원 V2 — PG(현재 NHN KCP)는 채널 설정으로 결정된다
+// 포트원 V2 — PG(현재 KG이니시스)는 채널 설정으로 결정된다
 const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID ?? "";
 const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY ?? "";
 /**

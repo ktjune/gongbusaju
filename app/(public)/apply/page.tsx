@@ -62,6 +62,26 @@ const PORTONE_CHANNEL_KEY_KAKAOPAY =
   process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY ?? "";
 
 type PayOption = "card" | "kakaopay";
+
+/**
+ * 훈(뜻)으로 한자 후보를 좁힌다.
+ *
+ * 폰에서 한자를 직접 입력하는 건 사실상 불가능하다. 반면 부모는 자기 아이 이름 한자를
+ * "높을 준", "빛날 영"처럼 **훈음으로** 기억하고 있다 — 그 말을 그대로 받는다.
+ * 음절은 이미 정해져 있으므로 뒤에 붙은 음("… 준")은 떼고 훈만 본다.
+ */
+function filterByHun(
+  cands: HanjaCand[],
+  query: string,
+  sound: string
+): HanjaCand[] {
+  let q = query.replace(/\s+/g, "");
+  if (!q) return cands;
+  // "높을준"처럼 음까지 붙여 쓴 경우 끝의 음을 떼어 낸다
+  if (q.length > sound.length && q.endsWith(sound)) q = q.slice(0, -sound.length);
+  if (!q) return cands;
+  return cands.filter((c) => c.hun.replace(/\s+/g, "").includes(q));
+}
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 const GATE_TOKEN_KEY = "gbsj_gate_token";
 // 심사 모드 잠금 여부 — 서버의 ORDER_GATE_TOKEN과 짝을 이룬다(둘 다 설정하거나 둘 다 비운다)
@@ -163,6 +183,8 @@ export default function ApplyPage() {
   const [hanjaManual, setHanjaManual] = useState(false);
   // 한자 후보 조회 실패 표시 + 다시 시도 트리거
   const [hanjaLoadFailed, setHanjaLoadFailed] = useState(false);
+  // 음절별 "뜻으로 찾기" 입력값
+  const [hunQuery, setHunQuery] = useState<Record<number, string>>({});
   const [hanjaReloadKey, setHanjaReloadKey] = useState(0);
   const nameSyllables = [...childName.trim()].filter((c) => /^[가-힣]$/.test(c));
 
@@ -202,6 +224,7 @@ export default function ApplyPage() {
   // 이름이 바뀌면 음절별 한자 후보를 조회하고 기존 선택을 초기화
   useEffect(() => {
     setHanjaSel({});
+    setHunQuery({});
     if (!hanjaManual) setChildNameHanja("");
     const sylls = [...new Set([...childName.trim()].filter((c) => /^[가-힣]$/.test(c)))];
     if (sylls.length === 0) {
@@ -542,8 +565,23 @@ export default function ApplyPage() {
                           </span>
                         )}
                       </div>
+                      {/* 훈으로 좁히기 — 폰에서 한자를 직접 치는 건 거의 불가능하지만,
+                          부모는 자기 아이 이름 한자를 "높을 준"처럼 훈음으로 알고 있다.
+                          "높을"만 쳐도 되고 "높을 준"처럼 음까지 붙여도 걸리게 한다. */}
+                      {(hanjaCands[s]?.length ?? 0) > 8 && (
+                        <input
+                          className={styles.input}
+                          type="text"
+                          value={hunQuery[i] ?? ""}
+                          onChange={(e) =>
+                            setHunQuery((q) => ({ ...q, [i]: e.target.value }))
+                          }
+                          placeholder={`뜻으로 찾기 — 예: 높을, 빛날 ${s}`}
+                          style={{ marginBottom: 6, fontSize: "0.86rem", padding: "8px 10px" }}
+                        />
+                      )}
                       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
-                        {(hanjaCands[s] ?? []).map((cand) => (
+                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s).map((cand) => (
                           <button
                             type="button"
                             key={cand.c}
@@ -562,9 +600,11 @@ export default function ApplyPage() {
                             </span>
                           </button>
                         ))}
-                        {(hanjaCands[s]?.length ?? 0) === 0 && (
+                        {filterByHun(hanjaCands[s] ?? [], hunQuery[i] ?? "", s).length === 0 && (
                           <span style={{ fontSize: "0.82rem", color: "#9a9fa8", alignSelf: "center" }}>
-                            후보를 찾지 못했어요 — 아래 직접 입력을 이용해 주세요
+                            {(hunQuery[i] ?? "").trim()
+                              ? "그 뜻으로는 찾지 못했어요 — 다른 말로 찾아보세요 (예: 밝을, 맑을)"
+                              : "후보를 찾지 못했어요 — 아래 직접 입력을 이용해 주세요"}
                           </span>
                         )}
                       </div>
@@ -606,6 +646,13 @@ export default function ApplyPage() {
                     onChange={(e) => setChildNameHanja(e.target.value)}
                     placeholder="한자 직접 입력 (예: 俊書)"
                   />
+                  {/* 폰에는 한자 키보드가 따로 없다고 생각해 여기서 포기하는 경우가 많다.
+                      대부분의 한글 키보드에 한자 변환이 들어 있는데 이걸 모른다. */}
+                  <p className={styles.hint}>
+                    폰에서는 <b>한글을 입력하면 키보드 위쪽 추천줄에 한자 후보</b>가 뜹니다.
+                    안 보이면 키보드 설정에서 한자 변환을 켜 주세요. 한자를 넣지 않으셔도
+                    신청은 그대로 진행됩니다(이름 성명학 풀이만 빠집니다).
+                  </p>
                   <button
                     type="button"
                     className={styles.addrClear}

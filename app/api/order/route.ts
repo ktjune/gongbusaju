@@ -46,6 +46,29 @@ type Body = {
   attribution?: unknown;
 };
 
+/**
+ * 발송 하나가 늘어져 뒤엣것을 막지 못하게 시간 상한을 둔다.
+ *
+ * 접수 확인과 새 주문 알림을 순차로 바꿨더니(동시 발송 시 429로 죽는 문제 때문),
+ * 이번엔 **앞엣것이 느리면 뒤엣것이 아예 실행되지 않는** 문제가 생겼다.
+ * 실제로 이메일 없이 휴대폰만 넣은 주문에서 문자 발송(솔라피)이 늘어지는 바람에
+ * 운영자 알림이 통째로 빠졌다(2026-09-16 카카오페이 테스트 결제).
+ *
+ * 타임아웃은 발송을 취소하지 못한다 — 기다리기를 그만둘 뿐이다. 그래도 충분하다.
+ * 뒤에 줄 선 알림이 제 차례를 얻는 것이 목적이다.
+ */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} 응답 없음 (${ms}ms 초과)`)), ms)
+    ),
+  ]);
+}
+
+/** 발송 하나에 허용하는 시간. 리포트 생성(40~50s)과 함수 상한(60s) 사이에서 잡는다. */
+const NOTIFY_TIMEOUT_MS = 10_000;
+
 export async function POST(req: Request) {
   let body: Body;
   try {
@@ -171,21 +194,34 @@ export async function POST(req: Request) {
      */
     waitUntil(
       (async () => {
-        await sendOrderConfirm({
-          orderId: order.id,
-          contactEmail: input.contactEmail,
-          contactPhone: input.contactPhone,
-        }).catch((err: unknown) => {
+        const confirm = await withTimeout(
+          sendOrderConfirm({
+            orderId: order.id,
+            contactEmail: input.contactEmail,
+            contactPhone: input.contactPhone,
+          }),
+          NOTIFY_TIMEOUT_MS,
+          "접수 확인"
+        ).catch((err: unknown) => {
           console.error(`[order] 접수 확인 발송 실패 — 주문: ${order.id}`, err);
+          return null;
         });
+        if (confirm?.hasFailure) {
+          console.error(`[order] 접수 확인 일부 실패 — 주문: ${order.id}: ${confirm.error}`);
+        }
 
         // 줄바꿈은 템플릿 리터럴의 실제 개행을 쓴다
-        await sendOwnerAlert(
-          `새 주문 ${amountLabel}`,
-          `주문번호: ${order.id}
+        await withTimeout(
+          sendOwnerAlert(
+            `새 주문 ${amountLabel}`,
+            `주문번호: ${order.id}
 금액: ${amountLabel}
 유입: ${describeChannel(input.attribution ?? {})}
-진입 경로: ${input.attribution?.landingPath ?? "-"}`
+진입 경로: ${input.attribution?.landingPath ?? "-"}
+연락처: ${input.contactEmail ? "이메일" : ""}${input.contactEmail && input.contactPhone ? " · " : ""}${input.contactPhone ? "휴대폰" : ""}`
+          ),
+          NOTIFY_TIMEOUT_MS,
+          "새 주문 알림"
         ).catch((err: unknown) => {
           console.error(`[order] 새 주문 알림 실패 — 주문: ${order.id}`, err);
         });

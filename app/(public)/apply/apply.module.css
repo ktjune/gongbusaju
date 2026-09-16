@@ -242,3 +242,33 @@
   color: #5d5442;
   word-break: keep-all;
 }
+
+/*
+ * 결제수단 선택 — 카카오페이 채널이 설정된 경우에만 렌더된다.
+ * 폰에서 카드번호 16자리를 치는 것이 가장 큰 이탈 지점이라, 간편결제를
+ * 카드와 같은 무게로 나란히 둔다(어느 쪽도 기본값처럼 보이지 않게).
+ */
+.payOptions {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.payOption {
+  flex: 1 1 0;
+  padding: 13px 10px;
+  border: 1px solid #ddd6c8;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.94rem;
+  color: #4a4438;
+  cursor: pointer;
+}
+
+.payOptionOn {
+  border: 2px solid #1f3b63;
+  background: #f7f9fc;
+  color: #1f3b63;
+  font-weight: 700;
+}

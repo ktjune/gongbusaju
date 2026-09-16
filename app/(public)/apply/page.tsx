@@ -49,6 +49,19 @@ const OFFER_PERIOD_MS = 24 * 60 * 60 * 1000;
 // 포트원 V2 — PG(현재 NHN KCP)는 채널 설정으로 결정된다
 const PORTONE_STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID ?? "";
 const PORTONE_CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY ?? "";
+/**
+ * 카카오페이 전용 채널.
+ *
+ * 카카오페이는 PG 제휴(간편결제 UI 호출)가 아니라 **직접 계약**이라 자기 채널을 쓴다
+ * (가맹점코드 CID 발급, 2026-09-16 심사 완료). 그래서 카드용 채널키와 별개다.
+ *
+ * 값이 없으면 결제수단 선택이 아예 뜨지 않고 지금까지처럼 카드로만 진행된다 —
+ * 포트원 콘솔에 채널을 만들기 전에 배포해도 안전하다.
+ */
+const PORTONE_CHANNEL_KEY_KAKAOPAY =
+  process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY_KAKAOPAY ?? "";
+
+type PayOption = "card" | "kakaopay";
 const ORDER_PAYLOAD_KEY = "gbsj_order_payload";
 const GATE_TOKEN_KEY = "gbsj_gate_token";
 // 심사 모드 잠금 여부 — 서버의 ORDER_GATE_TOKEN과 짝을 이룬다(둘 다 설정하거나 둘 다 비운다)
@@ -158,6 +171,9 @@ export default function ApplyPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  // 결제수단. 카카오페이 채널이 없으면 이 값은 계속 "card"로 남는다.
+  const [payOption, setPayOption] = useState<PayOption>("card");
+  const kakaoPayAvailable = PORTONE_CHANNEL_KEY_KAKAOPAY !== "";
 
   const birthYear = birthDate.slice(0, 4);
 
@@ -297,7 +313,12 @@ export default function ApplyPage() {
       if (orderLocked) {
         throw new Error("현재 결제 준비 중입니다. 곧 정식 오픈합니다.");
       }
-      if (!PORTONE_STORE_ID || !PORTONE_CHANNEL_KEY) {
+      // 카카오페이는 전용 채널 + EASY_PAY로 부른다. 채널키가 없으면 선택지 자체가
+      // 뜨지 않으므로 여기 오는 일도 없지만, 방어적으로 카드로 되돌린다.
+      const useKakao = payOption === "kakaopay" && PORTONE_CHANNEL_KEY_KAKAOPAY !== "";
+      const channelKey = useKakao ? PORTONE_CHANNEL_KEY_KAKAOPAY : PORTONE_CHANNEL_KEY;
+
+      if (!PORTONE_STORE_ID || !channelKey) {
         throw new Error("결제 설정 오류(상점 정보 없음)");
       }
       const paymentId = `gbg_${crypto.randomUUID().replace(/-/g, "")}`;
@@ -305,12 +326,12 @@ export default function ApplyPage() {
 
       const res = await PortOne.requestPayment({
         storeId: PORTONE_STORE_ID,
-        channelKey: PORTONE_CHANNEL_KEY,
+        channelKey,
         paymentId,
         orderName: "공부결 리포트",
         totalAmount: PRICE_VALUE,
         currency: "CURRENCY_KRW",
-        payMethod: "CARD",
+        payMethod: useKakao ? "EASY_PAY" : "CARD",
         // 디지털 콘텐츠 — 에스크로 대상이 아님을 명시하고, KCP 결제창의 "제공기간" 칸을 채운다
         productType: "PRODUCT_TYPE_DIGITAL",
         offerPeriod: {
@@ -365,10 +386,35 @@ export default function ApplyPage() {
                 <span className={styles.label}>서비스 제공 기간</span>
                 <span className={styles.label}>결제 후 1일 이내</span>
               </div>
+              {/* 카카오페이 채널이 설정된 경우에만 선택지를 보인다.
+                  미설정이면 지금까지처럼 카드 결제만 진행된다. */}
+              {kakaoPayAvailable && !orderLocked && (
+                <div className={styles.payOptions}>
+                  <button
+                    type="button"
+                    onClick={() => setPayOption("card")}
+                    className={`${styles.payOption} ${payOption === "card" ? styles.payOptionOn : ""}`}
+                    aria-pressed={payOption === "card"}
+                  >
+                    신용카드
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayOption("kakaopay")}
+                    className={`${styles.payOption} ${payOption === "kakaopay" ? styles.payOptionOn : ""}`}
+                    aria-pressed={payOption === "kakaopay"}
+                  >
+                    카카오페이
+                  </button>
+                </div>
+              )}
+
               <p className={styles.hint}>
                 {orderLocked
                   ? "결제 시스템 점검 중입니다. 오픈 후 바로 신청하실 수 있습니다."
-                  : "아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."}
+                  : payOption === "kakaopay"
+                    ? "아래 버튼을 누르면 카카오페이 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."
+                    : "아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."}
               </p>
               <p className={styles.hint}>
                 본 상품은 온라인으로 제작·전달되는 디지털 콘텐츠로,{" "}

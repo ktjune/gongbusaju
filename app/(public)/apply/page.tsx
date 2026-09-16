@@ -768,6 +768,13 @@ export default function ApplyPage() {
             </div>
             {searching && (
               <div className={styles.postcodeWrap}>
+                {/* 카카오 위젯은 검색 전까지 사용법 안내(tip)만 띄운다. 폰에서는 그 화면이
+                    "검색이 된 건지 아닌지" 알 수 없게 보인다는 제보가 있었다 — 무엇을
+                    눌러야 결과가 나오는지 우리가 한 줄로 알려 준다. */}
+                <p className={styles.addrGuide}>
+                  주소를 입력한 뒤 <b>키보드의 검색(↵)</b>을 눌러주세요. 아래에 나온 목록에서
+                  고르시면 자동으로 입력됩니다.
+                </p>
                 <div ref={postcodeBoxRef} className={styles.postcodeBox} />
                 <button type="button" className={styles.addrClear} onClick={() => setSearching(false)}>
                   주소 검색 닫기

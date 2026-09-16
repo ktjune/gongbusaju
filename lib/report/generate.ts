@@ -385,6 +385,23 @@ async function generateGroup(
     );
   }
 
+/**
+ * LLM이 이중 이스케이프한 제어문자를 되돌린다.
+ *
+ * JSON.parse는 정상이지만, 모델이 가끔 `\\n`으로 한 번 더 감싸 보낸다.
+ * 그러면 파싱 후에도 역슬래시와 n 두 글자가 그대로 남아, 리포트 본문에
+ * `\n\n`이 눈에 보이게 찍힌다(실제로 발행된 리포트 절반에서 발견).
+ *
+ * 한국어 산문에 역슬래시가 진짜로 쓰일 일은 없으므로 되돌려도 안전하다.
+ */
+function unescapeLiterals(v: string): string {
+  return v
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, " ")
+    .replace(/\\"/g, '"');
+}
+
   let parsed: Partial<LlmPerspective>;
   try {
     parsed = JSON.parse(jsonMatch[0]) as Partial<LlmPerspective>;
@@ -392,6 +409,13 @@ async function generateGroup(
     throw new Error(
       `[그룹:${group.name}] LLM 응답 JSON 파싱 실패: "${jsonMatch[0].slice(0, 200)}"`
     );
+  }
+
+  // 이중 이스케이프 되돌리기 — 문자열 필드 전부
+  for (const [k, v] of Object.entries(parsed)) {
+    if (typeof v === "string") {
+      (parsed as Record<string, string>)[k] = unescapeLiterals(v);
+    }
   }
 
   // 그룹 내 필수 필드 검증

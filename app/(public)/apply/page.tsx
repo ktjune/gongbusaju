@@ -200,8 +200,6 @@ export default function ApplyPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  // 결제수단. 카카오페이 채널이 없으면 이 값은 계속 "card"로 남는다.
-  const [payOption, setPayOption] = useState<PayOption>("card");
   const kakaoPayAvailable = PORTONE_CHANNEL_KEY_KAKAOPAY !== "";
 
   const birthYear = birthDate.slice(0, 4);
@@ -337,7 +335,7 @@ export default function ApplyPage() {
    * PC는 팝업에서 끝나 함수가 값을 반환한다 — 두 경로를 모두 처리한다.
    * 신청 데이터는 결제 전에 sessionStorage에 넣어 두고, 돌아온 뒤 꺼내 쓴다.
    */
-  async function handlePay() {
+  async function handlePay(payOption: PayOption) {
     setError(null);
     setPaying(true);
     try {
@@ -406,64 +404,92 @@ export default function ApplyPage() {
 
           {error && <div className={styles.error}>{error}</div>}
 
-          {/* 포트원은 별도 위젯 영역 없이 버튼 클릭 시 결제창이 뜬다 */}
-          <div className={styles.section}>
-            <div className={styles.field}>
-              <div className={styles.row} style={{ justifyContent: "space-between" }}>
-                <span className={styles.label}>공부결 리포트 1부</span>
-                <span className={styles.label}>{PRICE}원</span>
-              </div>
-              <div className={styles.row} style={{ justifyContent: "space-between" }}>
-                <span className={styles.label}>서비스 제공 기간</span>
-                <span className={styles.label}>결제 후 1일 이내</span>
-              </div>
-              {/* 카카오페이 채널이 설정된 경우에만 선택지를 보인다.
-                  미설정이면 지금까지처럼 카드 결제만 진행된다. */}
-              {kakaoPayAvailable && !orderLocked && (
-                <div className={styles.payOptions}>
-                  <button
-                    type="button"
-                    onClick={() => setPayOption("card")}
-                    className={`${styles.payOption} ${payOption === "card" ? styles.payOptionOn : ""}`}
-                    aria-pressed={payOption === "card"}
-                  >
-                    신용카드
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPayOption("kakaopay")}
-                    className={`${styles.payOption} ${payOption === "kakaopay" ? styles.payOptionOn : ""}`}
-                    aria-pressed={payOption === "kakaopay"}
-                  >
-                    카카오페이
-                  </button>
-                </div>
-              )}
-
-              <p className={styles.hint}>
-                {orderLocked
-                  ? "결제 시스템 점검 중입니다. 오픈 후 바로 신청하실 수 있습니다."
-                  : payOption === "kakaopay"
-                    ? "아래 버튼을 누르면 카카오페이 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."
-                    : "아래 버튼을 누르면 카드 결제창이 열립니다. 결제 후 리포트 제작이 자동으로 시작됩니다."}
-              </p>
-              <p className={styles.hint}>
-                본 상품은 온라인으로 제작·전달되는 디지털 콘텐츠로,{" "}
-                <b>결제 완료 후 1일(24시간) 이내 이용 가능</b>합니다. 완성되면 입력하신
-                이메일·카카오로 결과 링크를 보내드립니다.
-              </p>
+          {/*
+           * 결제 단계의 순서는 "무엇을 얼마에 사는가 → 어떻게 낼 것인가 → 규정"이다.
+           * 예전에는 수단을 고르는 칸과 결제 버튼 사이에 환불 규정 전문이 끼어 있어서,
+           * 고른 뒤 한참을 스크롤해야 결제를 누를 수 있었다. 글이 많아 신뢰가 가지
+           * 않는다는 제보가 있어 수단 선택 자체를 실행 버튼으로 합쳤다 —
+           * 누르는 순간 그 수단의 결제창이 열린다.
+           */}
+          <div className={styles.orderCard}>
+            <div className={styles.orderRow}>
+              <span>공부결 리포트 1부</span>
+              <span>{PRICE}원</span>
             </div>
+            <div className={styles.orderRow}>
+              <span>받아보시는 때</span>
+              <span>결제 후 1일 이내</span>
+            </div>
+            <div className={styles.orderTotal}>
+              <span>결제 금액</span>
+              <strong>{PRICE}원</strong>
+            </div>
+          </div>
 
-            {/* PG 입점 검수 요건 — 상품 상세에 서비스 제공기간·교환·환불·취소 규정을
-                모두 노출해야 한다(링크만으로는 불충분). 내용은 이용약관 제7조와 동일. */}
-            <div className={styles.notice}>
-              <b>교환 · 환불 · 취소 규정</b>
-              <br />
+          {orderLocked ? (
+            <button className={styles.submit} disabled>
+              결제 준비 중 — 곧 오픈합니다
+            </button>
+          ) : (
+            <>
+              <p className={styles.payLabel}>결제 수단을 고르면 바로 결제창이 열립니다</p>
+              <button
+                type="button"
+                className={`${styles.payBtn} ${styles.payBtnCard}`}
+                onClick={() => handlePay("card")}
+                disabled={paying}
+              >
+                {paying ? "결제 진행 중…" : `신용·체크카드로 ${PRICE}원 결제`}
+              </button>
+              {kakaoPayAvailable && (
+                <button
+                  type="button"
+                  className={`${styles.payBtn} ${styles.payBtnKakao}`}
+                  onClick={() => handlePay("kakaopay")}
+                  disabled={paying}
+                >
+                  {paying ? "결제 진행 중…" : `카카오페이로 ${PRICE}원 결제`}
+                </button>
+              )}
+            </>
+          )}
+
+          <p className={styles.secureNote}>
+            결제는 <b>KG이니시스</b> 안전결제로 암호화되어 처리됩니다. 카드 정보는 저희
+            서버에 저장되지 않습니다.
+          </p>
+
+          <button
+            type="button"
+            className={styles.addrClear}
+            style={{ display: "block", margin: "14px auto 0" }}
+            onClick={() => {
+              setStep("form");
+              setError(null);
+            }}
+          >
+            ← 정보 다시 입력
+          </button>
+
+          {/* PG 입점 검수 요건 — 상품 상세에 서비스 제공기간·교환·환불·취소 규정을
+              모두 노출해야 한다(링크만으로는 불충분). 내용은 이용약관 제7조와 동일.
+              펼침(details)으로 접되 요약 줄에 핵심 약속을 적어 두어, 접힌 상태에서도
+              무엇을 보장하는지는 읽힌다. */}
+          <details className={styles.policy}>
+            <summary className={styles.policySummary}>
+              제작 전 취소는 전액 환불 · 7일 이내 무상 재발송
+              <span className={styles.policyMore}>규정 전문 보기</span>
+            </summary>
+            <div className={styles.policyBody}>
               · <b>취소/환불</b>: 결제일부터 <b>7일 이내</b>, 리포트 <b>제작 착수 전</b>에는
               전액 환불해 드립니다. 회사 귀책으로 리포트가 제공되지 못한 경우에도 전액 환불합니다.
               <br />
-              · <b>재발송</b>: 결과 링크를 받지 못했거나 분실하신 경우 <b>발행일부터 7일 이내</b>
+              · <b>재발송</b>: 결과 링크를 받지 못했거나 분실하신 경우 <b>발행일부터 7일 이내</b>{" "}
               무상 재발송해 드립니다.
+              <br />
+              · <b>서비스 제공 기간</b>: 온라인으로 제작·전달되는 디지털 콘텐츠로,{" "}
+              <b>결제 완료 후 1일(24시간) 이내</b> 이용하실 수 있습니다. 완성되면 입력하신
+              이메일·카카오로 결과 링크를 보내드립니다.
               <br />
               · <b>청약철회 제한</b>: 본 상품은 입력하신 정보로 개별 제작되는 디지털
               콘텐츠로, 제작·제공이 개시된 후에는 「전자상거래 등에서의 소비자보호에
@@ -479,34 +505,7 @@ export default function ApplyPage() {
               에서 주문번호와 연락처로 접수하시거나, 전화(0502-1944-3249) 또는
               이메일({SUPPORT_EMAIL})로 요청하실 수 있습니다.
             </div>
-          </div>
-
-          <button
-            className={styles.submit}
-            onClick={handlePay}
-            disabled={paying || orderLocked}
-          >
-            {orderLocked
-              ? "결제 준비 중 — 곧 오픈합니다"
-              : paying
-                ? "결제 진행 중…"
-                : `${PRICE}원 결제하기`}
-          </button>
-          <button
-            type="button"
-            className={styles.addrClear}
-            style={{ display: "block", margin: "12px auto 0" }}
-            onClick={() => {
-              setStep("form");
-              setError(null);
-            }}
-          >
-            ← 정보 다시 입력
-          </button>
-
-          <p className={styles.notice}>
-            결제는 안전하게 암호화되어 처리되며, 카드 정보는 저희 서버에 저장되지 않습니다.
-          </p>
+          </details>
         </div>
       </div>
     );

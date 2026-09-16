@@ -191,6 +191,14 @@ function buildEmailHtml(resultUrl: string): string {
  *   #{result_url}
  *
  *   링크는 언제든 재접속할 수 있습니다."
+ *
+ * 버튼 구성 (2개 권장 — 받은 사람은 메시지를 길게 눌러 전달하지 않는다. 버튼만 쓴다):
+ *   1) "리포트 확인하기"  → https://#{result_url}
+ *   2) "공유하기"        → https://#{result_url}?share=1
+ *      ?share=1로 들어오면 결과 페이지 맨 위에 공유 유도가 뜬다
+ *      (app/(public)/result/[token]/route.ts). 브라우저가 사용자 제스처 없이
+ *      navigator.share를 열어 주지 않으므로 자동 실행은 불가능하다.
+ *   ※ 버튼 추가·문구 변경은 카카오 템플릿 재심사 대상이다(솔라피 콘솔에서 신청).
  */
 async function sendAlimtalk(
   orderId: string,

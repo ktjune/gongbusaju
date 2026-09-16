@@ -23,7 +23,11 @@ import { getOrderStore } from "@/lib/orders";
  * 버튼은 하단 고정 바 하나로 묶는다. 예전에는 리포트 템플릿의 "PDF 저장/인쇄"와
  * 여기서 주입한 "PDF 저장"이 각자 떠서 폰에서 겹쳐 보였다 — 템플릿 것은 숨긴다.
  */
-function injectActionButtons(html: string, token: string): string {
+function injectActionButtons(
+  html: string,
+  token: string,
+  shareIntent: boolean
+): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const resultUrl = `${siteUrl}/result/${token}`;
   const pdfHref = `/result/${token}/pdf`;
@@ -98,11 +102,43 @@ function injectActionButtons(html: string, token: string): string {
   </div>
 </div>`;
 
+  /*
+   * 알림톡 "공유하기" 버튼으로 들어온 경우(?share=1)에만 맨 위에 띄운다.
+   *
+   * 브라우저는 사용자 제스처 없이 navigator.share를 열어 주지 않으므로 자동 실행은
+   * 불가능하다 — 대신 제일 먼저 보이는 자리에 큼직하게 둬서 한 번만 누르게 한다.
+   * (알림톡을 받은 부모가 나중에 "친구한테 보내야지" 할 때 다시 찾는 경로다)
+   */
+  const sharePrompt = shareIntent
+    ? `
+<div style="max-width:720px;margin:20px auto 0;padding:0 20px;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+  <div style="background:#fffdf3;border:1px solid #e3cfa6;border-left:4px solid #b08d57;border-radius:12px;padding:18px 20px;">
+    <div style="font-size:1rem;font-weight:700;color:#7a5f2e;margin-bottom:6px;">이 리포트를 보내시겠어요?</div>
+    <div style="font-size:0.88rem;color:#5d5442;line-height:1.7;margin-bottom:14px;">
+      링크만 전달되며, 받는 분도 같은 리포트를 그대로 보실 수 있어요.
+    </div>
+    <button type="button" onclick="gbShare()" style="background:#1f3b63;color:#fff;border:none;border-radius:10px;padding:13px 26px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">
+      공유하기
+    </button>
+  </div>
+</div>`
+    : "";
+
   const injection = ctaBanner + actionBar;
-  return html.includes("</body>")
+  let out = html.includes("</body>")
     ? html.replace("</body>", `${injection}
 </body>`)
     : html + injection;
+
+  // 공유 유도는 맨 위여야 의미가 있다 — 본문 시작 직후에 끼운다
+  if (sharePrompt) {
+    const m = out.match(/<body[^>]*>/i);
+    out = m
+      ? out.replace(m[0], `${m[0]}
+${sharePrompt}`)
+      : sharePrompt + out;
+  }
+  return out;
 }
 
 export const runtime = "nodejs";
@@ -127,7 +163,10 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
-  const preview = new URL(req.url).searchParams.get("preview") === "1";
+  const url = new URL(req.url);
+  const preview = url.searchParams.get("preview") === "1";
+  // 알림톡 "공유하기" 버튼으로 들어왔는지 — 맨 위에 공유 유도를 띄운다
+  const shareIntent = url.searchParams.get("share") === "1";
 
   const store = getOrderStore();
   const report = await store.getReportByToken(token);
@@ -164,6 +203,6 @@ export async function GET(
   }
 
   // 발행분(또는 미리보기) — 저장된 디자인 HTML + 액션 버튼 주입
-  const html = injectActionButtons(report.html, token);
+  const html = injectActionButtons(report.html, token, shareIntent);
   return htmlResponse(html);
 }

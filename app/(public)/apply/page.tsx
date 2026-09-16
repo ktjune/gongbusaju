@@ -601,8 +601,12 @@ export default function ApplyPage() {
                                 — "높을 준(峻)"인지 "술그릇 준(樽)"인지.
                                 뜻을 확인하지 못한 글자는 펼쳤을 때만 나오고, 그때는
                                 뜻 대신 그 사실을 적어 눈으로 알아보고 고르게 한다. */}
-                            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: cand.hun ? "#2c2c30" : "#a8a296", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                              {cand.hun || "뜻 미상"}
+                            {/* 뜻이 없는 글자는 그 자리를 비운다. "뜻 미상"이라고 적으면
+                                고를 수 있는 글자인데도 결함처럼 보인다 — 실제로는 획수·오행이
+                                다 있어 성명학 계산에 아무 지장이 없다.
+                                칸 높이는 유지해야 가로 스크롤에서 칩이 어긋나지 않는다. */}
+                            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#2c2c30", maxWidth: 72, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {cand.hun || " "}
                             </span>
                             <span style={{ fontSize: "0.62rem", color: EL_COLOR[cand.element] ?? "#8a8f99" }}>
                               {cand.strokes}획·{EL_HANGUL[cand.element] ?? cand.element}
@@ -628,8 +632,8 @@ export default function ApplyPage() {
                           }
                         >
                           {showUnknownHun[i]
-                            ? "뜻 미상 한자 접기"
-                            : `찾는 글자가 없나요? 뜻 미상 한자 ${(hanjaCands[s] ?? []).filter((c) => !c.hun).length}자 더 보기 →`}
+                            ? "접기"
+                            : `찾는 글자가 없나요? ${(hanjaCands[s] ?? []).filter((c) => !c.hun).length}자 더 보기 →`}
                         </button>
                       )}
                     </div>

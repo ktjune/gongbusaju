@@ -59,11 +59,32 @@ export function trackPurchase(orderId: string, amountKrw: number): void {
  * 결제 시작(결제창 호출)을 기록한다 — GA4 표준 `begin_checkout`.
  * purchase와 함께 보면 "결제창까지 갔는데 안 산 비율"이 나온다.
  */
-export function trackBeginCheckout(amountKrw: number): void {
+export function trackBeginCheckout(amountKrw: number, paymentType: string): void {
   const gtag = getGtag();
   if (!gtag) return;
   try {
     gtag("event", "begin_checkout", {
+      value: amountKrw,
+      currency: "KRW",
+      payment_type: paymentType,
+    });
+  } catch {
+    /* 무시 */
+  }
+}
+
+/**
+ * 신청서 입력을 마치고 결제 화면에 도착했음을 기록한다 — GA4 표준 `add_payment_info`.
+ *
+ * 신청서와 결제 화면은 같은 /apply 주소라 페이지뷰로는 둘을 가를 수 없다.
+ * 이 이벤트가 없으면 "신청서에서 포기했는지, 결제 화면에서 포기했는지"가 보이지 않는다.
+ * 퍼널: /case → /apply(page_view) → add_payment_info → begin_checkout → purchase
+ */
+export function trackPayStepReached(amountKrw: number): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  try {
+    gtag("event", "add_payment_info", {
       value: amountKrw,
       currency: "KRW",
     });

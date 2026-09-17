@@ -19,6 +19,7 @@ import { isValidEmail, isValidKoreanMobile } from "@/lib/validate/contact";
 import styles from "./apply.module.css";
 import { REPORT_PRICE, REPORT_PRICE_LABEL } from "@/lib/pricing";
 import { readAttribution } from "@/lib/attribution";
+import { trackBeginCheckout, trackPayStepReached } from "@/lib/analytics";
 
 // 가격 단일 출처 — 서버 검증값(lib/payments/portone)과 같은 상수를 쓴다.
 const PRICE = REPORT_PRICE_LABEL;
@@ -350,6 +351,8 @@ export default function ApplyPage() {
       if (!PORTONE_STORE_ID || !channelKey) {
         throw new Error("결제 설정 오류(상점 정보 없음)");
       }
+      // 결제창을 띄우기 직전 — 여기서 purchase까지 못 가면 결제창 안에서 포기한 것이다
+      trackBeginCheckout(PRICE_VALUE, useKakao ? "kakaopay" : "card");
       const paymentId = `gbg_${crypto.randomUUID().replace(/-/g, "")}`;
       sessionStorage.setItem(ORDER_PAYLOAD_KEY, JSON.stringify(buildPayload(paymentId)));
 
@@ -518,7 +521,10 @@ export default function ApplyPage() {
         className={styles.sheet}
         onSubmit={(e) => {
           e.preventDefault();
-          if (canProceed) setStep("pay");
+          if (canProceed) {
+            setStep("pay");
+            trackPayStepReached(PRICE_VALUE);
+          }
         }}
       >
         <div className={styles.badge}>공부·기질 사주 리포트</div>

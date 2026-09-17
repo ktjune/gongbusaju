@@ -9,6 +9,7 @@
  * 6. 통합 테스트 — 실제 Claude API (ANTHROPIC_API_KEY 없으면 skip)
  */
 
+import { REQUIRED_PROSE_FIELDS } from "../generate";
 import { describe, it, expect } from "vitest";
 import type { SajuResult } from "../../saju";
 import type { SchoolFacts } from "../../schools";
@@ -410,6 +411,32 @@ describe("generateReport — mock LLM 합성 테스트", () => {
     await expect(
       generateReport({ saju: sampleSaju }, { llmProvider: badProvider })
     ).rejects.toThrow(GuardrailError);
+  });
+
+  // 2026-09-15 유료 리포트 대운 풀이에 실제로 나갔던 문장. 어느 산문 필드에서 나와도 잡혀야 한다.
+  it("LLM 응답에 합격 결과 약속 → 모든 산문 필드에서 차단", async () => {
+    const sentence = "학업 실력이 공인된 점수와 합격이라는 든든한 결과로 이어지기 무척 유리한 흐름을 보여줍니다.";
+    for (const field of REQUIRED_PROSE_FIELDS) {
+      const badProvider = makeMockProvider({ [field]: sentence });
+      await expect(
+        generateReport({ saju: sampleSaju }, { llmProvider: badProvider }),
+        field
+      ).rejects.toThrow(GuardrailError);
+    }
+  });
+
+  // 운영 파이프라인은 collect 모드 — 던지지 않고 위반을 돌려줘야 주문이 재생성·검수로 간다
+  it("collect 모드: 합격 결과 약속 → 위반을 반환(발행 경로에서 자동 승인 차단 근거)", async () => {
+    const badProvider = makeMockProvider({
+      daeunProse: "이 시기에는 성적이 쑥쑥 오르고 합격으로 이어지기 쉽습니다.",
+    });
+    const result = await generateReport(
+      { saju: sampleSaju },
+      { llmProvider: badProvider, guardrailMode: "collect" }
+    );
+    const reasons = result.guardrailViolations.map((v) => v.reason);
+    expect(reasons).toContain('결과 약속 "합격"');
+    expect(reasons).toContain("성적 상승 약속");
   });
 
   it("LLM JSON 아닌 응답 → Error 발생", async () => {

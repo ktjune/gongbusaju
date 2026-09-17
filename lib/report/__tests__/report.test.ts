@@ -150,6 +150,28 @@ describe("checkGuardrails — 금지 표현 차단", () => {
     expect(() => checkGuardrails("이 결과를 보장합니다.")).toThrow(GuardrailError);
   });
 
+  // 2026-09-15 유료 리포트에 그대로 발행됐던 문장
+  it('합격 결과 약속 → GuardrailError', () => {
+    expect(() =>
+      checkGuardrails("학업 실력이 공인된 점수와 합격이라는 든든한 결과로 이어지기 무척 유리한 흐름을 보여줍니다.")
+    ).toThrow(GuardrailError);
+  });
+
+  it('성적 상승 약속 → GuardrailError', () => {
+    expect(() => checkGuardrails("이렇게 도와주면 성적이 쑥쑥 오를 수 있습니다.")).toThrow(GuardrailError);
+    expect(() => checkGuardrails("선의의 경쟁자가 있는 환경이 성적 향상에 도움이 됩니다.")).toThrow(GuardrailError);
+  });
+
+  it('명문·상위권 연결 → GuardrailError', () => {
+    expect(() => checkGuardrails("명문대 진학에 유리한 기질입니다.")).toThrow(GuardrailError);
+  });
+
+  it('중립 표현(합격선·정답이 없는 질문·예측 가능한 환경)은 통과', () => {
+    expect(passesGuardrails("학과 이름이나 합격선에 맞추기보다 실습 비율을 살펴보세요.")).toBe(true);
+    expect(passesGuardrails("정답이 없는 열린 질문을 던져 주세요.")).toBe(true);
+    expect(passesGuardrails("예측 가능한 일상 규칙이 안정감을 줍니다.")).toBe(true);
+  });
+
   it('"틀림없이" → GuardrailError', () => {
     expect(() => checkGuardrails("틀림없이 좋은 결과가 있을 것입니다.")).toThrow(GuardrailError);
   });

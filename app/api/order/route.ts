@@ -211,7 +211,7 @@ export async function POST(req: Request) {
         }
 
         // 줄바꿈은 템플릿 리터럴의 실제 개행을 쓴다
-        await withTimeout(
+        const alert = await withTimeout(
           sendOwnerAlert(
             `새 주문 ${amountLabel}`,
             `주문번호: ${order.id}
@@ -224,7 +224,13 @@ export async function POST(req: Request) {
           "새 주문 알림"
         ).catch((err: unknown) => {
           console.error(`[order] 새 주문 알림 실패 — 주문: ${order.id}`, err);
+          return { sent: false, error: err instanceof Error ? err.message : String(err) };
         });
+        // 성공/실패를 한 줄로 남긴다. 조용히 지나가면 "매출은 잡혔는데 메일이 안 왔다"를
+        // 사후에 추적할 수 없다(2026-09-16).
+        if (!alert.sent) {
+          console.error(`[order] 새 주문 알림 미발송 — 주문: ${order.id}, 사유: ${alert.error}`);
+        }
       })()
     );
 

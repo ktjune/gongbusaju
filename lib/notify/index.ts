@@ -351,21 +351,26 @@ function normalizePhone(phone: string): string {
  * 환경변수: NOTIFY_OWNER_EMAIL — 미설정 시 경고만 남기고 건너뜀.
  * @throws 절대 throw 안 함 — 알림 실패가 메인 플로우를 막으면 안 된다.
  */
-export async function sendOwnerAlert(subject: string, body: string): Promise<void> {
+export type OwnerAlertResult = { sent: boolean; error?: string };
+
+export async function sendOwnerAlert(
+  subject: string,
+  body: string
+): Promise<OwnerAlertResult> {
   const to = process.env.NOTIFY_OWNER_EMAIL?.trim();
 
   if (process.env.NODE_ENV !== "production") {
     console.log(`[notify:dev] 운영자 알림 시뮬레이션\n  제목: ${subject}\n  내용: ${body}`);
-    return;
+    return { sent: true };
   }
   if (!to) {
     console.warn(`[notify] NOTIFY_OWNER_EMAIL 미설정 — 운영자 알림 미발송: ${subject}`);
-    return;
+    return { sent: false, error: "NOTIFY_OWNER_EMAIL 미설정" };
   }
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn(`[notify] RESEND_API_KEY 미설정 — 운영자 알림 미발송: ${subject}`);
-    return;
+    return { sent: false, error: "RESEND_API_KEY 미설정" };
   }
 
   try {
@@ -383,8 +388,13 @@ export async function sendOwnerAlert(subject: string, body: string): Promise<voi
     });
     if (error) throw new Error(error.message);
     console.log(`[notify] 운영자 알림 발송 — ${subject}`);
+    return { sent: true };
   } catch (err) {
+    // 삼키되 이유는 돌려준다 — 호출자가 로그·화면에 남길 수 있어야 한다.
+    // 2026-09-16 주문에서 매출은 잡혔는데 알림 메일이 오지 않았고, 실패가
+    // 어디에도 남지 않아 사후에 원인을 찾을 수 없었다.
     console.error(`[notify] 운영자 알림 발송 실패 — ${subject}`, err);
+    return { sent: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 

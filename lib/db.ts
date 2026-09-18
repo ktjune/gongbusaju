@@ -7,6 +7,7 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
+import { toServerlessPoolerUrl } from "./db-url";
 import { PrismaClient } from "./generated/prisma";
 
 const globalForPrisma = globalThis as unknown as { __prisma?: PrismaClient };
@@ -20,7 +21,7 @@ export function getPrisma(): PrismaClient {
     // (2026-09-18 실측: pg_stat_activity에 Supavisor idle 연결 15개 = 세션 모드 한도 전부,
     //  5분 넘게 유휴. 어드민이 8개 API를 동시에 부르면서 특히 잘 드러났다.)
     const adapter = new PrismaPg({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: toServerlessPoolerUrl(process.env.DATABASE_URL, process.env.DB_POOLER_MODE),
       max: 3,
       // 놀고 있는 연결은 빨리 반납한다
       idleTimeoutMillis: 10_000,

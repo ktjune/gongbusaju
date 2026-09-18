@@ -36,27 +36,42 @@ export default function AdminPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
+  /**
+   * 각 요청이 **도착하는 대로** 해당 영역을 그린다.
+   *
+   * 예전에는 8개를 Promise.all로 묶어 한꺼번에 기다렸다. 그래서 검수 큐처럼
+   * 0.2초면 오는 목록도, LLM 생존 확인(모델 2개를 실제로 찔러 본다)이나
+   * 솔라피 잔액 조회가 끝날 때까지 화면 전체가 멈춰 있었다 — "어드민이 버벅인다".
+   *
+   * loading은 **일 처리에 필요한 목록**에만 건다. 비용·매출·LLM 상태는 참고 정보라
+   * 늦게 채워져도 일하는 데 지장이 없다.
+   */
   const load = useCallback(async () => {
     setLoading(true);
+
+    const get = (path: string) =>
+      fetch(path)
+        .then((r) => r.json())
+        .catch(() => null);
+
+    // 큐 목록 — 이것들이 오면 화면을 쓸 수 있다
+    const queues = Promise.all([
+      get("/api/admin/reports").then((d) => setItems(d?.items ?? [])),
+      get("/api/admin/orders").then((d) => setRegenOrders(d?.items ?? [])),
+      get("/api/admin/notify-failures").then((d) => setNotifyFailures(d?.items ?? [])),
+      get("/api/admin/sent").then((d) => setSentOrders(d?.items ?? [])),
+      get("/api/admin/refund-requests").then((d) => setRefundRequests(d?.items ?? [])),
+    ]);
+
+    // 참고 정보 — 화면을 막지 않고 뒤따라 채운다
+    void get("/api/admin/revenue").then((d) => setRevenue(d && d.total ? d : null));
+    void get("/api/admin/costs").then((d) => setCosts(d && d.month ? d : null));
+    void get("/api/admin/llm-health").then((d) =>
+      setHealth(d && Array.isArray(d.providers) ? d : null)
+    );
+
     try {
-      const [rep, ord, fail, sent, cost, llm, refundReq, rev] = await Promise.all([
-        fetch("/api/admin/reports").then((r) => r.json()),
-        fetch("/api/admin/orders").then((r) => r.json()),
-        fetch("/api/admin/notify-failures").then((r) => r.json()),
-        fetch("/api/admin/sent").then((r) => r.json()),
-        fetch("/api/admin/costs").then((r) => r.json()).catch(() => null),
-        fetch("/api/admin/llm-health").then((r) => r.json()).catch(() => null),
-        fetch("/api/admin/refund-requests").then((r) => r.json()),
-        fetch("/api/admin/revenue").then((r) => r.json()).catch(() => null),
-      ]);
-      setItems(rep.items ?? []);
-      setRegenOrders(ord.items ?? []);
-      setNotifyFailures(fail.items ?? []);
-      setSentOrders(sent.items ?? []);
-      setRefundRequests(refundReq.items ?? []);
-      setCosts(cost && cost.month ? cost : null);
-      setRevenue(rev && rev.total ? rev : null);
-      setHealth(llm && Array.isArray(llm.providers) ? llm : null);
+      await queues;
     } finally {
       setLoading(false);
     }

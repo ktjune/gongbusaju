@@ -26,14 +26,16 @@ export async function GET() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
+  // 리포트는 한 번에 받아 메모리에서 잇는다.
+  // 예전에는 주문마다 getReport를 따로 불러(N+1) 발송 건수가 늘수록 어드민이 느려졌다.
+  const reports = await store.listReports();
+  const tokenById = new Map(reports.map((r) => [r.id, r.token]));
+
   const items = await Promise.all(
     orders.map(async (o) => {
       // 리포트 토큰 → 결과 페이지 링크 (검수·재확인용)
-      let resultUrl: string | null = null;
-      if (o.reportId) {
-        const report = await store.getReport(o.reportId);
-        if (report) resultUrl = `${siteUrl}/result/${report.token}`;
-      }
+      const token = o.reportId ? tokenById.get(o.reportId) : undefined;
+      const resultUrl = token ? `${siteUrl}/result/${token}` : null;
       const payment = classifyPayment(o.paymentKey);
       return {
         id: o.id,

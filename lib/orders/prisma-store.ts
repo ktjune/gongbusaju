@@ -9,6 +9,7 @@
 import { getPrisma } from "../db";
 import { encryptPiiNullable, decryptPiiCompat } from "../crypto/pii";
 import { newReportToken } from "./store";
+import { AUTO_RECOVERED_PREFIX } from "../notify";
 import type { OrderStore } from "./store";
 import type { Order, NewOrder, OrderStatus, Report, Subject } from "./types";
 
@@ -21,6 +22,7 @@ type OrderRow = {
   paymentKey: string | null; refundedAt: Date | null; refundReason: string | null;
   refundRequestedAt: Date | null; refundRequestReason: string | null;
   notifyError: string | null; notifyFailedAt: Date | null;
+  notifyDeliveredAt: Date | null; notifyAuditedAt: Date | null;
   buyerName: string | null;
   contactEmail: string | null; contactPhone: string | null;
   generateAttempts: number;
@@ -45,6 +47,8 @@ function toOrder(r: OrderRow): Order {
     refundRequestReason: r.refundRequestReason,
     notifyError: r.notifyError,
     notifyFailedAt: r.notifyFailedAt ? iso(r.notifyFailedAt) : null,
+    notifyDeliveredAt: r.notifyDeliveredAt ? iso(r.notifyDeliveredAt) : null,
+    notifyAuditedAt: r.notifyAuditedAt ? iso(r.notifyAuditedAt) : null,
     generateAttempts: r.generateAttempts,
     // 연락처는 암호화 저장 — 읽을 때 복호화(레거시 평문도 호환)
     buyerName: decryptPiiCompat(r.buyerName),
@@ -191,9 +195,53 @@ export class PrismaOrderStore implements OrderStore {
   async recordNotifyResult(id: string, error: string | null): Promise<Order> {
     const row = await this.db.order.update({
       where: { id },
-      data: { notifyError: error, notifyFailedAt: error ? new Date() : null },
+      data: {
+        notifyError: error,
+        notifyFailedAt: error ? new Date() : null,
+        // 새 발송이 나갔다 — 이번 건의 수신 여부는 처음부터 다시 확인한다.
+        // 옛 확인이 남으면 이번 발송이 실패해도 웹훅·감사가 모두 건너뛴다.
+        notifyDeliveredAt: null,
+        notifyAuditedAt: null,
+      },
     });
     return toOrder(row);
+  }
+
+  async recordNotifyDelivery(
+    id: string,
+    result: { deliveredAt: Date | null; error: string | null }
+  ): Promise<Order | null> {
+    // 웹훅은 우리가 모르는 주문 식별자를 들고 올 수 있다(테스트 발송·옛 주문) — 조용히 무시.
+    const exists = await this.db.order.findUnique({ where: { id }, select: { id: true } });
+    if (!exists) return null;
+
+    const row = await this.db.order.update({
+      where: { id },
+      data: {
+        notifyDeliveredAt: result.deliveredAt,
+        notifyError: result.error,
+        notifyFailedAt: result.error ? new Date() : null,
+      },
+    });
+    return toOrder(row);
+  }
+
+  async listUnconfirmedNotifies(publishedBefore: Date): Promise<Order[]> {
+    const rows = await this.db.order.findMany({
+      where: {
+        status: "published",
+        OR: [{ contactPhone: { not: null } }, { contactEmail: { not: null } }],
+        notifyDeliveredAt: null,
+        notifyAuditedAt: null,
+        updatedAt: { lt: publishedBefore },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toOrder);
+  }
+
+  async markNotifyAudited(id: string): Promise<void> {
+    await this.db.order.update({ where: { id }, data: { notifyAuditedAt: new Date() } });
   }
 
   async recordGenerateAttempt(id: string): Promise<number> {
@@ -213,7 +261,12 @@ export class PrismaOrderStore implements OrderStore {
 
   async listNotifyFailures(): Promise<Order[]> {
     const rows = await this.db.order.findMany({
-      where: { notifyError: { not: null } },
+      where: {
+        notifyError: { not: null },
+        // 자동으로 되살린 건은 사람이 할 일이 없다 — 큐에 남기면 재발송을 눌러
+        // 고객이 같은 안내를 두 번 받는다. 사실은 발송 완료 목록에 그대로 보인다.
+        NOT: { notifyError: { startsWith: AUTO_RECOVERED_PREFIX } },
+      },
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toOrder);

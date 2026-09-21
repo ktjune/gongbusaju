@@ -4,9 +4,11 @@
  * 채널:
  *   - 이메일: Resend (RESEND_API_KEY 설정 시 실 발송)
  *   - 카카오 알림톡: Solapi REST API (SOLAPI_API_KEY 설정 시 실 발송)
- *       ※ 알림톡이 실패해도 문자로 대체 발송되지 않는다 — 솔라피 템플릿의
- *       "대체발송 설정"이 대체발송 안 함으로 되어 있다(콘솔에서 확인).
- *       따라서 알림톡 실패는 고객에게 아무것도 닿지 않고 끝난다.
+ *       ※ 솔라피 템플릿의 "대체발송 설정"은 대체발송 안 함이다(콘솔에서 확인).
+ *       즉 솔라피가 알아서 문자로 바꿔 보내주지 않는다. 그래서 이메일이 없는
+ *       고객에 한해 **코드가 직접** LMS로 폴백한다(sendResultLms).
+ *   - 발송 결과: HTTP 200은 "접수"일 뿐이다. 진짜 수신 여부는 솔라피 웹훅으로
+ *       뒤늦게 오며, app/api/solapi-webhook 이 받아 주문에 기록한다.
  *
  * 환경변수:
  *   RESEND_API_KEY        — Resend API 키
@@ -17,6 +19,7 @@
  *   KAKAO_PF_ID           — 카카오 발신 프로필 ID (pfId, KA01PF…)
  *   KAKAO_TEMPLATE_ID     — 알림톡 템플릿 ID (templateId, KA01TP…)
  *   NOTIFY_FROM_PHONE     — 발신 전화번호 (Solapi 등록 번호, 예: 01012345678)
+ *   SOLAPI_WEBHOOK_SECRET — 발송 결과 웹훅 URL에 붙일 비밀값 (app/api/solapi-webhook)
  */
 
 import { SUPPORT_EMAIL, SUPPORT_PHONE, REFUND_PATH } from "../support";
@@ -29,11 +32,26 @@ export type ResultLinkPayload = {
   contactPhone?: string | null;
 };
 
+/**
+ * 자동으로 되살린 발송에 붙이는 표시.
+ *
+ * 두 가지를 동시에 한다.
+ *   ① 같은 실패가 두 번 들어와도(솔라피 재전송 등) 문자를 두 번 보내지 않는 자물쇠.
+ *   ② 어드민 "발송 실패" 큐에서 빼는 표시 — 고객은 이미 문자로 받았는데 큐에
+ *      남아 있으면 운영자가 재발송을 눌러 **중복 발송**이 된다.
+ * 사실 자체는 지워지지 않는다. 발송 완료 목록에 사유가 그대로 보인다.
+ */
+export const AUTO_RECOVERED_PREFIX = "[자동복구]";
+
 /** 채널별 발송 결과 — 운영자가 어드민에서 실패 사유를 보고 재발송할 수 있게 한다. */
 export type SendResultLinkOutcome = {
-  /** 시도한 채널 중 하나라도 실패하면 true */
+  /** 사람이 손대야 하는 실패가 있으면 true. 자동으로 되살린 건은 false. */
   hasFailure: boolean;
-  /** 실패 사유 (여러 채널 실패 시 " / "로 연결). 전부 성공·미시도면 null. */
+  /**
+   * 기록할 사유. 전부 정상이면 null.
+   * 자동 복구된 경우엔 hasFailure=false 이면서 AUTO_RECOVERED_PREFIX로 시작하는
+   * 문구가 담긴다 — 호출측은 hasFailure와 무관하게 이 값을 그대로 저장해야 한다.
+   */
   error: string | null;
 };
 
@@ -53,6 +71,8 @@ export async function sendResultLink(
   if (!contactEmail && !contactPhone) return { hasFailure: false, error: null };
 
   const errors: string[] = [];
+  /** 사람 개입 없이 되살린 발송의 기록 — 실패는 아니지만 남겨야 한다. */
+  let recovered: string | null = null;
 
   // 이메일 발송
   if (contactEmail) {
@@ -63,18 +83,48 @@ export async function sendResultLink(
     });
   }
 
-  // 카카오 알림톡 (Solapi)
+  // 카카오 알림톡 (Solapi) — 실패하면 문자로 받아낸다
   if (contactPhone) {
-    await sendAlimtalk(orderId, resultUrl, contactPhone).catch((err) => {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[notify] 알림톡 발송 실패 — 주문: ${orderId}`, err);
-      errors.push(`알림톡: ${msg}`);
-    });
+    const alimtalkError = await sendAlimtalk(orderId, resultUrl, contactPhone).then(
+      () => null,
+      (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[notify] 알림톡 발송 실패 — 주문: ${orderId}`, err);
+        return msg;
+      }
+    );
+
+    if (alimtalkError !== null) {
+      /*
+       * 솔라피 템플릿의 대체발송이 "안 함"이라 알림톡이 떨어지면 고객에게
+       * 아무것도 가지 않는다. 이메일도 없는 고객이면 그대로 미제공이 된다
+       * (2026-09-16 주문). 돈을 받은 이상 침묵보다는 문자 한 통이 낫다.
+       *
+       * 이메일이 있는 고객에게까지 문자를 겹쳐 보내지는 않는다 — 이미 닿았고
+       * 비용·성가심만 는다. 대신 알림톡 실패는 그대로 기록해 어드민에 남긴다.
+       */
+      if (contactEmail) {
+        errors.push(`알림톡: ${alimtalkError}`);
+      } else {
+        const lmsError = await sendResultLms(orderId, resultUrl, contactPhone).then(
+          () => null,
+          (err: unknown) => (err instanceof Error ? err.message : String(err))
+        );
+        if (lmsError !== null) {
+          console.error(`[notify] 결과 링크 문자 폴백도 실패 — 주문: ${orderId}`, lmsError);
+          errors.push(`알림톡: ${alimtalkError} / 문자 폴백: ${lmsError}`);
+        } else {
+          console.warn(
+            `[notify] 알림톡 실패 → 문자로 대체 발송 — 주문: ${orderId}, 사유: ${alimtalkError}`
+          );
+          recovered = `${AUTO_RECOVERED_PREFIX} 알림톡 실패(${alimtalkError}) → 문자 재발송함`;
+        }
+      }
+    }
   }
 
-  return errors.length > 0
-    ? { hasFailure: true, error: errors.join(" / ") }
-    : { hasFailure: false, error: null };
+  if (errors.length > 0) return { hasFailure: true, error: errors.join(" / ") };
+  return { hasFailure: false, error: recovered };
 }
 
 async function sendEmail(
@@ -105,6 +155,9 @@ async function sendEmail(
     to,
     subject: "[공부결] 리포트가 완성됐습니다",
     html: buildEmailHtml(resultUrl),
+    // 발송 결과 웹훅(app/api/resend-webhook)이 어느 주문의 무슨 메일인지
+    // 알아보는 유일한 단서. Resend가 웹훅 페이로드에 그대로 돌려준다.
+    tags: emailTags(orderId, "result-email"),
   });
 
   if (error) {
@@ -112,6 +165,22 @@ async function sendEmail(
   }
 
   console.log(`[notify] 이메일 발송 완료 — 주문: ${orderId}, 수신: ${to}`);
+}
+
+/**
+ * Resend 태그 — 솔라피의 customFields와 같은 역할(발송 결과 웹훅의 상관관계).
+ *
+ * 태그 값은 영숫자·밑줄·하이픈만 허용된다. 주문 식별자(cuid)는 영숫자라 그대로
+ * 통과하지만, 혹시 모를 문자는 걸러 보낸다 — 태그 하나 때문에 메일 발송 전체가
+ * 거부되면 본말전도다.
+ */
+export type EmailKind = "result-email" | "confirm-email";
+
+function emailTags(orderId: string, kind: EmailKind): { name: string; value: string }[] {
+  return [
+    { name: "order_id", value: orderId.replace(/[^A-Za-z0-9_-]/g, "") },
+    { name: "kind", value: kind },
+  ];
 }
 
 function buildFromAddress(): string {
@@ -246,23 +315,61 @@ async function sendAlimtalk(
     return;
   }
 
-  const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
-  const body = {
-    message: {
-      to: normalizePhone(to),
-      from,
-      type: "ATA", // AlimTalk
-      kakaoOptions: {
-        pfId,
-        templateId,
-        variables: {
-          // 템플릿의 본문·버튼 링크가 "https://#{result_url}" 형식이므로
-          // 변수 값에는 프로토콜(https://)을 넣지 않는다 (중복 방지).
-          "#{result_url}": resultUrl.replace(/^https?:\/\//, ""),
-        },
+  const accepted = await postSolapiMessage(orderId, "result-ata", apiKey, apiSecret, {
+    to: normalizePhone(to),
+    from,
+    type: "ATA", // AlimTalk
+    kakaoOptions: {
+      pfId,
+      templateId,
+      variables: {
+        // 템플릿의 본문·버튼 링크가 "https://#{result_url}" 형식이므로
+        // 변수 값에는 프로토콜(https://)을 넣지 않는다 (중복 방지).
+        "#{result_url}": resultUrl.replace(/^https?:\/\//, ""),
       },
     },
-  };
+  });
+
+  console.log(
+    `[notify] 알림톡 접수 — 주문: ${orderId}, 수신: ${to}, messageId: ${accepted.messageId ?? "-"}`
+  );
+}
+
+/**
+ * 솔라피에 메시지 한 통을 접수시킨다 — 알림톡·LMS 공통 경로.
+ *
+ * **HTTP 200은 "접수"일 뿐 "발송 성공"이 아니다.** 솔라피는 접수 후 1차 검토를
+ * 거쳐 카카오·이통사로 넘기고, 그 결과는 비동기로만 온다(발송 내역·웹훅).
+ * 예전 코드는 `res.ok`만 보고 성공으로 기록했다 — 2026-09-16 주문(전화번호만 남긴
+ * 고객)의 알림톡이 접수까지만 되고 사라졌는데 notifyError가 null로 남아,
+ * 고객이 연락할 때까지 5일 동안 아무도 몰랐다.
+ *
+ * 그래서 여기서 두 겹으로 본다.
+ *   ① HTTP 상태
+ *   ② 응답 본문의 statusCode — "2000"(정상 접수)이 아니면 실패로 던진다.
+ *      1xxx/3xxx는 접수 자체가 거절된 것이라 고객에게 아무것도 가지 않는다.
+ * 그래도 남는 구멍(접수는 됐는데 카카오가 나중에 거절)은 웹훅이 메운다.
+ *
+ * customFields는 나중에 오는 발송 결과 웹훅이 어느 주문의 무슨 발송인지 알아보게
+ * 하는 유일한 단서다 — 솔라피가 리포트에 그대로 돌려준다(app/api/solapi-webhook).
+ * kind를 함께 싣는 이유: 접수 확인 문자와 결과 링크가 같은 주문 식별자를 쓰므로,
+ * 접수 확인 문자의 수신 보고로 "결과 링크가 도착했다"고 적히면 안 된다.
+ */
+export type SolapiMessageKind = "result-ata" | "result-lms" | "confirm-lms";
+
+type SolapiMessage = Record<string, unknown>;
+type SolapiAccepted = { messageId: string | null; statusCode: string | null };
+
+const SOLAPI_ACCEPTED_CODE = "2000";
+
+async function postSolapiMessage(
+  orderId: string,
+  kind: SolapiMessageKind,
+  apiKey: string,
+  apiSecret: string,
+  message: SolapiMessage
+): Promise<SolapiAccepted> {
+  const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
 
   const res = await fetch("https://api.solapi.com/messages/v4/send", {
     method: "POST",
@@ -270,18 +377,78 @@ async function sendAlimtalk(
       "Content-Type": "application/json",
       Authorization: auth,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      message: { ...message, customFields: { orderId, kind } },
+    }),
   });
 
-  const data = (await res.json()) as Record<string, unknown>;
+  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (!res.ok) {
     throw new Error(
-      `Solapi 오류 ${res.status}: ${data.errorCode ?? ""} ${data.errorMessage ?? ""}`
+      `Solapi 오류 ${res.status}: ${data.errorCode ?? ""} ${data.errorMessage ?? ""}`.trim()
     );
   }
 
-  console.log(`[notify] 알림톡 발송 완료 — 주문: ${orderId}, 수신: ${to}`);
+  // statusCode가 아예 없는 응답은 규격 변경일 수 있다 — 접수로 보고 웹훅에 맡긴다.
+  const statusCode = typeof data.statusCode === "string" ? data.statusCode : null;
+  if (statusCode !== null && statusCode !== SOLAPI_ACCEPTED_CODE) {
+    throw new Error(
+      `Solapi 접수 거절 ${statusCode}: ${data.statusMessage ?? ""}`.trim()
+    );
+  }
+
+  return {
+    messageId: typeof data.messageId === "string" ? data.messageId : null,
+    statusCode,
+  };
+}
+
+/**
+ * 결과 링크를 문자(LMS)로 보낸다 — 알림톡이 실패했을 때의 폴백.
+ *
+ * 두 곳에서 부른다.
+ *   ① sendResultLink — 알림톡 **접수**가 거절됐을 때, 그 자리에서 바로.
+ *   ② app/api/solapi-webhook — 접수는 됐는데 **카카오가 뒤늦게 거절**했을 때.
+ * ②가 없으면 9/16 같은 건은 사람이 어드민을 열어 눌러야 나간다.
+ *
+ * 알림톡보다 비싸지만(건당 30원대 vs 13원) 실패했을 때만 나간다.
+ * 문자는 카카오 템플릿 심사와 무관해서 링크를 본문에 그대로 실을 수 있다.
+ */
+export async function sendResultLms(
+  orderId: string,
+  resultUrl: string,
+  to: string
+): Promise<void> {
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `[notify:dev] 결과 링크 문자 폴백 시뮬레이션\n  주문: ${orderId}\n  수신: ${to}\n  URL: ${resultUrl}`
+    );
+    return;
+  }
+
+  const apiKey = process.env.SOLAPI_API_KEY;
+  const apiSecret = process.env.SOLAPI_API_SECRET;
+  const from = process.env.NOTIFY_FROM_PHONE;
+  if (!apiKey || !apiSecret || !from) {
+    throw new Error("Solapi 설정 미비 — 문자 폴백 불가");
+  }
+
+  const text =
+    `[공부결] 리포트가 완성됐습니다\n\n` +
+    `아래 링크에서 확인하세요.\n` +
+    `${resultUrl}\n\n` +
+    `링크는 언제든 다시 여실 수 있습니다.\n` +
+    `문의: ${SUPPORT_PHONE} / ${SUPPORT_EMAIL}`;
+
+  await postSolapiMessage(orderId, "result-lms", apiKey, apiSecret, {
+    to: normalizePhone(to),
+    from,
+    type: "LMS",
+    subject: "리포트 완성 안내",
+    text,
+  });
+  console.log(`[notify] 결과 링크 문자 폴백 접수 — 주문: ${orderId}`);
 }
 
 /**
@@ -481,6 +648,7 @@ async function sendOrderConfirmEmail(orderId: string, to: string): Promise<void>
     to,
     subject: "[공부결] 신청이 접수됐습니다",
     html: buildOrderConfirmHtml(orderId),
+    tags: emailTags(orderId, "confirm-email"),
   });
   if (error) throw new Error(`Resend 오류: ${error.message}`);
   console.log(`[notify] 접수 확인 메일 완료 — 주문: ${orderId}`);
@@ -500,7 +668,6 @@ async function sendOrderConfirmLms(orderId: string, to: string): Promise<void> {
     return;
   }
 
-  const auth = await buildSolapiAuthAsync(apiKey, apiSecret);
   const text =
     `[공부결] 신청이 접수됐습니다\n\n` +
     `주문번호: ${orderId}\n` +
@@ -509,18 +676,14 @@ async function sendOrderConfirmLms(orderId: string, to: string): Promise<void> {
     `완성되면 결과 링크를 보내드립니다.\n` +
     `문의·환불: ${SUPPORT_PHONE} / ${SUPPORT_EMAIL}`;
 
-  const res = await fetch("https://api.solapi.com/messages/v4/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: auth },
-    body: JSON.stringify({
-      message: { to: normalizePhone(to), from, type: "LMS", subject: "신청 접수 안내", text },
-    }),
+  await postSolapiMessage(orderId, "confirm-lms", apiKey, apiSecret, {
+    to: normalizePhone(to),
+    from,
+    type: "LMS",
+    subject: "신청 접수 안내",
+    text,
   });
-  const data = (await res.json()) as Record<string, unknown>;
-  if (!res.ok) {
-    throw new Error(`Solapi 오류 ${res.status}: ${data.errorCode ?? ""} ${data.errorMessage ?? ""}`);
-  }
-  console.log(`[notify] 접수 확인 문자 완료 — 주문: ${orderId}`);
+  console.log(`[notify] 접수 확인 문자 접수 — 주문: ${orderId}`);
 }
 
 function buildOrderConfirmHtml(orderId: string): string {

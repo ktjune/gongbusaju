@@ -36,7 +36,10 @@ export async function approveReport(reportId: string): Promise<Report> {
         contactEmail: order.contactEmail,
         contactPhone: order.contactPhone,
       });
-      await store.recordNotifyResult(order.id, outcome.hasFailure ? outcome.error : null);
+      // hasFailure로 고르지 않는다 — 자동 복구된 발송(문자 폴백)은 실패가 아니지만
+      // 기록은 남아야 한다. 그 기록이 없으면 뒤늦게 온 웹훅이 같은 실패를 보고
+      // 문자를 한 통 더 보낸다(고객 중복 수신).
+      await store.recordNotifyResult(order.id, outcome.error);
     } catch (err) {
       console.error("[notify] 발송 처리 중 예외:", err);
     }
@@ -62,7 +65,7 @@ export async function retryNotify(orderId: string): Promise<{ hasFailure: boolea
     contactPhone: order.contactPhone,
   });
 
-  await store.recordNotifyResult(order.id, outcome.hasFailure ? outcome.error : null);
+  await store.recordNotifyResult(order.id, outcome.error);
   return { hasFailure: outcome.hasFailure };
 }
 

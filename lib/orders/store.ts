@@ -13,6 +13,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Order, NewOrder, Subject, Report, OrderStatus } from "./types";
 import { PrismaOrderStore } from "./prisma-store";
+import { AUTO_RECOVERED_PREFIX } from "../notify";
 
 export interface OrderStore {
   // ── 주문 ──
@@ -28,15 +29,38 @@ export interface OrderStore {
   listRefundRequests(): Promise<Order[]>;
   /** PG 결제 식별자로 주문을 찾는다 — 웹훅의 미아 결제 판정용 */
   getOrderByPaymentKey(paymentKey: string): Promise<Order | null>;
-  /** 결과 링크 발송 결과 기록 — error=null이면 성공(이전 실패 기록도 비움). */
+  /**
+   * 결과 링크 발송 **시도** 결과 기록 — error=null이면 이상 없음.
+   * 새 발송이 나갔다는 뜻이므로 이전 수신 확인·경보 표시는 지운다
+   * (옛 확인이 남으면 이번 발송이 실패해도 웹훅·감사가 모두 건너뛴다).
+   */
   recordNotifyResult(id: string, error: string | null): Promise<Order>;
   /** 생성 시도 카운트 +1 — 자동 재시도 상한 판정용. 갱신된 시도 횟수를 반환. */
   recordGenerateAttempt(id: string): Promise<number>;
   /** 시도 횟수를 상한(to)까지 채워 자동 재시도 대상에서 제외한다(결정적 실패용). */
   exhaustGenerateAttempts(id: string, to: number): Promise<void>;
   listOrders(filter?: { status?: OrderStatus }): Promise<Order[]>;
-  /** 발송 실패가 기록된(notifyError != null) 주문 목록 — 어드민 "발송 실패" 큐 */
+  /**
+   * 사람이 손대야 하는 발송 실패 목록 — 어드민 "발송 실패" 큐.
+   * 자동으로 되살린 건(문자 폴백)은 뺀다 — 고객은 이미 받았는데 큐에 남아 있으면
+   * 운영자가 재발송을 눌러 중복 발송이 된다.
+   */
   listNotifyFailures(): Promise<Order[]>;
+  /**
+   * 솔라피 발송 결과 웹훅 반영 — 수신 확인이면 deliveredAt, 실패면 error.
+   * 접수(HTTP 200) 이후에 오는 진짜 결과라 recordNotifyResult와 따로 둔다.
+   */
+  recordNotifyDelivery(
+    id: string,
+    result: { deliveredAt: Date | null; error: string | null }
+  ): Promise<Order | null>;
+  /**
+   * 발송했는데 어느 통로로도 수신 확인이 오지 않은 주문.
+   * 알림톡·문자는 솔라피 웹훅이, 이메일은 Resend 웹훅이 확인해 준다.
+   */
+  listUnconfirmedNotifies(publishedBefore: Date): Promise<Order[]>;
+  /** 미확인 경보를 보냈다고 표시 — 같은 주문으로 매일 경보가 반복되지 않게. */
+  markNotifyAudited(id: string): Promise<void>;
 
   // ── 자녀 PII ──
   createSubject(data: Omit<Subject, "id" | "createdAt">): Promise<Subject>;
@@ -86,6 +110,8 @@ export class InMemoryOrderStore implements OrderStore {
       ...data,
       id: randomUUID(),
       generateAttempts: 0,
+      notifyDeliveredAt: null,
+      notifyAuditedAt: null,
       createdAt: ts,
       updatedAt: ts,
     };
@@ -159,6 +185,9 @@ export class InMemoryOrderStore implements OrderStore {
       ...order,
       notifyError: error,
       notifyFailedAt: error ? nowIso() : null,
+      // 이번 발송의 수신 여부는 아직 모른다 — 처음부터 다시 확인한다
+      notifyDeliveredAt: null,
+      notifyAuditedAt: null,
       updatedAt: nowIso(),
     };
     this.orders.set(id, updated);
@@ -192,8 +221,47 @@ export class InMemoryOrderStore implements OrderStore {
 
   async listNotifyFailures(): Promise<Order[]> {
     return [...this.orders.values()]
-      .filter((o) => o.notifyError != null)
+      .filter(
+        (o) => o.notifyError != null && !o.notifyError.startsWith(AUTO_RECOVERED_PREFIX)
+      )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async recordNotifyDelivery(
+    id: string,
+    result: { deliveredAt: Date | null; error: string | null }
+  ): Promise<Order | null> {
+    const order = this.orders.get(id);
+    if (!order) return null;
+    const updated: Order = {
+      ...order,
+      notifyDeliveredAt: result.deliveredAt ? result.deliveredAt.toISOString() : null,
+      notifyError: result.error,
+      notifyFailedAt: result.error ? nowIso() : null,
+      updatedAt: nowIso(),
+    };
+    this.orders.set(id, updated);
+    return updated;
+  }
+
+  async listUnconfirmedNotifies(publishedBefore: Date): Promise<Order[]> {
+    const cutoff = publishedBefore.toISOString();
+    return [...this.orders.values()]
+      .filter(
+        (o) =>
+          o.status === "published" &&
+          (o.contactPhone != null || o.contactEmail != null) &&
+          o.notifyDeliveredAt == null &&
+          o.notifyAuditedAt == null &&
+          o.updatedAt < cutoff
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async markNotifyAudited(id: string): Promise<void> {
+    const order = this.orders.get(id);
+    if (!order) return;
+    this.orders.set(id, { ...order, notifyAuditedAt: nowIso() });
   }
 
   async createSubject(data: Omit<Subject, "id" | "createdAt">): Promise<Subject> {

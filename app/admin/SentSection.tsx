@@ -12,6 +12,7 @@ export type SentOrderItem = {
   contactPhone: string | null;
   resultUrl: string | null;
   notifyError: string | null;
+  notifyDeliveredAt: string | null;
   refundedAt: string | null;
   hasPayment: boolean;
   paymentLabel: string;
@@ -85,10 +86,11 @@ export function SentSection({
                     <td style={S.td}>
                       {refunded ? (
                         <span style={S.statusRej}>환불됨</span>
-                      ) : o.notifyError ? (
-                        <span style={S.statusFail}>발송 실패</span>
                       ) : (
-                        <span style={S.statusPub}>발송 완료</span>
+                        <DeliveryStatus
+                          notifyError={o.notifyError}
+                          notifyDeliveredAt={o.notifyDeliveredAt}
+                        />
                       )}
                     </td>
                     <td style={S.td}>
@@ -135,5 +137,51 @@ export function SentSection({
         )
       )}
     </>
+  );
+}
+
+/**
+ * 발송 상태 — "보냈다"와 "닿았다"를 구분해서 보여준다.
+ *
+ * 2026-09-16 주문은 우리 기록에 "발송 완료"였지만 고객은 아무것도 못 받았다.
+ * 접수(우리가 보낸 것)와 수신(발송사가 확인해 준 것)은 다른 사실이라 따로 적는다.
+ *
+ *   수신 확인   발송사 웹훅이 고객에게 닿았다고 확인 — 유일하게 믿을 수 있는 상태
+ *   문자로 대체  원래 통로가 실패해 자동으로 문자를 다시 보냄 (사람이 할 일 없음)
+ *   발송 실패   사람이 손대야 함
+ *   확인 대기   보내긴 했으나 아직 결과가 오지 않음
+ */
+function DeliveryStatus({
+  notifyError,
+  notifyDeliveredAt,
+}: {
+  notifyError: string | null;
+  notifyDeliveredAt: string | null;
+}) {
+  if (notifyDeliveredAt) {
+    return (
+      <span style={S.statusPub} title={new Date(notifyDeliveredAt).toLocaleString("ko-KR")}>
+        수신 확인
+      </span>
+    );
+  }
+  if (notifyError?.startsWith("[자동복구]")) {
+    return (
+      <span style={S.statusPub} title={notifyError}>
+        문자로 대체
+      </span>
+    );
+  }
+  if (notifyError) {
+    return (
+      <span style={S.statusFail} title={notifyError}>
+        발송 실패
+      </span>
+    );
+  }
+  return (
+    <span style={{ color: "#9a9fa8" }} title="보냈지만 아직 수신 확인이 오지 않았습니다">
+      확인 대기
+    </span>
   );
 }

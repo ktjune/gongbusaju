@@ -46,6 +46,12 @@ model Order {
   // 성공하면 null로 비운다.
   notifyError    String?
   notifyFailedAt DateTime?
+  // 솔라피 발송 결과 웹훅이 "수신 완료"로 확인해 준 시각. null = 아직 미확인.
+  // 접수(HTTP 200)와 수신은 다르다 — 접수만 보고 성공으로 적었다가
+  // 2026-09-16 주문의 알림톡이 소리 없이 사라졌다.
+  notifyDeliveredAt DateTime?
+  // "발송했는데 수신 확인이 안 온다" 경보를 보낸 시각 (중복 경보 방지)
+  notifyAuditedAt   DateTime?
   // 리포트 생성 시도 횟수 — failed/고착 generating 자동 재시도 상한(6회)용.
   // 매 생성 시작 시 +1 (worker가 candidates 필터에 사용)
   generateAttempts Int @default(0)

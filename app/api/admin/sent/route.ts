@@ -48,6 +48,9 @@ export async function GET() {
         resultUrl,
         // 발송 결과: notifyError가 있으면 알림 발송 실패, refundedAt은 환불 시각
         notifyError: o.notifyError,
+        // 발송사(솔라피·Resend) 웹훅이 "고객에게 닿았다"고 확인해 준 시각.
+        // null이면 아직 모른다 — 보냈다는 것과 받았다는 것은 다르다(2026-09-16).
+        notifyDeliveredAt: o.notifyDeliveredAt,
         refundedAt: o.refundedAt,
         hasPayment: !!o.paymentKey,
         // 실제 출금이 있었을 수 있는 결제인지 — PG 테스트 결제도 취소 안내 메일이

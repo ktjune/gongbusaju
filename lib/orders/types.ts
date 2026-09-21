@@ -45,6 +45,14 @@ export type Order = {
   /** 결과 링크 발송 실패 사유 — 성공하면 null. 어드민 "발송 실패" 큐에서 사용. */
   notifyError: string | null;
   notifyFailedAt: string | null;
+  /**
+   * 솔라피 발송 결과 웹훅이 "수신 완료"로 확인해 준 시각. null = 아직 미확인.
+   * 접수(HTTP 200)와 수신은 다르다 — 접수만 보고 성공으로 적으면 카카오가
+   * 뒤늦게 거절한 건이 기록상 성공으로 남는다(2026-09-16).
+   */
+  notifyDeliveredAt: string | null;
+  /** "발송했는데 수신 확인이 없다" 경보를 운영자에게 보낸 시각 (중복 경보 방지) */
+  notifyAuditedAt: string | null;
   /** 리포트 생성 시도 횟수 — 자동 재시도 상한(6회)용. 매 생성 시작 시 +1 */
   generateAttempts: number;
   /** 신청자(보호자) 성명 — 결제 시 PG 요구 + 환불 문의 본인 확인용. 암호화 저장. */
@@ -86,7 +94,14 @@ export type OrderMetrics = Pick<
 /** 스토어 createOrder에 넘기는 형태 — 측정 필드는 빠져도 된다. */
 export type NewOrder = Omit<
   Order,
-  "id" | "createdAt" | "updatedAt" | "generateAttempts" | keyof OrderMetrics
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "generateAttempts"
+  // 발송 결과는 주문을 만드는 시점에 존재할 수 없다 — 발송 후 웹훅·감사가 채운다
+  | "notifyDeliveredAt"
+  | "notifyAuditedAt"
+  | keyof OrderMetrics
 > &
   Partial<OrderMetrics>;
 

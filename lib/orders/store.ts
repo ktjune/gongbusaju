@@ -57,6 +57,11 @@ export interface OrderStore {
   /**
    * 발송했는데 어느 통로로도 수신 확인이 오지 않은 주문.
    * 알림톡·문자는 솔라피 웹훅이, 이메일은 Resend 웹훅이 확인해 준다.
+   *
+   * 이미 실패로 기록돼 운영자에게 알린 건은 뺀다 — 어드민 "발송 실패" 큐에
+   * 올라가 있어 사람이 이미 알고 있고, 3시간 뒤 같은 주문으로 또 울리면
+   * 경보가 소음이 된다. 자동 복구된 건([자동복구])은 그 문자의 수신 보고를
+   * 기다리는 중이라 대상에 남긴다 — 그마저 안 오면 알아야 한다.
    */
   listUnconfirmedNotifies(publishedBefore: Date): Promise<Order[]>;
   /** 미확인 경보를 보냈다고 표시 — 같은 주문으로 매일 경보가 반복되지 않게. */
@@ -253,6 +258,7 @@ export class InMemoryOrderStore implements OrderStore {
           (o.contactPhone != null || o.contactEmail != null) &&
           o.notifyDeliveredAt == null &&
           o.notifyAuditedAt == null &&
+          (o.notifyError == null || o.notifyError.startsWith(AUTO_RECOVERED_PREFIX)) &&
           o.updatedAt < cutoff
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));

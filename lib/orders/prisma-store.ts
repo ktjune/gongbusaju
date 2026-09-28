@@ -233,6 +233,16 @@ export class PrismaOrderStore implements OrderStore {
         OR: [{ contactPhone: { not: null } }, { contactEmail: { not: null } }],
         notifyDeliveredAt: null,
         notifyAuditedAt: null,
+        // 이미 실패로 알린 건은 어드민 큐에 있다 — 또 울리지 않는다.
+        // 자동 복구된 건은 문자의 수신 보고를 기다리는 중이라 남긴다.
+        AND: [
+          {
+            OR: [
+              { notifyError: null },
+              { notifyError: { startsWith: AUTO_RECOVERED_PREFIX } },
+            ],
+          },
+        ],
         updatedAt: { lt: publishedBefore },
       },
       orderBy: { createdAt: "desc" },

@@ -154,3 +154,61 @@ describe("재발송하면 수신 확인을 처음부터 다시 센다", () => {
     expect(await store.listNotifyFailures()).toHaveLength(1);
   });
 });
+
+/** 주문의 마지막 갱신 시각을 과거로 돌린다 (감사 기준 시계) */
+function age(store: OrderStore, id: string, hoursAgo: number): void {
+  const map = (store as unknown as { orders: Map<string, { updatedAt: string }> }).orders;
+  const o = map.get(id)!;
+  map.set(id, { ...o, updatedAt: new Date(Date.now() - hoursAgo * HOUR).toISOString() });
+}
+
+/**
+ * 경보가 소음이 되면 사람이 안 본다.
+ * 이미 실패로 알린 건은 어드민 "발송 실패" 큐에 있으니 또 울리지 않는다.
+ */
+describe("이미 알린 실패는 다시 울리지 않는다", () => {
+  it("실패 기록이 있는 주문은 감사 대상이 아니다", async () => {
+    const store = getOrderStore();
+    const id = await publishedOrder(store, { hoursAgo: 0, phone: "010-1111-2222" });
+    await store.recordNotifyDelivery(id, {
+      deliveredAt: null,
+      error: "result-ata 발송 실패 3065: 발송 불가",
+    });
+    age(store, id, 5); // 실패 기록 후 5시간이 지나도
+
+    const result = await auditUnconfirmedNotifies(3);
+
+    expect(result.found).toBe(0);
+  });
+
+  it("자동 복구된 건은 여전히 감사한다 — 그 문자의 수신 보고마저 안 오면 알아야 한다", async () => {
+    const store = getOrderStore();
+    const id = await publishedOrder(store, { hoursAgo: 0, phone: "010-1111-2222" });
+    await store.recordNotifyDelivery(id, {
+      deliveredAt: null,
+      error: "[자동복구] 알림톡 실패(3065) → 문자 재발송함",
+    });
+    age(store, id, 5);
+
+    const result = await auditUnconfirmedNotifies(3);
+
+    expect(result.orderIds).toEqual([id]);
+  });
+
+  /**
+   * 복구 직후에는 울리지 않아야 한다 — 문자의 수신 보고가 올 시간을 줘야 한다.
+   * (3시간 시계는 마지막 발송 시점부터 다시 간다.)
+   */
+  it("복구 직후에는 아직 감사하지 않는다", async () => {
+    const store = getOrderStore();
+    const id = await publishedOrder(store, { hoursAgo: 5, phone: "010-1111-2222" });
+    await store.recordNotifyDelivery(id, {
+      deliveredAt: null,
+      error: "[자동복구] 알림톡 실패(3065) → 문자 재발송함",
+    });
+
+    const result = await auditUnconfirmedNotifies(3);
+
+    expect(result.found).toBe(0);
+  });
+});

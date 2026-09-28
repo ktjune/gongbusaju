@@ -227,6 +227,18 @@ export default function ApplyPage() {
 
   const canProceed = missing.length === 0;
 
+  /*
+   * 카드 결제에는 구매자 휴대폰 번호가 반드시 있어야 한다.
+   * KG이니시스 V2 일반결제 규정이고, 없으면 PortOne이 결제창을 아예 열지 않는다
+   * ("이니시스 V2 일반 결제의 경우 구매자 휴대폰 번호는 필수 입력입니다").
+   *
+   * 연락처는 "이메일 또는 휴대폰 둘 중 하나"로 받으므로 이메일만 남긴 고객이
+   * 생기는데, 그 고객이 카드 버튼을 누르면 빨간 에러만 뜨고 아무 데도 못 간다.
+   * 결제 직전까지 와서 막히는 것이라 그대로 이탈한다 — 2026-09-16 이후 주문이
+   * 끊긴 구간이 여기다. 버튼을 내밀기 전에 미리 판정한다.
+   */
+  const cardPayAvailable = contactPhone.trim() !== "" && !phoneInvalid;
+
   // 이름이 바뀌면 음절별 한자 후보를 조회하고 기존 선택을 초기화
   useEffect(() => {
     setHanjaSel({});
@@ -436,14 +448,52 @@ export default function ApplyPage() {
           ) : (
             <>
               <p className={styles.payLabel}>결제 수단을 고르면 바로 결제창이 열립니다</p>
-              <button
-                type="button"
-                className={`${styles.payBtn} ${styles.payBtnCard}`}
-                onClick={() => handlePay("card")}
-                disabled={paying}
-              >
-                {paying ? "결제 진행 중…" : `신용·체크카드로 ${PRICE}원 결제`}
-              </button>
+              {cardPayAvailable ? (
+                <button
+                  type="button"
+                  className={`${styles.payBtn} ${styles.payBtnCard}`}
+                  onClick={() => handlePay("card")}
+                  disabled={paying}
+                >
+                  {paying ? "결제 진행 중…" : `신용·체크카드로 ${PRICE}원 결제`}
+                </button>
+              ) : (
+                /* 누르면 실패할 버튼을 내밀지 않는다 — 대신 되돌아갈 길을 준다 */
+                <div
+                  style={{
+                    border: "1px solid #e4d9c4",
+                    background: "#fffaf0",
+                    borderRadius: 12,
+                    padding: "16px 18px",
+                    fontSize: "0.9rem",
+                    lineHeight: 1.7,
+                    color: "#5a5f6a",
+                  }}
+                >
+                  <b style={{ color: "#2c2c30" }}>카드 결제에는 휴대폰 번호가 필요합니다.</b>
+                  <br />
+                  카드사 규정상 번호 없이는 카드 결제창이 열리지 않습니다.
+                  {kakaoPayAvailable ? " 번호를 넣어 주시거나, 아래 카카오페이로 결제해 주세요." : " 번호를 넣어 주세요."}
+                  <br />
+                  <button
+                    type="button"
+                    onClick={() => setStep("form")}
+                    style={{
+                      marginTop: 12,
+                      background: "#1f3b63",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "10px 18px",
+                      fontSize: "0.9rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    휴대폰 번호 입력하러 가기
+                  </button>
+                </div>
+              )}
               {kakaoPayAvailable && (
                 <button
                   type="button"
@@ -858,6 +908,13 @@ export default function ApplyPage() {
             {phoneInvalid && (
               <p className={styles.hint} style={{ color: "#a4442a" }}>
                 휴대폰 번호를 다시 확인해 주세요. (예: 010-1234-5678)
+              </p>
+            )}
+            {/* 결제 직전에 막히지 않도록 여기서 미리 알려 준다 (카드사 규정) */}
+            {!phoneInvalid && contactPhone.trim() === "" && (
+              <p className={styles.hint}>
+                <b>카드로 결제하시려면 휴대폰 번호가 필요합니다.</b> 카카오페이로 결제하시면
+                번호 없이도 됩니다. 번호를 남기시면 완성된 리포트를 알림톡으로도 보내 드립니다.
               </p>
             )}
           </div>

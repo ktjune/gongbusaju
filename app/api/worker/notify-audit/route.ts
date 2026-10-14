@@ -9,6 +9,8 @@
  * 2. 운영 요약 — 멈춘 주문·검수 대기·발송 실패·환불 요청·AI 공급자 상태를 모아
  *    손댈 것이 있을 때만 메일 한 통으로 알린다 (lib/orders/ops-digest).
  *    감사(1)가 먼저 돌아 이미 알린 수신 미확인 건은 요약에 다시 실리지 않는다.
+ * 3. 주간 리포트 — 월요일(KST)에만, 지난주 실적을 전주와 비교해 메일로 보낸다
+ *    (lib/orders/weekly-report). 이건 이상 유무와 관계없이 매주 보낸다.
  *
  * ※ Hobby 플랜은 크론이 하루 1회로 제한돼 새 크론을 늘리지 않고 여기에 얹었다.
  *
@@ -18,6 +20,8 @@
 
 import { auditUnconfirmedNotifies } from "@/lib/orders/notify-audit";
 import { buildOpsDigest, formatDigestAlert, withLlmAlerts } from "@/lib/orders/ops-digest";
+import { summarizeWeeks, isKstMonday, formatWeeklyReport } from "@/lib/orders/weekly-report";
+import { getOrderStore } from "@/lib/orders";
 import { checkLlmHealth } from "@/lib/report/llm-health";
 import { sendOwnerAlert } from "@/lib/notify";
 
@@ -56,5 +60,18 @@ export async function GET(req: Request) {
     digest = { error: e instanceof Error ? e.message : String(e) };
   }
 
-  return Response.json({ status: "done", ...result, digest });
+  let weekly: { sent: boolean } | { error: string } | null = null;
+  if (isKstMonday()) {
+    try {
+      const { subject, body } = formatWeeklyReport(
+        summarizeWeeks(await getOrderStore().listOrders())
+      );
+      weekly = { sent: (await sendOwnerAlert(subject, body)).sent };
+    } catch (e) {
+      console.error("[notify-audit] 주간 리포트 실패:", e);
+      weekly = { error: e instanceof Error ? e.message : String(e) };
+    }
+  }
+
+  return Response.json({ status: "done", ...result, digest, weekly });
 }

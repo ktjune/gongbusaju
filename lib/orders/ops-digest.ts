@@ -18,6 +18,7 @@ import { MAX_GENERATE_ATTEMPTS } from "./generate";
 import { UNCONFIRMED_AFTER_HOURS } from "./notify-audit";
 import { classifyPayment } from "../payments/classify";
 import type { Order, Report } from "./types";
+import type { LlmHealth } from "../report/llm-health";
 
 const MIN = 60 * 1000;
 const HOUR = 60 * MIN;
@@ -188,4 +189,36 @@ export async function buildOpsDigest(now: Date = new Date()): Promise<OpsDigest>
     { orders, pendingReports, notifyFailures, unconfirmed, refundRequests },
     now
   );
+}
+
+/** LLM 점검 결과를 경보에 합친다 — 주력 장애는 가장 급하므로 맨 앞에. */
+export function withLlmAlerts(alerts: string[], llm: LlmHealth | null | undefined): string[] {
+  const merged = [...alerts];
+  if (llm?.note && !llm.primaryOk) merged.unshift(`AI 공급자 장애: ${llm.note}`);
+  else if (llm?.note) merged.push(`AI 폴백 점검: ${llm.note}`);
+  return merged;
+}
+
+/** 운영자 메일 제목·본문. 주문번호는 어드민에서 찾아볼 수 있게 함께 적는다. */
+export function formatDigestAlert(
+  digest: OpsDigest,
+  alerts: string[]
+): { subject: string; body: string } {
+  const ids = [
+    ...digest.stuck.paid,
+    ...digest.stuck.generating,
+    ...digest.stuck.failedExhausted,
+    ...digest.stuck.rejected,
+  ].map((o) => o.id);
+  ids.push(...digest.notify.failed.map((o) => o.id), ...digest.notify.unconfirmed);
+  ids.push(...digest.refundRequests.map((o) => o.id));
+  const uniq = [...new Set(ids)];
+
+  return {
+    subject: `아침 점검 — 확인할 것 ${alerts.length}건`,
+    body:
+      alerts.map((a) => `• ${a}`).join("\n") +
+      (uniq.length ? `\n\n관련 주문: ${uniq.join(", ")}` : "") +
+      `\n\n어제(${digest.yesterday.date}) 주문 ${digest.yesterday.orders}건 · 실매출 ${digest.yesterday.paidKrw.toLocaleString("ko-KR")}원`,
+  };
 }

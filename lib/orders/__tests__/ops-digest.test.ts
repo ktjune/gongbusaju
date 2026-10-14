@@ -6,7 +6,14 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { summarizeOps, kstDate, type OpsDigestInput } from "../ops-digest";
+import {
+  summarizeOps,
+  kstDate,
+  withLlmAlerts,
+  formatDigestAlert,
+  type OpsDigestInput,
+} from "../ops-digest";
+import type { LlmHealth } from "../../report/llm-health";
 import { MAX_GENERATE_ATTEMPTS } from "../generate";
 import type { Order, Report } from "../types";
 
@@ -167,5 +174,50 @@ describe("summarizeOps", () => {
   it("kstDate는 UTC 15시 이후를 다음 날로 본다", () => {
     expect(kstDate(new Date("2026-10-13T14:59:00Z"))).toBe("2026-10-13");
     expect(kstDate(new Date("2026-10-13T15:00:00Z"))).toBe("2026-10-14");
+  });
+});
+
+describe("withLlmAlerts", () => {
+  const health = (over: Partial<LlmHealth>): LlmHealth => ({
+    providers: [],
+    primaryOk: true,
+    hasFallback: true,
+    fallbackOk: true,
+    note: null,
+    ...over,
+  });
+
+  it("주력 장애는 맨 앞, 폴백 문제는 맨 뒤에 붙는다", () => {
+    expect(withLlmAlerts(["x"], health({ primaryOk: false, note: "죽음" }))[0]).toContain("장애");
+    expect(withLlmAlerts(["x"], health({ fallbackOk: false, note: "폴백" }))).toEqual([
+      "x",
+      "AI 폴백 점검: 폴백",
+    ]);
+  });
+
+  it("정상이거나 키가 없으면 그대로", () => {
+    expect(withLlmAlerts(["x"], health({}))).toEqual(["x"]);
+    expect(withLlmAlerts([], null)).toEqual([]);
+  });
+});
+
+describe("formatDigestAlert", () => {
+  it("경보·관련 주문번호·어제 실적을 담고 개인정보는 담지 않는다", () => {
+    const d = summarizeOps(
+      {
+        ...empty,
+        orders: [order({ id: "f9", status: "failed", generateAttempts: MAX_GENERATE_ATTEMPTS })],
+        refundRequests: [order({ id: "rr1", refundRequestReason: "아이 이름 홍길순 오기" })],
+      },
+      NOW
+    );
+    const { subject, body } = formatDigestAlert(d, d.alerts);
+    expect(subject).toContain("2건");
+    expect(body).toContain("f9");
+    expect(body).toContain("rr1");
+    expect(body).toContain("2026-10-13");
+    for (const pii of ["홍길동", "홍길순", "parent@example.com", "010-1234-5678"]) {
+      expect(body).not.toContain(pii);
+    }
   });
 });

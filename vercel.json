@@ -1,6 +1,6 @@
 {
   "crons": [
     { "path": "/api/worker/cleanup-pii", "schedule": "0 18 * * *" },
-    { "path": "/api/worker/notify-audit", "schedule": "0 2 * * *" }
+    { "path": "/api/worker/notify-audit", "schedule": "50 23 * * *" }
   ]
 }

@@ -11,7 +11,7 @@
  *   CRON_SECRET — Bearer 인증. 미설정 시 개발=통과, 프로덕션=거부.
  */
 
-import { buildOpsDigest } from "@/lib/orders/ops-digest";
+import { buildOpsDigest, withLlmAlerts } from "@/lib/orders/ops-digest";
 import { checkLlmHealth } from "@/lib/report/llm-health";
 
 export const runtime = "nodejs";
@@ -37,9 +37,7 @@ export async function GET(req: Request) {
     withLlm ? checkLlmHealth() : Promise.resolve(undefined),
   ]);
 
-  const alerts = [...digest.alerts];
-  if (llm && llm.note && !llm.primaryOk) alerts.unshift(`AI 공급자 장애: ${llm.note}`);
-  else if (llm?.note) alerts.push(`AI 폴백 점검: ${llm.note}`);
+  const alerts = withLlmAlerts(digest.alerts, llm);
 
   return Response.json({
     ...digest,

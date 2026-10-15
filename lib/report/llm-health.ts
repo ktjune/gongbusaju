@@ -44,7 +44,7 @@ export type LlmHealth = {
 
 function buildProbes(): Probe[] {
   const probes: Probe[] = [];
-  const geminiModel = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+  const geminiModel = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
   const geminiFallback = process.env.GEMINI_FALLBACK_MODEL?.trim();
 
   if (process.env.GEMINI_API_KEY) {

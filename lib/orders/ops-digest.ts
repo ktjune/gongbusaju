@@ -92,8 +92,18 @@ export type OpsDigestInput = {
 };
 
 /** 순수 함수 — 스토어 없이 테스트할 수 있게 집계만 한다. */
+/**
+ * 사람이 손댈 필요가 없는 주문 — PG 테스트 결제·모의 주문(실제 출금 없음).
+ * 심사 기간(2026-07~08)에 남은 테스트 주문이 failed/rejected로 영구히 남아 있어,
+ * 이걸 세면 매일 아침 같은 거짓 경보가 온다. 실결제·판별 불가 건만 센다.
+ */
+function needsHuman(o: Order): boolean {
+  const kind = classifyPayment(o.paymentKey).kind;
+  return kind !== "test" && kind !== "none";
+}
+
 export function summarizeOps(input: OpsDigestInput, now: Date = new Date()): OpsDigest {
-  const { orders } = input;
+  const orders = input.orders.filter(needsHuman);
   const byStatus = (s: Order["status"]) => orders.filter((o) => o.status === s);
 
   const paid = byStatus("paid").filter((o) => ageMs(o.updatedAt, now) > STUCK_PAID_AFTER_MS);
@@ -111,7 +121,7 @@ export function summarizeOps(input: OpsDigestInput, now: Date = new Date()): Ops
   }, null);
 
   const yDate = kstDate(new Date(now.getTime() - 24 * HOUR));
-  const yOrders = orders.filter((o) => kstDate(new Date(o.createdAt)) === yDate);
+  const yOrders = input.orders.filter((o) => kstDate(new Date(o.createdAt)) === yDate);
   const yPaid = yOrders.filter((o) => {
     if (o.amountKrw == null) return false;
     const kind = classifyPayment(o.paymentKey).kind;

@@ -30,7 +30,7 @@ function order(over: Partial<Order> = {}): Order {
     subjectId: "s1",
     reportId: null,
     userId: null,
-    paymentKey: null,
+    paymentKey: "gbg_live",
     refundedAt: null,
     refundReason: null,
     refundRequestedAt: null,
@@ -219,5 +219,31 @@ describe("formatDigestAlert", () => {
     for (const pii of ["홍길동", "홍길순", "parent@example.com", "010-1234-5678"]) {
       expect(body).not.toContain(pii);
     }
+  });
+});
+
+describe("테스트 결제 주문", () => {
+  it("PG 테스트·모의 주문은 실패·반려로 남아 있어도 경보하지 않는다", () => {
+    const d = summarizeOps(
+      {
+        ...empty,
+        orders: [
+          order({ id: "t1", status: "failed", paymentKey: "tgen_x", generateAttempts: MAX_GENERATE_ATTEMPTS }),
+          order({ id: "t2", status: "rejected", paymentKey: null }),
+        ],
+      },
+      NOW
+    );
+    expect(d.ok).toBe(true);
+    expect(d.stuck.failedExhausted).toEqual([]);
+    expect(d.stuck.rejected).toEqual([]);
+  });
+
+  it("실결제 주문은 그대로 경보한다", () => {
+    const d = summarizeOps(
+      { ...empty, orders: [order({ id: "r1", status: "rejected", paymentKey: "gbg_1" })] },
+      NOW
+    );
+    expect(d.stuck.rejected.map((o) => o.id)).toEqual(["r1"]);
   });
 });
